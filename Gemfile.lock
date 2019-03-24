@@ -5,6 +5,7 @@ GEM
       debug_inspector (>= 0.0.1)
     coderay (1.1.2)
     debug_inspector (0.0.3)
+    ffi (1.10.0)
     interception (0.5)
     method_source (0.9.2)
     pg (1.1.4)
@@ -18,10 +19,15 @@ GEM
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
     rack (2.0.6)
+    rake (12.3.2)
     roda (3.18.0)
       rack
+    sassc (2.0.1)
+      ffi (~> 1.9)
+      rake
     shotgun (0.9.2)
       rack (>= 1.0)
+    tilt (2.0.9)
 
 PLATFORMS
   ruby
@@ -32,7 +38,9 @@ DEPENDENCIES
   pry-rescue
   pry-stack_explorer
   roda
+  sassc
   shotgun
+  tilt
 
 BUNDLED WITH
    2.0.1

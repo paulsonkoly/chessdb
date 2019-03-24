@@ -1,0 +1,49 @@
+@mixin button-like {
+  cursor: pointer;
+}
+
+.passed {
+  color: $chessdb-greyscale3;
+  @include button-like;
+}
+
+.current {
+  color: $chessdb-light-green;
+  @include button-like;
+}
+
+.upcoming {
+  color: $chessdb-greyscale4;
+  @include button-like;
+}
+
+.elo {
+  color: $chessdb-greyscale6;
+}
+
+.popularity-bar {
+  border: solid 1px $chessdb-greyscale1;
+}
+
+@mixin bar-section {
+  display: inline-block;
+  padding: 2px;
+//  zoom: 1;
+//  vertical-align: middle;
+}
+
+.white-won {
+  color: $chessdb-greyscale1;
+  background-color: $chessdb-greyscale6;
+  @include bar-section;
+}
+
+.draw {
+  background-color: $chessdb-greyscale3;
+  @include bar-section;
+}
+
+.black-won {
+  background-color: $chessdb-greyscale1;
+  @include bar-section;
+}

@@ -1,3 +1,5 @@
 /.bundle/
 /vendor/
 /config/database.yml
+assets/css/foundation-sites-*/
+/.sass-cache/

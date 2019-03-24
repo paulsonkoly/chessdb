@@ -4,6 +4,8 @@ source "https://rubygems.org"
 
 gem 'roda'
 gem 'pg'
+gem 'tilt'
+gem 'sassc'
 
 group :development do
   gem 'shotgun'

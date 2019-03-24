@@ -9,11 +9,17 @@ database_connection_params = YAML.load(config_yaml, symbolize_names: true)
 
 $connection = PG.connect(database_connection_params[:development])
 
+
 class App < Roda
+  plugin :assets, css: 'application.scss'
+
   route do |r|
+    r.assets
+
     r.on 'games' do
       r.get Integer do |id|
         "games triggered id: #{id}"
+        assets_paths(:css).to_s
       end
 
       r.get(/(\d+).json/) do |id|
