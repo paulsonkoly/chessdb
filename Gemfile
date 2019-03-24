@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 gem 'roda'
 gem 'pg'
+gem 'sequel'
 gem 'tilt'
 gem 'sassc'
 
