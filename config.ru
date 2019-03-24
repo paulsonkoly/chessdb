@@ -7,7 +7,7 @@ database_config_file = File.join(File.dirname(__FILE__), 'config', 'database.yml
 config_yaml = File.read(database_config_file)
 database_connection_params = YAML.load(config_yaml, symbolize_names: true)
 
-connection = PG.connect(database_connection_params[:development])
+$connection = PG.connect(database_connection_params[:development])
 
 class App < Roda
   route do |r|
@@ -17,7 +17,13 @@ class App < Roda
       end
 
       r.get(/(\d+).json/) do |id|
-        "json handler triggered id: #{id}"
+        sql = <<~EOSQL
+          select * from moves where moves.game_id = $1 order by fullmove_number, active_colour asc
+        EOSQL
+        pg_result = $connection.exec_params(sql, [id.to_i])
+        result = pg_result.ntuples.times.map { |ix| pg_result[ix] }
+        response['Content-Type'] = 'application/json'
+        result.to_json
       end
     end
   end
@@ -26,5 +32,6 @@ end
 begin
   run App.freeze.app
 ensure
-  connection.close
+  # TODO: why???
+#  $connection.close
 end
