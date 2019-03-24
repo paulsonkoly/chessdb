@@ -1,7 +1,22 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    binding_of_caller (0.8.0)
+      debug_inspector (>= 0.0.1)
+    coderay (1.1.2)
+    debug_inspector (0.0.3)
+    interception (0.5)
+    method_source (0.9.2)
     pg (1.1.4)
+    pry (0.12.2)
+      coderay (~> 1.1.0)
+      method_source (~> 0.9.0)
+    pry-rescue (1.5.0)
+      interception (>= 0.5)
+      pry (>= 0.12.0)
+    pry-stack_explorer (0.4.9.3)
+      binding_of_caller (>= 0.7)
+      pry (>= 0.9.11)
     rack (2.0.6)
     roda (3.18.0)
       rack
@@ -13,6 +28,9 @@ PLATFORMS
 
 DEPENDENCIES
   pg
+  pry
+  pry-rescue
+  pry-stack_explorer
   roda
   shotgun
 
