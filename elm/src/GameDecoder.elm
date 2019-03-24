@@ -22,7 +22,7 @@ moveDecoder =
     (field "fullmove_number" int)
     (field "castling_availability" int)
     (field "halfmove_clock" int)
-    (field "en_passant" int |> nullable)
+    (field "en_passant" (nullable <| int))
 
 
 colourDecoder : Decoder Colour
