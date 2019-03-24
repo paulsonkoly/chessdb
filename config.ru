@@ -11,7 +11,7 @@ $connection = PG.connect(database_connection_params[:development])
 
 
 class App < Roda
-  plugin :assets, css: 'application.scss'
+  plugin :assets, css: 'application.scss', js: 'application.js'
 
   route do |r|
     r.assets
@@ -22,7 +22,9 @@ class App < Roda
         <html>
           <head>
             <title>Chessdb</title>
+            <meta charset="UTF-8">
             #{assets(:css)}
+            #{assets(:js)}
           </head>
 
           <body>
@@ -38,9 +40,8 @@ class App < Roda
                       Santiago m, Santiago CHI, 
                     </div>
                     <div id="game_viewer" class="cell small-8"/></div>
-                    <script src="/packs/game_viewer-69b10750517199d618e5.js"></script>
+                    <script>var app = Elm.Main.init({ node: document.getElementById("game_viewer") });</script>
                   </div>
-
                 </div>
               </div>
             </div>

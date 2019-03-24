@@ -2,4 +2,6 @@
 /vendor/
 /config/database.yml
 assets/css/foundation-sites-*/
+assets/js/application.js
 /.sass-cache/
+/elm/elm-stuff/
