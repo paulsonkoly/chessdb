@@ -16,6 +16,39 @@ class App < Roda
   route do |r|
     r.assets
 
+    r.root do
+      <<~EOHTML
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>Chessdb</title>
+            #{assets(:css)}
+          </head>
+
+          <body>
+            <div class="grid-conatiner">
+              <div class="grid-x grid-padding-x grid-padding-y">
+                <div class="cell">
+                  <div class="grid-x">
+                    <div class="cell small-3">
+                      <h5>
+                        Morovic Fernandez, Ivan<span class="elo">(2535)</span> - Korchnoi, Viktor<span class="elo">(2615)</span>
+                      </h5>
+                      <hr />
+                      Santiago m, Santiago CHI, 
+                    </div>
+                    <div id="game_viewer" class="cell small-8"/></div>
+                    <script src="/packs/game_viewer-69b10750517199d618e5.js"></script>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          </body>
+        </html>
+      EOHTML
+    end
+
     r.on 'games' do
       r.get Integer do |id|
         "games triggered id: #{id}"
