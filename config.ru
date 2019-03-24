@@ -1,4 +1,13 @@
 require 'roda'
+require 'yaml'
+require 'pg'
+
+## DATABASE
+database_config_file = File.join(File.dirname(__FILE__), 'config', 'database.yml').freeze
+config_yaml = File.read(database_config_file)
+database_connection_params = YAML.load(config_yaml, symbolize_names: true)
+
+connection = PG.connect(database_connection_params[:development])
 
 class App < Roda
   route do |r|
@@ -14,4 +23,8 @@ class App < Roda
   end
 end
 
-run App.freeze.app
+begin
+  run App.freeze.app
+ensure
+  connection.close
+end
