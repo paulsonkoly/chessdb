@@ -58,7 +58,14 @@ class App < Roda
       end
 
       r.get(/(\d+).json/) do |id|
+        columns = DB[:moves].columns.map do |column|
+          case column 
+          when :active_colour then Sequel.cast(:active_colour, Integer)
+          else column
+          end
+        end
         ds = DB[:moves]
+          .select(*columns)
           .where(game_id: id)
           .order(:fullmove_number)
           .order_append(:active_colour)

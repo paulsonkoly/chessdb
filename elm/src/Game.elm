@@ -1,16 +1,13 @@
 -- | Game and related structures
-module Game exposing (Game, Move, Colour(..))
+module Game exposing (Game, Move)
 
 import Array exposing(Array)
-
-type Colour = White | Black
-
 
 type alias Move =
   { id : Int
   , fenPosition : String
   , san : String
-  , activeColour : Colour
+  , activeColour : Int
   , fullMoveNumber : Int
   , castlingAvailability : Int -- TODO
   , halfmoveClock : Int
