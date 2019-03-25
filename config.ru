@@ -12,7 +12,9 @@ DB = Sequel.connect(
   **database_connection_params[:development])
 
 class App < Roda
-  plugin :assets, css: 'application.scss', js: ['application.js', 'chessboard.js', 'jquery-min.js']
+  plugin :assets,
+    css: ['application.scss', 'svg-with-js.min.css'],
+    js: ['application.js', 'chessboard.js', 'jquery-min.js']
   plugin :static ['/public']
 
   route do |r|

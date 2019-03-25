@@ -5,6 +5,8 @@ module View exposing
 
 import Html as H exposing (Html)
 import Html.Attributes as A
+import FontAwesome.Icon as I
+import FontAwesome.Solid as S
 
 import Game exposing (..)
 
@@ -74,9 +76,9 @@ pairwise xs =
 viewButtons : Html msg
 viewButtons = 
   H.div [A.class "button-group"]
-    [ H.button [A.class "button"] [H.text "<<"] -- TODO icons
-    , H.button [A.class "button"] [H.text "<"]
-    , H.button [A.class "button"] [H.text ">"]
-    , H.button [A.class "button"] [H.text ">>"]
-    , H.button [A.class "button"] [H.text "i"]
+    [ H.button [A.class "button"] [I.view S.angleDoubleLeft ]
+    , H.button [A.class "button"] [I.view S.angleLeft]
+    , H.button [A.class "button"] [I.view S.angleRight]
+    , H.button [A.class "button"] [I.view S.angleDoubleRight]
+    , H.button [A.class "button"] [I.view S.info]
     ]
