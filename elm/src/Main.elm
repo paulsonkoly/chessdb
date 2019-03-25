@@ -10,6 +10,7 @@ import String.Conversions exposing(fromHttpError)
 
 import Game exposing (..)
 import GameDecoder exposing (game)
+import View as V
 --------------------------------------------------------------------------------
 
 main =
@@ -56,65 +57,6 @@ view model =
     Loaded game currentMove ->
       let
           { moves } = game
-      in viewMoveList (Array.toList moves) currentMove
+      in V.viewMoveList (Array.toList moves) currentMove
     Loading -> text "Loading..."
     Error (httpError) -> text <| fromHttpError httpError
-
-
-viewMoveList : List Move -> Int -> Html msg
-viewMoveList moves currentMove =
-  div [class "card"]
-    [ div [class "grid-y", style "height" "600px"]
-      [ div
-        [ class "cell"
-        , class "medium-cell-block-y"
-        , id "movelist-scroll"
-        ] (List.indexedMap (viewMovePair currentMove) (pairwise moves))
-      ]
-    ]
-
-
-viewMovePair : Int -> Int -> (Move, Maybe Move) -> Html msg
-viewMovePair currentMove rowId (left, mright) =
-  let
-      idDiv =
-        div
-          [class "cell"
-          , class "medium-2"
-          , class "medium-offset-1"
-          , id (String.fromInt rowId)
-          ] [text <| String.fromInt <| rowId]
-
-      wrapInDivs s = div [class "grid-x"] (idDiv :: s)
-
-      stuff =
-        case mright of
-          Just right ->
-            [ div [class "cell", class "medium-4"] [viewMove left currentMove]
-            , div [class "cell", class "auto"] [viewMove right currentMove]
-            ]
-          Nothing ->
-            [ div [class "cell", class "medium-4"] [viewMove left currentMove] ]
-  in wrapInDivs stuff
-
-
-viewMove : Move -> Int -> Html msg
-viewMove {san, id, fullMoveNumber, activeColour } currentMove =
-  let
-      thisMove = fullMoveNumber + activeColour
-      status = if thisMove < currentMove then
-          "upcoming"
-        else if thisMove == currentMove then
-          "current"
-        else
-          "passed"
-  in div [class "status"] [text san]
-
-
-pairwise : List a -> List (a, Maybe a)
-pairwise xs =
-  case xs of
-    []  -> []
-    [x] -> [(x, Nothing)]
-    x::y::zs -> (x, Just y) :: pairwise zs
-
