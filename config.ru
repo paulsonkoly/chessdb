@@ -52,12 +52,16 @@ class App < Roda
                           node: document.getElementById("game_viewer"),
                           flags: #{id}
                         });
+                        var chessboard;
 
                         app.ports.signalDomRendered.subscribe(function (msg) {
                           requestAnimationFrame(function() {
-                            console.log(msg);
-                            ChessBoard('chessboard', 'start');
+                            chessboard = ChessBoard('chessboard', 'start');
                           });
+                        });
+
+                        app.ports.signalFenChanged.subscribe(function (fen) {
+                          chessboard.position(fen);
                         });
                       </script>
                     </div>
