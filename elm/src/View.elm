@@ -1,14 +1,16 @@
 module View exposing
   ( viewMoveList
   , viewButtons
+  , Button(..)
   )
 
-import Html as H exposing (Html)
-import Html.Attributes as A
 import FontAwesome.Icon as I
 import FontAwesome.Solid as S
-
 import Game exposing (..)
+import Html as H exposing (Html)
+import Html.Attributes as A
+import Html.Events as E
+
 
 --------------------------------------------------------------------------------
 -- MoveList
@@ -36,7 +38,7 @@ viewMovePair currentMove rowId (left, mright) =
           , A.class "medium-2"
           , A.class "medium-offset-1"
           , A.id ("movelist-row-" ++ strRowId)
-          ] [H.text (strRowId ++ ".")]
+          ] [H.text (String.fromInt (rowId + 1) ++ ".")]
 
       wrapInDivs s = H.div [A.class "grid-x"] (idDiv :: s)
 
@@ -54,14 +56,14 @@ viewMovePair currentMove rowId (left, mright) =
 viewMove : Move -> Int -> Html msg
 viewMove {san, id, fullMoveNumber, activeColour } currentMove =
   let
-      thisMove = fullMoveNumber + activeColour
+      thisMove = fullMoveNumber * 2 + activeColour - 3
       status = if thisMove < currentMove then
-          "upcoming"
+          "passed"
         else if thisMove == currentMove then
           "current"
         else
-          "passed"
-  in H.div [A.class "status"] [H.text san]
+          "upcoming"
+  in H.div [A.class status] [H.text san]
 
 
 pairwise : List a -> List (a, Maybe a)
@@ -73,12 +75,23 @@ pairwise xs =
 
 
 --------------------------------------------------------------------------------
-viewButtons : Html msg
-viewButtons = 
-  H.div [A.class "button-group"]
-    [ H.button [A.class "button"] [I.view S.angleDoubleLeft ]
-    , H.button [A.class "button"] [I.view S.angleLeft]
-    , H.button [A.class "button"] [I.view S.angleRight]
-    , H.button [A.class "button"] [I.view S.angleDoubleRight]
-    , H.button [A.class "button"] [I.view S.info]
-    ]
+type Button
+  = ToStartPosition
+  | ToLeft
+  | ToRight
+  | ToEndPosition
+
+
+viewButtons : Html Button
+viewButtons =
+    H.div [ A.class "button-group" ]
+        [ viewButton ToStartPosition S.angleDoubleLeft
+        , viewButton ToLeft S.angleLeft
+        , viewButton ToRight S.angleRight
+        , viewButton ToEndPosition S.angleDoubleRight
+        , H.button [ A.class "button" ] [ I.view S.info ] -- TODO : modal help
+        ]
+
+viewButton : msg -> I.Icon -> Html msg
+viewButton msg icon =
+  H.button [ A.class "button", E.onClick msg ] [ I.view icon ]
