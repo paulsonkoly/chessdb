@@ -23,13 +23,15 @@ viewMoveList moves currentMove =
 viewMovePair : Int -> Int -> (Move, Maybe Move) -> Html msg
 viewMovePair currentMove rowId (left, mright) =
   let
+      strRowId = String.fromInt rowId
+
       idDiv =
         H.div
           [A.class "cell"
           , A.class "medium-2"
           , A.class "medium-offset-1"
-          , A.id (String.fromInt rowId)
-          ] [H.text <| String.fromInt <| rowId]
+          , A.id ("movelist-row-" ++ strRowId)
+          ] [H.text (strRowId ++ ".")]
 
       wrapInDivs s = H.div [A.class "grid-x"] (idDiv :: s)
 

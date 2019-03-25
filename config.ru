@@ -41,7 +41,9 @@ class App < Roda
                         <hr />
                         Santiago m, Santiago CHI, 
                       </div>
-                      <div id="game_viewer" class="cell small-8"/></div>
+                      <div class="cell small-8"/>
+                        <div id="game_viewer"></div>
+                      </div>
                       <script>
                         var app = Elm.Main.init({
                           node: document.getElementById("game_viewer"),

@@ -57,6 +57,10 @@ view model =
     Loaded game currentMove ->
       let
           { moves } = game
-      in V.viewMoveList (Array.toList moves) currentMove
+      in
+          div [ class "grid-x", class "grid-margin-x"]
+            [ div [class "cell", class "small-6"] []
+            , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) currentMove]
+            ]
     Loading -> text "Loading..."
     Error (httpError) -> text <| fromHttpError httpError
