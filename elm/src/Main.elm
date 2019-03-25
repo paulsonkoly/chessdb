@@ -1,3 +1,5 @@
+port module GameViewer exposing (..)
+
 import Browser
 import Platform.Sub
 import Platform.Cmd
@@ -31,6 +33,8 @@ type Model
 type Msg = Received (Result Http.Error Game)
 
 --------------------------------------------------------------------------------
+port signalDomRendered : () -> Cmd msg
+
 init : Int -> (Model, Cmd Msg)
 init id =
   ( Loading
@@ -44,10 +48,11 @@ subscriptions : Model -> Sub Msg
 subscriptions = always Sub.none
 
 --------------------------------------------------------------------------------
+
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = -- (model, Cmd.none)
   case msg of
-    Received (Ok game) -> (Loaded game 0, Cmd.none)
+    Received (Ok game) -> (Loaded game 0, signalDomRendered ())
     Received (Err oops) -> (Error oops, Cmd.none)
 
 
@@ -59,7 +64,14 @@ view model =
           { moves } = game
       in
           div [ class "grid-x", class "grid-margin-x"]
-            [ div [class "cell", class "small-6"] []
+            [ div [class "cell", class "small-6"]
+              [ div [class "grid-y", class "margin-y"]
+                [ div [class "cell"]
+                  [ div [id "board-container", style "position" "relative"] 
+                    [ div [id "chessboard", style "width" "400px"] []]
+                  ]
+                ]
+              ]
             , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) currentMove]
             ]
     Loading -> text "Loading..."

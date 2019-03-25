@@ -12,7 +12,8 @@ DB = Sequel.connect(
   **database_connection_params[:development])
 
 class App < Roda
-  plugin :assets, css: 'application.scss', js: 'application.js'
+  plugin :assets, css: 'application.scss', js: ['application.js', 'chessboard.js', 'jquery-min.js']
+  plugin :static ['/public']
 
   route do |r|
     r.assets
@@ -45,9 +46,16 @@ class App < Roda
                         <div id="game_viewer"></div>
                       </div>
                       <script>
-                        var app = Elm.Main.init({
+                        var app = Elm.GameViewer.init({
                           node: document.getElementById("game_viewer"),
                           flags: #{id}
+                        });
+
+                        app.ports.signalDomRendered.subscribe(function (msg) {
+                          requestAnimationFrame(function() {
+                            console.log(msg);
+                            ChessBoard('chessboard', 'start');
+                          });
                         });
                       </script>
                     </div>
