@@ -1,4 +1,7 @@
-module View exposing (viewMoveList)
+module View exposing
+  ( viewMoveList
+  , viewButtons
+  )
 
 import Html as H exposing (Html)
 import Html.Attributes as A
@@ -66,3 +69,14 @@ pairwise xs =
     [x] -> [(x, Nothing)]
     x::y::zs -> (x, Just y) :: pairwise zs
 
+
+--------------------------------------------------------------------------------
+viewButtons : Html msg
+viewButtons = 
+  H.div [A.class "button-group"]
+    [ H.button [A.class "button"] [H.text "<<"] -- TODO icons
+    , H.button [A.class "button"] [H.text "<"]
+    , H.button [A.class "button"] [H.text ">"]
+    , H.button [A.class "button"] [H.text ">>"]
+    , H.button [A.class "button"] [H.text "i"]
+    ]
