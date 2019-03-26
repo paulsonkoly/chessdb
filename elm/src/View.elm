@@ -141,10 +141,14 @@ viewPopularityItemBar : PopularityItem -> List (Html msg)
 viewPopularityItemBar item =
   let
     viewBarElem (class_, selector) =
-      let count = selector item
+      let
+        count = selector item
+        a = toFloat count
+        b = toFloat item.totalCount
+        c = String.fromFloat (a / b * 100) |> (\l -> l ++ "%")
       in if count > 0 then
         Just <| div
-          [class class_, style "width" (itemPercentage item selector)]
+          [class class_, style "width" c]
           [text <| String.fromInt <| count]
       else
         Nothing
@@ -153,13 +157,3 @@ viewPopularityItemBar item =
     , ("draw", .draw)
     , ("black-won", .blackWon)
     ]
-
-
-itemPercentage : PopularityItem -> (PopularityItem -> Int) -> String
-itemPercentage item side =
-  let
-    a = toFloat <| side item
-    b = toFloat <| item.totalCount
-    c = String.fromFloat <| a / b * 100
-  in c ++ "%"
-
