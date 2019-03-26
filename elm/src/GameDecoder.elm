@@ -34,4 +34,16 @@ moveDecoder =
 -- | Json decoder for popularity stats
 popularitiesDecoder : Decoder Popularities
 popularitiesDecoder =
-  map (always { token = 1, stats = [] }) (succeed ())
+  map2 Popularities
+    (field "token" int)
+    (field "moves" (list popularityItemDecoder))
+
+
+popularityItemDecoder : Decoder PopularityItem
+popularityItemDecoder =
+  map5 (\a b c d e -> { nextSan = a, whiteWon = b, blackWon = c, draw = d, totalCount = e})
+    (field "next_san" string)
+    (field "white_won" int)
+    (field "black_won" int)
+    (field "draw" int)
+    (field "total_count" int)

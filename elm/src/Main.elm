@@ -9,13 +9,13 @@ import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
 import Http
 import Url.Builder as Url
-import String.Conversions exposing(fromHttpError)
 import Debug exposing (todo)
 
 import Game exposing (..)
 import GameDecoder exposing (..)
 import View as V
 import Msg exposing (Msg(..))
+import Loadable exposing (..)
 --------------------------------------------------------------------------------
 
 port signalDomRendered : () -> Cmd msg
@@ -32,9 +32,6 @@ main =
 
 --------------------------------------------------------------------------------
 -- Model
-type Loadable a
-  = Loading
-  | Loaded (Result Http.Error a)
 
 
 type alias Model =
@@ -142,27 +139,26 @@ getToken popularities =
 
 view : Model -> Html Msg
 view model =
-  case model.game of
-    Loaded (Ok gameData) ->
-      let
-          { moves } = gameData
-      in
-          div [ class "grid-x", class "grid-margin-x"]
-            [ div [class "cell", class "small-6"]
-              [ div [class "grid-y", class "grid-margin-y"]
-                [ div [class "cell"]
-                  [ div [id "board-container", style "position" "relative"]
-                    [ div [id "chessboard", style "width" "400px"] []]
-                  ]
-                , div [class "cell"]
-                  [ V.viewButtons
-                    { moveNumber = model.move
-                    , lastMoveNumber = Array.length moves
-                    }
-                  ]
+  viewLoadable model.game (\gameData ->
+    let
+        { moves } = gameData
+    in
+        div [ class "grid-x", class "grid-margin-x"]
+          [ div [class "cell", class "small-6"]
+            [ div [class "grid-y", class "grid-margin-y"]
+              [ div [class "cell"]
+                [ div [id "board-container", style "position" "relative"]
+                  [ div [id "chessboard", style "width" "400px"] []]
                 ]
+              , div [class "cell"]
+                [ V.viewButtons
+                  { moveNumber = model.move
+                  , lastMoveNumber = Array.length moves
+                  }
+                ]
+              , div [class "cell"] [ V.viewPopularities model.popularities ]
               ]
-            , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) model.move]
             ]
-    Loaded (Err oops) -> text <| fromHttpError oops
-    Loading -> text "Loading..."
+          , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) model.move]
+          ]
+    )

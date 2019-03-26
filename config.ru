@@ -90,6 +90,33 @@ class App < Roda
         { moves: ds.all }.to_json
       end
     end
+
+    r.on 'moves' do
+      r.get 'popularities' do
+        token = r.params['token'].to_i
+        fen = r.params['fen']
+
+        ds = DB[:moves]
+          .select(:result, :next_san)
+          .join(:games, [[:id, :game_id]])
+          .exclude(next_san: nil)
+          .where(fen_position: fen)
+          .from_self(alias: 'counts')
+          .select(
+            :next_san,
+            Sequel.function(:count).*.filter(result: 0).as(:black_won),
+            Sequel.function(:count).*.filter(result: 1).as(:white_won),
+            Sequel.function(:count).*.filter(result: 2).as(:draw),
+
+            (Sequel.function(:count).*.filter(result: 0) +
+             Sequel.function(:count).*.filter(result: 1) +
+             Sequel.function(:count).*.filter(result: 2)).as(:total_count))
+          .group(:next_san)
+          .order(Sequel.desc(:total_count))
+        response['Content-Type'] = 'application/json'
+        { token: token, moves: ds.all }.to_json
+      end
+    end
   end
 end
 

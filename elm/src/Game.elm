@@ -22,13 +22,13 @@ type alias Game =
 
 type alias Popularities =
   { token : Int
-  , stats : List MoveStats
+  , items : List PopularityItem
   }
 
-type alias MoveStats =
-  { san : String
+type alias PopularityItem =
+  { nextSan : String
   , whiteWon : Int
   , draw : Int
   , blackWon : Int
-  , total : Int
+  , totalCount : Int
   }

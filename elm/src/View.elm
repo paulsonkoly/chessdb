@@ -2,6 +2,7 @@ module View exposing
   ( viewMoveList
   , viewButtons
   , MoveNumbers
+  , viewPopularities
   )
 
 import FontAwesome.Icon as I
@@ -14,6 +15,9 @@ import Html.Events exposing (..)
 
 import Game exposing (..)
 import Msg exposing (..)
+import Loadable exposing (..)
+
+
 --------------------------------------------------------------------------------
 -- MoveList
 viewMoveList : List Move -> Int -> Html Msg
@@ -96,3 +100,66 @@ viewButtons { moveNumber, lastMoveNumber } =
 viewButton : msg -> I.Icon -> Html msg
 viewButton msg icon =
   button [ class "button", onClick msg ] [ I.view icon ]
+
+
+--------------------------------------------------------------------------------
+viewPopularities : Loadable Popularities -> Html msg
+viewPopularities popularities =
+  div [class "card"]
+    (
+      ( div [class "card-divider"]
+        [ text "Move popularities"
+        , div [class "popularity-bar", style "float" "right"]
+          [ div [class "white-won"] [text "1-0"]
+          , div [class "draw"] [text "1/2-1/2"]
+          , div [class "black-won"] [text "0-1"]
+          ]
+        ]
+      ) :: (viewLoadableList popularities viewNormalPopularities)
+    )
+
+
+viewNormalPopularities : Popularities -> List (Html msg)
+viewNormalPopularities {items} =
+  items
+    |> List.map viewPopularityItem
+
+
+
+viewPopularityItem : PopularityItem -> Html msg
+viewPopularityItem item =
+  div [class "grid-x"]
+    [ div [class "cell", class "small-2"] [ text item.nextSan ]
+    , div [class "cell", class "small-3"]
+      [ text <| String.fromInt <| item.totalCount ]
+    , div [class "cell", class "large-7"]
+      [ div [class "popularity-bar"] (viewPopularityItemBar item)]
+    ]
+
+
+viewPopularityItemBar : PopularityItem -> List (Html msg)
+viewPopularityItemBar item =
+  let
+    viewBarElem (class_, selector) =
+      let count = selector item
+      in if count > 0 then
+        Just <| div
+          [class class_, style "width" (itemPercentage item selector)]
+          [text <| String.fromInt <| count]
+      else
+        Nothing
+  in List.filterMap viewBarElem
+    [ ("white-won", .whiteWon)
+    , ("draw", .draw)
+    , ("black-won", .blackWon)
+    ]
+
+
+itemPercentage : PopularityItem -> (PopularityItem -> Int) -> String
+itemPercentage item side =
+  let
+    a = toFloat <| side item
+    b = toFloat <| item.totalCount
+    c = String.fromFloat <| a / b * 100
+  in c ++ "%"
+
