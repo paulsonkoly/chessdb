@@ -12,7 +12,7 @@ import String.Conversions exposing(fromHttpError)
 import Debug exposing (todo)
 
 import Game exposing (..)
-import GameDecoder exposing (game)
+import GameDecoder exposing (..)
 import View as V
 import Msg exposing (Msg(..))
 --------------------------------------------------------------------------------
@@ -31,20 +31,37 @@ main =
 
 --------------------------------------------------------------------------------
 -- Model
-type Model
+type Loadable a
   = Loading
-  | Error Http.Error
-  | Loaded Game Int
+  | Loaded (Result Http.Error a)
 
+
+type alias Model =
+  { game : Loadable Game
+  , move : Int
+  , token : Int
+  , popularities : Loadable Popularities
+  }
+
+
+cmdFetchPopularitiesFor : String -> Int -> Cmd Msg
+cmdFetchPopularitiesFor fen token =
+  Http.get
+    { url = "/moves/popularities&token=1;fen=" ++ fen
+    , expect = Http.expectJson PopularitiesReceived popularitiesDecoder
+    }
 
 --------------------------------------------------------------------------------
 init : Int -> (Model, Cmd Msg)
 init id =
-  ( Loading
-  , Http.get
-    { url = "/games/" ++ (String.fromInt id) ++ ".json"
-    , expect = Http.expectJson Received game
-    }
+  ( { game = Loading, move = -1, token = 1, popularities = Loading }
+  , Cmd.batch
+    [ Http.get
+      { url = "/games/" ++ (String.fromInt id) ++ ".json"
+      , expect = Http.expectJson GameReceived gameDecoder
+      }
+    , cmdFetchPopularitiesFor "/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR/" 1
+    ]
   )
 
 subscriptions : Model -> Sub Msg
@@ -53,49 +70,69 @@ subscriptions = always Sub.none
 --------------------------------------------------------------------------------
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
-  case (msg, model) of
-    (Received (Ok game), _) -> (Loaded game -1, signalDomRendered ())
-    (Received (Err oops), _) -> (Error oops, Cmd.none)
-
-    (SetMoveNumberTo newMoveNumber, Loaded game moveNumer) ->
-      setMove game moveNumer newMoveNumber
+  case msg of
+--------------------------------------------------------------------------------
+    GameReceived game ->
+      ( { model | game = Loaded game }
+      , case game of
+          Ok _ -> signalDomRendered ()
+          Err _ -> Cmd.none
+      )
 
 --------------------------------------------------------------------------------
-    _ -> todo "Whoops"
+    PopularitiesReceived popularities ->
+      ( if getToken popularities == Just model.token then
+          { model | popularities = Loaded popularities }
+        else
+          model
+      , Cmd.none
+      )
+
+--------------------------------------------------------------------------------
+    SetMoveNumberTo newMoveNumber ->
+      if model.move /= newMoveNumber then
+        let mfen = getFen newMoveNumber model
+        in case mfen of
+          Just fen ->
+            ({ model | move = newMoveNumber, token = model.token + 1 }
+            , Cmd.batch
+              [ signalFenChanged fen
+              , cmdFetchPopularitiesFor fen (model.token + 1)
+              ]
+            )
+
+          Nothing -> (model, Cmd.none)
+      else
+        (model, Cmd.none)
 
 
-getFenPosition : Move -> String
-getFenPosition {fenPosition} = fenPosition
-
-
-getNextFenPosition : Int -> Array.Array Move -> Maybe String
-getNextFenPosition nextMove moves =
-  if nextMove == -1 then
+getFen : Int -> Model -> Maybe String
+getFen ix model =
+  if ix == -1 then
     Just "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
   else
-    Maybe.map getFenPosition <| Array.get nextMove moves
+    case model.game of
+      Loading -> Nothing
+      Loaded errGame ->
+        Result.toMaybe errGame
+          |> Maybe.map (.moves)
+          |> Maybe.andThen (Array.get ix)
+          |> Maybe.map (.fenPosition)
 
 
-setMove : Game -> Int -> Int -> (Model, Cmd Msg)
-setMove game move nextMove =
-  let
-    { moves } = game
-    nextFen = getNextFenPosition nextMove moves
-  in case nextFen of
-    Just fen ->
-      if move /= nextMove then
-        (Loaded game nextMove, signalFenChanged fen)
-      else
-        (Loaded game move, Cmd.none)
-    Nothing -> (Loaded game move, Cmd.none)
+
+getToken : Result Http.Error Popularities -> Maybe Int
+getToken popularities =
+  Result.toMaybe popularities
+    |> Maybe.map (.token)
 
 
 view : Model -> Html Msg
 view model =
-  case model of
-    Loaded game currentMove ->
+  case model.game of
+    Loaded (Ok gameData) ->
       let
-          { moves } = game
+          { moves } = gameData
       in
           div [ class "grid-x", class "grid-margin-x"]
             [ div [class "cell", class "small-6"]
@@ -106,13 +143,13 @@ view model =
                   ]
                 , div [class "cell"]
                   [ V.viewButtons
-                    { moveNumber = currentMove
+                    { moveNumber = model.move
                     , lastMoveNumber = Array.length moves
                     }
                   ]
                 ]
               ]
-            , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) currentMove]
+            , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) model.move]
             ]
+    Loaded (Err oops) -> text <| fromHttpError oops
     Loading -> text "Loading..."
-    Error (httpError) -> text <| fromHttpError httpError

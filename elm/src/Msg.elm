@@ -2,10 +2,11 @@ module Msg exposing (..)
 
 import Http
 
-import Game exposing (Game)
+import Game exposing (..)
 
 type Msg
-  = Received (Result Http.Error Game)
+  = GameReceived (Result Http.Error Game)
+  | PopularitiesReceived (Result Http.Error Popularities)
   | SetMoveNumberTo Int
 
 

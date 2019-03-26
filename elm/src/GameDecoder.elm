@@ -1,12 +1,17 @@
-module GameDecoder exposing (game)
+module GameDecoder exposing
+  ( gameDecoder
+  , popularitiesDecoder
+  )
+
 
 import Json.Decode exposing (..)
 import Game exposing (..)
 
+
 --------------------------------------------------------------------------------
 -- | Json decoder for games
-game : Decoder Game
-game =
+gameDecoder : Decoder Game
+gameDecoder =
   map2 Game
     (succeed ()) -- TODO
     (field "moves" (array <| moveDecoder))
@@ -23,3 +28,10 @@ moveDecoder =
     (field "castling_availability" int)
     (field "halfmove_clock" int)
     (field "en_passant" (nullable <| int))
+
+
+--------------------------------------------------------------------------------
+-- | Json decoder for popularity stats
+popularitiesDecoder : Decoder Popularities
+popularitiesDecoder =
+  map (always { token = 1, stats = [] }) (succeed ())
