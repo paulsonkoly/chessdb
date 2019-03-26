@@ -63,7 +63,7 @@ init id =
       { url = "/games/" ++ (String.fromInt id) ++ ".json"
       , expect = Http.expectJson GameReceived gameDecoder
       }
-    , cmdFetchPopularitiesFor "/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR/" 1
+    , cmdFetchPopularitiesFor "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR" 1
     ]
   )
 

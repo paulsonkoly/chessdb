@@ -95,12 +95,19 @@ class App < Roda
       r.get 'popularities' do
         token = r.params['token'].to_i
         fen = r.params['fen']
+        if fen == 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
+          condition = { fullmove_number: 1 }
+          next_san_column = :san
+        else
+          condition = { fen_position: fen }
+          next_san_column = :next_san
+        end
 
         ds = DB[:moves]
-          .select(:result, :next_san)
+          .select(:result, Sequel.as(next_san_column, :next_san))
           .join(:games, [[:id, :game_id]])
           .exclude(next_san: nil)
-          .where(fen_position: fen)
+          .where(condition)
           .from_self(alias: 'counts')
           .select(
             :next_san,
@@ -113,6 +120,7 @@ class App < Roda
              Sequel.function(:count).*.filter(result: 2)).as(:total_count))
           .group(:next_san)
           .order(Sequel.desc(:total_count))
+
         response['Content-Type'] = 'application/json'
         { token: token, moves: ds.all }.to_json
       end
