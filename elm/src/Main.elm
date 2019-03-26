@@ -8,6 +8,7 @@ import Html exposing (Html, button, div, text)
 import Html.Events exposing (onClick)
 import Html.Attributes exposing (class, id, style)
 import Http
+import Url.Builder as Url
 import String.Conversions exposing(fromHttpError)
 import Debug exposing (todo)
 
@@ -46,8 +47,13 @@ type alias Model =
 
 cmdFetchPopularitiesFor : String -> Int -> Cmd Msg
 cmdFetchPopularitiesFor fen token =
-  Http.get
-    { url = "/moves/popularities&token=1;fen=" ++ fen
+  let
+    url = Url.absolute ["moves", "popularities"]
+      [ Url.string "fen" fen
+      , Url.int "token" token
+      ]
+  in Http.get
+    { url = url
     , expect = Http.expectJson PopularitiesReceived popularitiesDecoder
     }
 
@@ -80,11 +86,14 @@ update msg model =
       )
 
 --------------------------------------------------------------------------------
-    PopularitiesReceived popularities ->
-      ( if getToken popularities == Just model.token then
-          { model | popularities = Loaded popularities }
+    PopularitiesReceived receivedData ->
+      ( if getToken receivedData == Just model.token then
+          { model | popularities = Loaded receivedData }
         else
-          model
+          case (receivedData, model.popularities) of
+            (Err oops, Loading) ->
+              { model | popularities = Loaded (Err oops) }
+            _ -> model
       , Cmd.none
       )
 
@@ -94,7 +103,11 @@ update msg model =
         let mfen = getFen newMoveNumber model
         in case mfen of
           Just fen ->
-            ({ model | move = newMoveNumber, token = model.token + 1 }
+            ( { model
+              | move = newMoveNumber
+              , token = model.token + 1
+              , popularities = Loading
+              }
             , Cmd.batch
               [ signalFenChanged fen
               , cmdFetchPopularitiesFor fen (model.token + 1)
