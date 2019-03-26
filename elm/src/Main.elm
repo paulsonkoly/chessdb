@@ -14,6 +14,7 @@ import Debug exposing (todo)
 import Game exposing (..)
 import GameDecoder exposing (game)
 import View as V
+import Msg exposing (Msg(..))
 --------------------------------------------------------------------------------
 
 port signalDomRendered : () -> Cmd msg
@@ -36,10 +37,6 @@ type Model
   | Loaded Game Int
 
 
-type Msg
-  = Received (Result Http.Error Game)
-  | ButtonAction V.Button
-
 --------------------------------------------------------------------------------
 init : Int -> (Model, Cmd Msg)
 init id =
@@ -60,25 +57,8 @@ update msg model =
     (Received (Ok game), _) -> (Loaded game -1, signalDomRendered ())
     (Received (Err oops), _) -> (Error oops, Cmd.none)
 
-    (ButtonAction V.ToStartPosition, Loaded game move) ->
-      setMove game move -1
-
---------------------------------------------------------------------------------
-    (ButtonAction V.ToLeft, Loaded game move) ->
-      let nextMove = move - 1
-      in setMove game move nextMove
-
---------------------------------------------------------------------------------
-    (ButtonAction V.ToRight, Loaded game move) ->
-      let nextMove = move + 1
-      in setMove game move nextMove
-
---------------------------------------------------------------------------------
-    (ButtonAction V.ToEndPosition, Loaded game move) ->
-      let
-        { moves } = game
-        nextMove = Array.length moves - 1
-      in setMove game move nextMove
+    (SetMoveNumberTo newMoveNumber, Loaded game moveNumer) ->
+      setMove game moveNumer newMoveNumber
 
 --------------------------------------------------------------------------------
     _ -> todo "Whoops"
@@ -124,7 +104,12 @@ view model =
                   [ div [id "board-container", style "position" "relative"]
                     [ div [id "chessboard", style "width" "400px"] []]
                   ]
-                , div [class "cell"] [Html.map ButtonAction V.viewButtons]
+                , div [class "cell"]
+                  [ V.viewButtons
+                    { moveNumber = currentMove
+                    , lastMoveNumber = Array.length moves
+                    }
+                  ]
                 ]
               ]
             , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) currentMove]

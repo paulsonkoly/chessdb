@@ -1,59 +1,61 @@
 module View exposing
   ( viewMoveList
   , viewButtons
-  , Button(..)
+  , MoveNumbers
   )
 
 import FontAwesome.Icon as I
 import FontAwesome.Solid as S
+
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+
+
 import Game exposing (..)
-import Html as H exposing (Html)
-import Html.Attributes as A
-import Html.Events as E
-
-
+import Msg exposing (..)
 --------------------------------------------------------------------------------
 -- MoveList
-viewMoveList : List Move -> Int -> Html msg
+viewMoveList : List Move -> Int -> Html Msg
 viewMoveList moves currentMove =
-  H.div [A.class "card"]
-    [ H.div [A.class "grid-y", A.style "height" "600px"]
-      [ H.div
-        [ A.class "cell"
-        , A.class "medium-cell-block-y"
-        , A.id "movelist-scroll"
+  div [class "card"]
+    [ div [class "grid-y", style "height" "600px"]
+      [ div
+        [ class "cell"
+        , class "medium-cell-block-y"
+        , id "movelist-scroll"
         ] (List.indexedMap (viewMovePair currentMove) (pairwise moves))
       ]
     ]
 
 
-viewMovePair : Int -> Int -> (Move, Maybe Move) -> Html msg
+viewMovePair : Int -> Int -> (Move, Maybe Move) -> Html Msg
 viewMovePair currentMove rowId (left, mright) =
   let
       strRowId = String.fromInt rowId
 
       idDiv =
-        H.div
-          [A.class "cell"
-          , A.class "medium-2"
-          , A.class "medium-offset-1"
-          , A.id ("movelist-row-" ++ strRowId)
-          ] [H.text (String.fromInt (rowId + 1) ++ ".")]
+        div
+          [class "cell"
+          , class "medium-2"
+          , class "medium-offset-1"
+          , id ("movelist-row-" ++ strRowId)
+          ] [text (String.fromInt (rowId + 1) ++ ".")]
 
-      wrapInDivs s = H.div [A.class "grid-x"] (idDiv :: s)
+      wrapInDivs s = div [class "grid-x"] (idDiv :: s)
 
       stuff =
         case mright of
           Just right ->
-            [ H.div [A.class "cell", A.class "medium-4"] [viewMove left currentMove]
-            , H.div [A.class "cell", A.class "auto"] [viewMove right currentMove]
+            [ div [class "cell", class "medium-4"] [viewMove left currentMove]
+            , div [class "cell", class "auto"] [viewMove right currentMove]
             ]
           Nothing ->
-            [ H.div [A.class "cell", A.class "medium-4"] [viewMove left currentMove] ]
+            [ div [class "cell", class "medium-4"] [viewMove left currentMove] ]
   in wrapInDivs stuff
 
 
-viewMove : Move -> Int -> Html msg
+viewMove : Move -> Int -> Html Msg
 viewMove {san, id, fullMoveNumber, activeColour } currentMove =
   let
       thisMove = fullMoveNumber * 2 + activeColour - 3
@@ -63,7 +65,7 @@ viewMove {san, id, fullMoveNumber, activeColour } currentMove =
           "current"
         else
           "upcoming"
-  in H.div [A.class status] [H.text san]
+  in div [class status, onClick (SetMoveNumberTo thisMove)] [text san]
 
 
 pairwise : List a -> List (a, Maybe a)
@@ -75,23 +77,22 @@ pairwise xs =
 
 
 --------------------------------------------------------------------------------
-type Button
-  = ToStartPosition
-  | ToLeft
-  | ToRight
-  | ToEndPosition
+type alias MoveNumbers =
+  { moveNumber : Int
+  , lastMoveNumber : Int
+  }
 
 
-viewButtons : Html Button
-viewButtons =
-    H.div [ A.class "button-group" ]
-        [ viewButton ToStartPosition S.angleDoubleLeft
-        , viewButton ToLeft S.angleLeft
-        , viewButton ToRight S.angleRight
-        , viewButton ToEndPosition S.angleDoubleRight
-        , H.button [ A.class "button" ] [ I.view S.info ] -- TODO : modal help
+viewButtons : MoveNumbers -> Html Msg
+viewButtons { moveNumber, lastMoveNumber } =
+    div [ class "button-group" ]
+        [ viewButton (SetMoveNumberTo -1) S.angleDoubleLeft
+        , viewButton (SetMoveNumberTo <| moveNumber - 1) S.angleLeft
+        , viewButton (SetMoveNumberTo <| moveNumber + 1) S.angleRight
+        , viewButton (SetMoveNumberTo lastMoveNumber) S.angleDoubleRight
+        , button [ class "button" ] [ I.view S.info ] -- TODO : modal help
         ]
 
 viewButton : msg -> I.Icon -> Html msg
 viewButton msg icon =
-  H.button [ A.class "button", E.onClick msg ] [ I.view icon ]
+  button [ class "button", onClick msg ] [ I.view icon ]
