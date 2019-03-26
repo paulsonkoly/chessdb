@@ -7,6 +7,7 @@ gem 'pg'
 gem 'sequel'
 gem 'tilt'
 gem 'sassc'
+gem 'puma'
 
 group :development do
   gem 'shotgun'
