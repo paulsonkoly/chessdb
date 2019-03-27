@@ -69,7 +69,7 @@ viewMove {san, id, fullMoveNumber, activeColour } currentMove =
           "current"
         else
           "upcoming"
-  in div [class status, onClick (SetMoveNumberTo thisMove)] [text san]
+  in div [class status, onClick (SetMoveNumberTo thisMove NoScroll)] [text san]
 
 
 pairwise : List a -> List (a, Maybe a)
@@ -90,10 +90,10 @@ type alias MoveNumbers =
 viewButtons : MoveNumbers -> Html Msg
 viewButtons { moveNumber, lastMoveNumber } =
     div [ class "button-group" ]
-        [ viewButton (SetMoveNumberTo -1) S.angleDoubleLeft
-        , viewButton (SetMoveNumberTo <| moveNumber - 1) S.angleLeft
-        , viewButton (SetMoveNumberTo <| moveNumber + 1) S.angleRight
-        , viewButton (SetMoveNumberTo lastMoveNumber) S.angleDoubleRight
+        [ viewButton (SetMoveNumberTo -1 Scroll) S.angleDoubleLeft
+        , viewButton (SetMoveNumberTo (moveNumber - 1) Scroll) S.angleLeft
+        , viewButton (SetMoveNumberTo (moveNumber + 1) Scroll) S.angleRight
+        , viewButton (SetMoveNumberTo lastMoveNumber Scroll) S.angleDoubleRight
         , button [ class "button" ] [ I.view S.info ] -- TODO : modal help
         ]
 

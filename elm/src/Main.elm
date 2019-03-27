@@ -2,6 +2,7 @@ port module GameViewer exposing (..)
 
 import Browser
 import Browser.Events as Events
+import Browser.Dom as Dom
 import Platform.Sub
 import Platform.Cmd
 import Array
@@ -12,11 +13,12 @@ import Http
 import Url.Builder as Url
 import Debug exposing (todo)
 import Json.Decode as Decode
+import Task
 
 import Game exposing (..)
 import GameDecoder exposing (..)
 import View as V
-import Msg exposing (Msg(..))
+import Msg exposing (Msg(..), Scrolling(..))
 import Loadable exposing (..)
 --------------------------------------------------------------------------------
 
@@ -76,10 +78,10 @@ keyDecoder move =
   let
     stringToMsg str = 
       case str of
-        "ArrowLeft"  -> SetMoveNumberTo (move - 1)
-        "h"          -> SetMoveNumberTo (move - 1)
-        "ArrowRight" -> SetMoveNumberTo (move + 1)
-        "l"          -> SetMoveNumberTo (move + 1)
+        "ArrowLeft"  -> SetMoveNumberTo (move - 1) Scroll
+        "h"          -> SetMoveNumberTo (move - 1) Scroll
+        "ArrowRight" -> SetMoveNumberTo (move + 1) Scroll
+        "l"          -> SetMoveNumberTo (move + 1) Scroll
         _            -> Noop
   in Decode.map stringToMsg (Decode.field "key" Decode.string)
 
@@ -113,7 +115,7 @@ update msg model =
       )
 
 --------------------------------------------------------------------------------
-    SetMoveNumberTo newMoveNumber ->
+    SetMoveNumberTo newMoveNumber scroll ->
       if model.move /= newMoveNumber then
         let mfen = getFen newMoveNumber model
         in case mfen of
@@ -126,6 +128,7 @@ update msg model =
             , Cmd.batch
               [ signalFenChanged fen
               , cmdFetchPopularitiesFor fen (model.token + 1)
+              , scrollTo scroll newMoveNumber
               ]
             )
 
@@ -136,6 +139,19 @@ update msg model =
 --------------------------------------------------------------------------------
     Noop -> (model, Cmd.none)
 
+
+scrollTo : Scrolling -> Int -> Cmd Msg
+scrollTo scroll moveNumber =
+  let y = toFloat <| ((moveNumber // 2) - 12) * 24
+  in case scroll of
+    Scroll ->
+      Task.attempt (always Noop)
+        ( Dom.getViewportOf "movelist-scroll"
+          |> Task.andThen (\ { viewport } ->
+            Dom.setViewportOf "movelist-scroll" viewport.x y
+          )
+        )
+    NoScroll -> Cmd.none
 
 
 getFen : Int -> Model -> Maybe String
@@ -175,12 +191,13 @@ view model =
               , div [class "cell"]
                 [ V.viewButtons
                   { moveNumber = model.move
-                  , lastMoveNumber = Array.length moves
+                  , lastMoveNumber = (Array.length moves) - 1
                   }
                 ]
               , div [class "cell"] [ V.viewPopularities model.popularities ]
               ]
             ]
-          , div [class "cell", class "small-4"] [V.viewMoveList (Array.toList moves) model.move]
+          , div [class "cell", class "small-4"]
+            [V.viewMoveList (Array.toList moves) model.move]
           ]
     )
