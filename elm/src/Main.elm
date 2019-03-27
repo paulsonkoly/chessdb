@@ -1,6 +1,7 @@
 port module GameViewer exposing (..)
 
 import Browser
+import Browser.Events as Events
 import Platform.Sub
 import Platform.Cmd
 import Array
@@ -10,6 +11,7 @@ import Html.Attributes exposing (class, id, style)
 import Http
 import Url.Builder as Url
 import Debug exposing (todo)
+import Json.Decode as Decode
 
 import Game exposing (..)
 import GameDecoder exposing (..)
@@ -67,8 +69,24 @@ init id =
     ]
   )
 
+
+--------------------------------------------------------------------------------
+keyDecoder : Int -> Decode.Decoder Msg
+keyDecoder move =
+  let
+    stringToMsg str = 
+      case str of
+        "ArrowLeft"  -> SetMoveNumberTo (move - 1)
+        "h"          -> SetMoveNumberTo (move - 1)
+        "ArrowRight" -> SetMoveNumberTo (move + 1)
+        "l"          -> SetMoveNumberTo (move + 1)
+        _            -> Noop
+  in Decode.map stringToMsg (Decode.field "key" Decode.string)
+
+
 subscriptions : Model -> Sub Msg
-subscriptions = always Sub.none
+subscriptions {move} = Events.onKeyPress (keyDecoder move)
+
 
 --------------------------------------------------------------------------------
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -114,6 +132,10 @@ update msg model =
           Nothing -> (model, Cmd.none)
       else
         (model, Cmd.none)
+
+--------------------------------------------------------------------------------
+    Noop -> (model, Cmd.none)
+
 
 
 getFen : Int -> Model -> Maybe String
