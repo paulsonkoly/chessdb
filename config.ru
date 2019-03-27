@@ -92,7 +92,7 @@ class App < Roda
                         <div id="game_viewer"></div>
                       </div>
                       <script>
-                        var app = Elm.GameViewer.init({
+                        var app = Elm.Main.init({
                           node: document.getElementById("game_viewer"),
                           flags: #{id}
                         });
@@ -168,7 +168,7 @@ class App < Roda
                Sequel.function(:count).*.filter(result: 2)).as(:total_count))
             .group(:next_san)
             .order(Sequel.desc(:total_count))
-            ds.all
+          ds.all
         end
 
         {token: token, moves: data}.to_json

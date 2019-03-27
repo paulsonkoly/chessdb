@@ -164,7 +164,7 @@ viewButton msg icon =
 
 viewPopularities : Loadable Popularities -> Html msg
 viewPopularities popularities =
-    div [ class "card" ]
+    div [ class "card", id "popularity-card" ]
         (div [ class "card-divider" ]
             [ text "Move popularities"
             , div [ class "popularity-bar", style "float" "right" ]

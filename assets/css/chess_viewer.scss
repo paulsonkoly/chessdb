@@ -47,3 +47,7 @@
   background-color: $chessdb-greyscale1;
   @include bar-section;
 }
+
+#popularity-card {
+  min-height: 200px;
+}
