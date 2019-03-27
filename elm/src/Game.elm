@@ -1,6 +1,3 @@
--- | Game and related structures
-
-
 module Game exposing (Game, Move, Popularities, PopularityItem)
 
 import Array exposing (Array)

@@ -1,10 +1,12 @@
 module View exposing
     ( MoveNumbers
+    , view
     , viewButtons
     , viewMoveList
     , viewPopularities
     )
 
+import Array
 import FontAwesome.Icon as I
 import FontAwesome.Solid as S
 import Game exposing (..)
@@ -12,7 +14,40 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Loadable exposing (..)
+import Model exposing (..)
 import Msg exposing (..)
+
+
+view : Model -> Html Msg
+view model =
+    viewLoadable model.game (viewLoaded model)
+
+
+viewLoaded : Model -> Game -> Html Msg
+viewLoaded model game =
+    let
+        moves =
+            game.moves
+    in
+    div [ class "grid-x", class "grid-margin-x" ]
+        [ div [ class "cell", class "small-6" ]
+            [ div [ class "grid-y", class "grid-margin-y" ]
+                [ div [ class "cell" ]
+                    [ div [ id "board-container", style "position" "relative" ]
+                        [ div [ id "chessboard", style "width" "400px" ] [] ]
+                    ]
+                , div [ class "cell" ]
+                    [ viewButtons
+                        { moveNumber = model.move
+                        , lastMoveNumber = Array.length moves - 1
+                        }
+                    ]
+                , div [ class "cell" ] [ viewPopularities model.popularities ]
+                ]
+            ]
+        , div [ class "cell", class "small-4" ]
+            [ viewMoveList (Array.toList moves) model.move ]
+        ]
 
 
 

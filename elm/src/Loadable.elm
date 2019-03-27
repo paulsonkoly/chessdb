@@ -1,12 +1,12 @@
-module Loadable exposing (Loadable(..), viewLoadable, viewLoadableList)
+module Loadable exposing
+    ( Loadable(..)
+    , viewLoadable
+    , viewLoadableList
+    )
 
 import Html exposing (Html, text)
 import Http
-import String.Conversions exposing (fromHttpError)
-
-
-
---------------------------------------------------------------------------------
+import String.Conversions as Conversions
 
 
 type Loadable a
@@ -17,14 +17,14 @@ type Loadable a
 viewLoadable : Loadable a -> (a -> Html msg) -> Html msg
 viewLoadable loadable viewNormal =
     case loadable of
+        -- todo spinner
         Loading ->
             text "Loading"
 
-        -- todo spinner
-        Loaded (Err oops) ->
-            text <| fromHttpError oops
-
         -- todo display nicely
+        Loaded (Err oops) ->
+            text <| Conversions.fromHttpError oops
+
         Loaded (Ok a) ->
             viewNormal a
 
@@ -32,13 +32,13 @@ viewLoadable loadable viewNormal =
 viewLoadableList : Loadable a -> (a -> List (Html msg)) -> List (Html msg)
 viewLoadableList loadable viewNormal =
     case loadable of
+        -- todo spinner
         Loading ->
             [ text "Loading" ]
 
-        -- todo spinner
-        Loaded (Err oops) ->
-            [ text <| fromHttpError oops ]
-
         -- todo display nicely
+        Loaded (Err oops) ->
+            [ text <| Conversions.fromHttpError oops ]
+
         Loaded (Ok a) ->
             viewNormal a
