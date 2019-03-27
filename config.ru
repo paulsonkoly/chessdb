@@ -56,10 +56,13 @@ class App < Roda
   plugin :assets,
     css: ['application.scss', 'svg-with-js.min.css'],
     js: ['application.js', 'chessboard.js', 'jquery-min.js']
+  plugin :public
+  opts[:root] = File.expand_path(__dir__)
   plugin :static ['/public']
 
   route do |r|
     r.assets
+    r.public
 
     r.on 'games' do
       r.get Integer do |id|
