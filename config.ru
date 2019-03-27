@@ -1,6 +1,47 @@
 require 'roda'
 require 'yaml'
 require 'sequel'
+require 'hiredis'
+
+class Cache
+  def initialize
+    @redis = Hiredis::Connection.new
+    @redis.connect('localhost', 6379)
+    @mutex = Mutex.new
+  end
+
+  def fetch(key, &block)
+    response = read(key)
+    if response.nil?
+      value = yield
+      write(key, value)
+      value
+    else
+      response
+    end
+  end
+
+  private
+
+  def read(key)
+    value = cache_action { @redis.write ['GET', key] }
+    Marshal.load(value) unless value.nil?
+  end
+
+  def write(key, value)
+    value = Marshal.dump(value)
+    cache_action { @redis.write ['SET', key, value] }
+  end
+
+  def cache_action
+    @mutex.synchronize do
+      yield
+      @redis.read
+    end
+  end
+end
+
+AppCache = Cache.new
 
 ## DATABASE
 database_config_file = File.join(File.dirname(__FILE__), 'config', 'database.yml').freeze
@@ -95,34 +136,39 @@ class App < Roda
       r.get 'popularities' do
         token = r.params['token'].to_i
         fen = r.params['fen']
-        if fen == 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
-          condition = { fullmove_number: 1 }
-          next_san_column = :san
-        else
-          condition = { fen_position: fen }
-          next_san_column = :next_san
-        end
-
-        ds = DB[:moves]
-          .select(:result, Sequel.as(next_san_column, :next_san))
-          .join(:games, [[:id, :game_id]])
-          .exclude(next_san: nil)
-          .where(condition)
-          .from_self(alias: 'counts')
-          .select(
-            :next_san,
-            Sequel.function(:count).*.filter(result: 0).as(:black_won),
-            Sequel.function(:count).*.filter(result: 1).as(:white_won),
-            Sequel.function(:count).*.filter(result: 2).as(:draw),
-
-            (Sequel.function(:count).*.filter(result: 0) +
-             Sequel.function(:count).*.filter(result: 1) +
-             Sequel.function(:count).*.filter(result: 2)).as(:total_count))
-          .group(:next_san)
-          .order(Sequel.desc(:total_count))
 
         response['Content-Type'] = 'application/json'
-        { token: token, moves: ds.all }.to_json
+
+        data = AppCache.fetch(fen) do
+          if fen == 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR'
+            condition = { fullmove_number: 1 }
+            next_san_column = :san
+          else
+            condition = { fen_position: fen }
+            next_san_column = :next_san
+          end
+
+          ds = DB[:moves]
+            .select(:result, Sequel.as(next_san_column, :next_san))
+            .join(:games, [[:id, :game_id]])
+            .exclude(next_san: nil)
+            .where(condition)
+            .from_self(alias: 'counts')
+            .select(
+              :next_san,
+              Sequel.function(:count).*.filter(result: 0).as(:black_won),
+              Sequel.function(:count).*.filter(result: 1).as(:white_won),
+              Sequel.function(:count).*.filter(result: 2).as(:draw),
+
+              (Sequel.function(:count).*.filter(result: 0) +
+               Sequel.function(:count).*.filter(result: 1) +
+               Sequel.function(:count).*.filter(result: 2)).as(:total_count))
+            .group(:next_san)
+            .order(Sequel.desc(:total_count))
+            ds.all
+        end
+
+        {token: token, moves: data}.to_json
       end
     end
   end

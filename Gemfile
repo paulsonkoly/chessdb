@@ -8,6 +8,7 @@ gem 'sequel'
 gem 'tilt'
 gem 'sassc'
 gem 'puma'
+gem 'hiredis', '~> 0.6'
 
 group :development do
   gem 'shotgun'
