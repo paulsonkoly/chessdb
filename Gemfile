@@ -13,6 +13,7 @@ gem 'hiredis', '~> 0.6'
 group :development do
   gem 'shotgun'
   gem 'pry'
+  gem 'pry-doc'
   gem 'pry-rescue'
   gem 'pry-stack_explorer'
 end
