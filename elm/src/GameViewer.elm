@@ -1,4 +1,4 @@
-port module Main exposing (main)
+port module GameViewer exposing (main)
 
 import Array
 import Browser

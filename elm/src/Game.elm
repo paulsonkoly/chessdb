@@ -1,6 +1,35 @@
-module Game exposing (Game, Move, Popularities, PopularityItem)
+module Game exposing
+    ( Game
+    , GameProperties
+    , Move
+    , Outcome(..)
+    , Popularities
+    , PopularityItem
+    )
 
 import Array exposing (Array)
+import Date exposing (Date)
+
+
+type Outcome
+    = WhiteWon
+    | BlackWon
+    | Draw
+
+
+type alias GameProperties =
+    { white : String
+    , black : String
+    , eitherColour : String
+    , minimumElo : Int
+    , maximumElo : Int
+    , event : String
+    , site : String
+    , date : Date
+    , round : String
+    , result : Outcome
+    , eco : String
+    }
 
 
 type alias Move =

@@ -104,7 +104,7 @@ viewMovePair currentMove rowId ( left, mright ) =
 
 
 viewMove : Move -> Int -> Html Msg
-viewMove { san, id, fullMoveNumber, activeColour } currentMove =
+viewMove { san, fullMoveNumber, activeColour } currentMove =
     let
         thisMove =
             fullMoveNumber * 2 + activeColour - 3
