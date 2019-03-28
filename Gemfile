@@ -9,6 +9,7 @@ gem 'tilt'
 gem 'sassc'
 gem 'puma'
 gem 'hiredis', '~> 0.6'
+gem 'app_configuration', '~> 0.0'
 
 group :development do
   gem 'shotgun'

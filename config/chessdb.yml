@@ -1,0 +1,6 @@
+---
+database:
+  :development:
+    :database: "chessdb_development"
+    :host: "new"
+    :user: "chessdb"

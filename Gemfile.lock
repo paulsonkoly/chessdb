@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    app_configuration (0.0.3)
     binding_of_caller (0.8.0)
       debug_inspector (>= 0.0.1)
     coderay (1.1.2)
@@ -40,6 +41,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  app_configuration (~> 0.0)
   hiredis (~> 0.6)
   pg
   pry
