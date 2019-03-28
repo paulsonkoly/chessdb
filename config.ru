@@ -7,7 +7,9 @@ require_relative 'lib/configuration'
 
 AppCache = Cache.new
 AppErb = ERBStore.new
-AppErb << { token: :application, filename: 'templates/application.html.erb' }
+AppErb <<
+  { token: :game_viewer, filename: 'templates/game_viewer.html.erb' } <<
+  { token: :game_search, filename: 'templates/game_search.html.erb' }
 AppConfiguration = Configuration.new
 AppRepository = Repository.new(AppConfiguration)
 
@@ -26,11 +28,15 @@ class App < Roda
 
     r.on 'games' do
       r.get Integer do |id|
-        AppErb.resolve_html(:application, binding)
+        AppErb.resolve_html(:game_viewer, binding)
       end
 
       r.get(/(\d+).json/) do |id|
         { moves: AppRepository.moves_in_game(game_id: id).all }
+      end
+
+      r.get 'search' do
+        AppErb.resolve_html(:game_search, binding)
       end
     end
 
