@@ -52,7 +52,6 @@ viewLoaded model game =
 
 
 --------------------------------------------------------------------------------
--- MoveList
 
 
 viewMoveList : List Move -> Int -> Html Msg
@@ -90,12 +89,16 @@ viewMovePair currentMove rowId ( left, mright ) =
         stuff =
             case mright of
                 Just right ->
-                    [ div [ class "cell", class "medium-4" ] [ viewMove left currentMove ]
-                    , div [ class "cell", class "auto" ] [ viewMove right currentMove ]
+                    [ div [ class "cell", class "medium-4" ]
+                        [ viewMove left currentMove ]
+                    , div [ class "cell", class "auto" ]
+                        [ viewMove right currentMove ]
                     ]
 
                 Nothing ->
-                    [ div [ class "cell", class "medium-4" ] [ viewMove left currentMove ] ]
+                    [ div [ class "cell", class "medium-4" ]
+                        [ viewMove left currentMove ]
+                    ]
     in
     wrapInDivs stuff
 
@@ -116,7 +119,8 @@ viewMove { san, id, fullMoveNumber, activeColour } currentMove =
             else
                 "upcoming"
     in
-    div [ class status, onClick (SetMoveNumberTo thisMove NoScroll) ] [ text san ]
+    div [ class status, onClick (SetMoveNumberTo thisMove NoScroll) ]
+        [ text san ]
 
 
 pairwise : List a -> List ( a, Maybe a )
@@ -144,18 +148,32 @@ type alias MoveNumbers =
 
 viewButtons : MoveNumbers -> Html Msg
 viewButtons { moveNumber, lastMoveNumber } =
-    div [ class "button-group" ]
-        [ viewButton (SetMoveNumberTo -1 Scroll) S.angleDoubleLeft
-        , viewButton (SetMoveNumberTo (moveNumber - 1) Scroll) S.angleLeft
-        , viewButton (SetMoveNumberTo (moveNumber + 1) Scroll) S.angleRight
-        , viewButton (SetMoveNumberTo lastMoveNumber Scroll) S.angleDoubleRight
-        , button [ class "button" ] [ I.view S.info ] -- TODO : modal help
-        ]
+    let
+        setter newMoveNumber =
+            SetMoveNumberTo newMoveNumber Scroll
+    in
+    viewCenterCell <|
+        div [ class "button-group" ]
+            [ viewButton (setter -1) S.angleDoubleLeft
+            , viewButton (setter (moveNumber - 1)) S.angleLeft
+            , viewButton (setter (moveNumber + 1)) S.angleRight
+            , viewButton (setter lastMoveNumber) S.angleDoubleRight
+            , button [ class "button" ] [ I.view S.info ] -- TODO : modal help
+            ]
 
 
 viewButton : msg -> I.Icon -> Html msg
 viewButton msg icon =
     button [ class "button", onClick msg ] [ I.view icon ]
+
+
+viewCenterCell : Html Msg -> Html Msg
+viewCenterCell inner =
+    div [ class "grid-x" ]
+        [ div [ class "cell", class "auto" ] []
+        , div [ class "cell", class "shrink" ] [ inner ]
+        , div [ class "cell", class "auto" ] []
+        ]
 
 
 
