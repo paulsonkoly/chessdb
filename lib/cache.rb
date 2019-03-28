@@ -7,6 +7,9 @@ class Cache
     @redis = Hiredis::Connection.new
     @redis.connect('localhost', 6379)
     @mutex = Mutex.new
+  rescue Errno::ECONNREFUSED
+    abort 'Can\'t connect to redis. ' \
+          'Please make sure that redis is running on localhost:6379'
   end
 
   # fetches key on hit or writes and returns the result of the block on hit
