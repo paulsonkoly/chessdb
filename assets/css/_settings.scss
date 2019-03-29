@@ -232,7 +232,7 @@ $stat-font-size: 2.5rem;
 // 6. Abide
 // --------
 
-$abide-inputs: true;
+$abide-inputs: false;
 $abide-labels: true;
 $input-background-invalid: get-color(alert);
 $form-label-color-invalid: get-color(alert);

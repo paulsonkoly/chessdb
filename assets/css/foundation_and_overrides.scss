@@ -76,3 +76,7 @@ html {
   margin-top: $global-margin;
   margin-bottom: $global-margin;
 }
+
+input.is-invalid-input {
+  border: 1px solid get_color(alert);
+}

@@ -3,14 +3,11 @@ module GameSearch exposing (main)
 import Browser
 import Date exposing (Date)
 import Game exposing (..)
-import GameSearch.Model exposing (Model)
+import GameSearch.Model as Model exposing (Model, init, validateModel)
+import GameSearch.Msg exposing (Msg(..))
 import GameSearch.View exposing (view)
 import Html exposing (Html)
 import Loadable exposing (..)
-
-
-type Msg
-    = Noop
 
 
 main =
@@ -24,23 +21,18 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init flags =
-    ( { white = Nothing
-      , black = Nothing
-      , eitherColour = Nothing
-      , minimumElo = Nothing
-      , maximumElo = Nothing
-      , event = Nothing
-      , site = Nothing
-      , date = Nothing
-      , round = Nothing
-      , result = Nothing
-      , eco = Nothing
-      , games = Loading
-      }
-    , Cmd.none
-    )
+    ( Model.init, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
-update _ m =
-    ( m, Cmd.none )
+update msg model =
+    case msg of
+        FormFieldChange f ->
+            ( model |> Model.updateModel f |> Model.validateModel, Cmd.none )
+
+        FormSubmitted ->
+            if Model.isModelValid model then
+                ( model, Cmd.none )
+
+            else
+                ( model, Cmd.none )
