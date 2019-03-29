@@ -35,11 +35,11 @@ outcomeFromString str =
 
 
 type alias GameProperties =
-    { white : String
+    { id : Int
+    , white : String
     , black : String
-    , eitherColour : String
-    , minimumElo : Int
-    , maximumElo : Int
+    , whiteElo : Int
+    , blackElo : Int
     , event : String
     , site : String
     , date : Date

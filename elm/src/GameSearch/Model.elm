@@ -3,6 +3,7 @@ module GameSearch.Model exposing
     , Model
     , init
     , isModelValid
+    , jsonEncodedQuery
     , updateModel
     , validateModel
     )
@@ -10,6 +11,7 @@ module GameSearch.Model exposing
 import Date exposing (Date)
 import Game exposing (GameProperties, Outcome)
 import GameSearch.Msg exposing (FieldChange(..), Msg(..))
+import Json.Encode as Encode exposing (Value)
 import Loadable exposing (Loadable(..))
 
 
@@ -118,3 +120,17 @@ updateModel msg model =
 
         EcoChanged str ->
             { model | eco = str }
+
+
+jsonEncodedQuery : Model -> Encode.Value
+jsonEncodedQuery model =
+    let
+        stringQuery ( name, str ) =
+            case str of
+                "" ->
+                    Nothing
+
+                _ ->
+                    Just ( name, Encode.string str )
+    in
+    Encode.object (List.filterMap stringQuery [ ( "white", model.white ) ])

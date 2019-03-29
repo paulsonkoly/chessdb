@@ -3,11 +3,15 @@ module GameSearch exposing (main)
 import Browser
 import Date exposing (Date)
 import Game exposing (..)
+import Game.Decoder exposing (gamesDecoder)
 import GameSearch.Model as Model exposing (Model, init, validateModel)
 import GameSearch.Msg exposing (Msg(..))
 import GameSearch.View exposing (view)
 import Html exposing (Html)
+import Http
+import Json.Encode as Encode
 import Loadable exposing (..)
+import Url.Builder as Url
 
 
 main =
@@ -24,7 +28,7 @@ init flags =
     ( Model.init, Cmd.none )
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FormFieldChange f ->
@@ -32,7 +36,16 @@ update msg model =
 
         FormSubmitted ->
             if Model.isModelValid model then
-                ( model, Cmd.none )
+                ( model
+                , Http.post
+                    { url = Url.absolute [ "games", "search" ] []
+                    , body = Http.jsonBody (Model.jsonEncodedQuery model)
+                    , expect = Http.expectJson GamesReceived gamesDecoder
+                    }
+                )
 
             else
                 ( model, Cmd.none )
+
+        GamesReceived games ->
+            ( model, Cmd.none )

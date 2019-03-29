@@ -1,5 +1,8 @@
 module GameSearch.Msg exposing (FieldChange(..), Msg(..))
 
+import Game exposing (GameProperties)
+import Http
+
 
 type FieldChange
     = WhiteChanged String
@@ -18,3 +21,4 @@ type FieldChange
 type Msg
     = FormFieldChange FieldChange
     | FormSubmitted
+    | GamesReceived (Result Http.Error (List GameProperties))
