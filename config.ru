@@ -27,7 +27,7 @@ class App < Roda
       end
 
       r.get(/(\d+).json/) do |id|
-        { moves: @app.repository.moves_in_game(game_id: id).all }
+        { moves: app.repository.moves_in_game(game_id: id).all }
       end
 
       r.get 'search' do
@@ -45,7 +45,7 @@ class App < Roda
         token = r.params['token'].to_i
         fen = r.params['fen']
 
-        data = AppCache.fetch(fen) do
+        data = app.cache.fetch(fen) do
           app.repository.popular_moves(fen: fen).all
         end
 
