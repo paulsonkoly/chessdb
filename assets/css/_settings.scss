@@ -430,6 +430,8 @@ $flexbox-responsive-breakpoints: true;
 // 20. Forms
 // ---------
 
+$field-item-background: $chessdb-greyscale1;
+
 $fieldset-border: 1px solid $medium-gray;
 $fieldset-padding: rem-calc(20);
 $fieldset-margin: rem-calc(18 0);
@@ -446,7 +448,7 @@ $form-label-color: $chessdb-greyscale4;
 $form-label-font-size: rem-calc(14);
 $form-label-font-weight: $global-weight-normal;
 $form-label-line-height: 1.8;
-$select-background: $white;
+$select-background: $field-item-background;
 $select-triangle-color: $dark-gray;
 $select-radius: $global-radius;
 $input-color: $chessdb-greyscale6;
@@ -455,8 +457,8 @@ $input-font-family: inherit;
 $input-font-size: rem-calc(16);
 $input-font-weight: $global-weight-normal;
 $input-line-height: $global-lineheight;
-$input-background: $chessdb-greyscale1;
-$input-background-focus: $chessdb-greyscale1;
+$input-background: $field-item-background;
+$input-background-focus: $field-item-background;
 $input-background-disabled: $light-gray;
 $input-border: 1px solid $chessdb-greyscale2;
 $input-border-focus: 1px solid $chessdb-green;
