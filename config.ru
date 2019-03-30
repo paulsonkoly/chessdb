@@ -8,7 +8,8 @@ class App < Roda
   plugin :assets,
     css: ['application.scss', 'svg-with-js.min.css'],
     js: ['application.js', 'chessboard.js', 'jquery-min.js'],
-    dependencies: app.dependency_map
+    dependencies: app.dependency_map,
+    postprocessor: Application.method(:post_process_asset)
   plugin :public
   opts[:root] = Configuration::PROJECT_ROOT
   plugin :static ['/public']

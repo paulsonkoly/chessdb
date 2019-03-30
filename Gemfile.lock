@@ -2,10 +2,13 @@ GEM
   remote: https://rubygems.org/
   specs:
     app_configuration (0.0.3)
+    autoprefixer-rails (9.5.0)
+      execjs
     binding_of_caller (0.8.0)
       debug_inspector (>= 0.0.1)
     coderay (1.1.2)
     debug_inspector (0.0.3)
+    execjs (2.7.0)
     ffi (1.10.0)
     hiredis (0.6.3)
     interception (0.5)
@@ -42,6 +45,7 @@ PLATFORMS
 
 DEPENDENCIES
   app_configuration (~> 0.0)
+  autoprefixer-rails
   hiredis (~> 0.6)
   pg
   pry
