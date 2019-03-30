@@ -8,6 +8,7 @@ type FieldChange
     = WhiteChanged String
     | BlackChanged String
     | EitherColourChanged String
+    | OpponentChanged String
     | MinimumEloChanged String
     | MaxiumEloChanged String
     | EventChanged String

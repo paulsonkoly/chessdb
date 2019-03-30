@@ -1,6 +1,8 @@
 module GameSearch.Model exposing
     ( Error
     , Model
+    , hasEitherOrOpponent
+    , hasWhiteOrBlack
     , init
     , isModelValid
     , jsonEncodedQuery
@@ -19,19 +21,11 @@ type alias Error =
     Maybe String
 
 
-type Either a b
-    = Left a
-    | Right b
-
-
-type Decisive
-    = Decisive
-
-
 type alias Model =
     { white : String
     , black : String
     , eitherColour : String
+    , opponent : String
     , elosDontMatch : Error
     , minimumElo : Maybe Int
     , maximumElo : Maybe Int
@@ -46,22 +40,12 @@ type alias Model =
     }
 
 
-resultFromString : String -> Maybe (Either Decisive Outcome)
-resultFromString str =
-    case str of
-        "Decisive" ->
-            Just (Left Decisive)
-
-        _ ->
-            Game.outcomeFromString str
-                |> Maybe.map Right
-
-
 init : Model
 init =
     { white = ""
     , black = ""
     , eitherColour = ""
+    , opponent = ""
     , elosDontMatch = Nothing
     , minimumElo = Nothing
     , maximumElo = Nothing
@@ -101,6 +85,16 @@ isModelValid model =
     model.elosDontMatch == Nothing && model.ecoError == Nothing
 
 
+hasWhiteOrBlack : Model -> Bool
+hasWhiteOrBlack model =
+    model.white /= "" || model.black /= ""
+
+
+hasEitherOrOpponent : Model -> Bool
+hasEitherOrOpponent model =
+    model.eitherColour /= "" || model.opponent /= ""
+
+
 updateModel : FieldChange -> Model -> Model
 updateModel msg model =
     case msg of
@@ -112,6 +106,9 @@ updateModel msg model =
 
         EitherColourChanged str ->
             { model | eitherColour = str }
+
+        OpponentChanged str ->
+            { model | opponent = str }
 
         MinimumEloChanged str ->
             { model | minimumElo = String.toInt str }
@@ -157,6 +154,7 @@ jsonEncodedQuery model =
             [ ( "white", model.white )
             , ( "black", model.black )
             , ( "either_colour", model.eitherColour )
+            , ( "opponent", model.opponent )
             , ( "event", model.event )
             , ( "site", model.site )
             , ( "round", model.round )

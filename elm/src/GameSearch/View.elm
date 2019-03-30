@@ -139,6 +139,7 @@ view model =
                             , input
                                 [ name "white"
                                 , type_ "text"
+                                , disabled (Model.hasEitherOrOpponent model)
                                 , onInput (FormFieldChange << WhiteChanged)
                                 ]
                                 []
@@ -148,6 +149,7 @@ view model =
                             , input
                                 [ name "black"
                                 , type_ "text"
+                                , disabled (Model.hasEitherOrOpponent model)
                                 , onInput (FormFieldChange << BlackChanged)
                                 ]
                                 []
@@ -155,11 +157,23 @@ view model =
                         ]
                     , div [ class "grid-x grid-padding-x" ]
                         [ div [ class "cell medium-6" ]
-                            [ label [ for "either_colour" ] [ text "Either colour" ]
+                            [ label [ for "either_colour" ]
+                                [ text "Either colour" ]
                             , input
                                 [ name "either_colour"
                                 , type_ "text"
+                                , disabled (Model.hasWhiteOrBlack model)
                                 , onInput (FormFieldChange << EitherColourChanged)
+                                ]
+                                []
+                            ]
+                        , div [ class "cell medium-6" ]
+                            [ label [ for "opponent" ] [ text "Opponent" ]
+                            , input
+                                [ name "opponent"
+                                , type_ "text"
+                                , disabled (Model.hasWhiteOrBlack model)
+                                , onInput (FormFieldChange << OpponentChanged)
                                 ]
                                 []
                             ]

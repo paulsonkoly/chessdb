@@ -459,7 +459,7 @@ $input-font-weight: $global-weight-normal;
 $input-line-height: $global-lineheight;
 $input-background: $field-item-background;
 $input-background-focus: $field-item-background;
-$input-background-disabled: $light-gray;
+$input-background-disabled: darken($field-item-background, 5%);
 $input-border: 1px solid $chessdb-greyscale2;
 $input-border-focus: 1px solid $chessdb-green;
 $input-padding: $form-spacing / 2;
