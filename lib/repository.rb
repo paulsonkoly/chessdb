@@ -1,10 +1,12 @@
 require 'yaml'
 require 'sequel'
+require 'logger'
 
 # Repository for database access
 class Repository
   def initialize(config)
     @db = Sequel.connect(adapter: 'postgres', **config.database[:development])
+    @db.loggers = [Logger.new($stdout)]
   end
 
   def moves_in_game(game_id:)
@@ -20,14 +22,54 @@ class Repository
   end
 
   def game_search(filter_hash)
-    @db[:games]
-      .where(filter_hash)
-      .order_by(:id)
-      .limit(100)
-      .all
+    game_search_filter
+      .run(@db[:games], filter_hash)
+      .order_by(:id).limit(100).all
+  end
+
+  # Composable filter objects.
+  class Filter
+    def initialize(key, &block)
+      @key = key
+      @block = block
+      @others = []
+    end
+
+    def <<(other)
+      @others << other
+      self
+    end
+
+    def run(table, hash)
+      table = @block.call(table, hash[@key]) if hash.key? @key
+      @others.each { |filter| table = filter.run(table, hash) }
+      table
+    end
   end
 
   private
+
+  def game_search_filter
+    @game_search_filter ||=
+      (Filter.new(:white) { |table, actual| table.where(white: actual) }   <<
+       Filter.new(:black) { |table, actual| table.where(black: actual) }   <<
+       Filter.new(:either_colour) do |table, actual|
+         table.where(white: actual).or(black: actual)
+       end                                                                 <<
+       Filter.new(:minimum_elo) do |table, actual|
+         table.where { (white_elo >= actual) & (black_elo >= actual) }
+       end                                                                 <<
+       Filter.new(:maximum_elo) do |table, actual|
+         table.where { (white_elo <= actual) & (black_elo <= actual) }
+       end                                                                 <<
+       Filter.new(:event) { |table, actual| table.where(event: actual) }   <<
+       Filter.new(:site) { |table, actual| table.where(site: actual) }     <<
+       Filter.new(:date) { |table, actual| table.where(date: actual) }     <<
+       Filter.new(:round) { |table, actual| table.where(round: actual) }   <<
+       Filter.new(:result) { |table, actual| table.where(result: actual) } <<
+       Filter.new(:eco) { |table, actual| table.where(eco: actual) }
+      ).freeze
+  end
 
   def game_columns
     @game_columns ||= @db[:moves].columns.map do |column|

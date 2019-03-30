@@ -165,8 +165,8 @@ jsonEncodedQuery model =
             , ( "eco", model.eco )
             ]
             ++ List.filterMap numberQuery
-                [ ( "minimum-elo", model.minimumElo )
-                , ( "maximum-elo", model.maximumElo )
+                [ ( "minimum_elo", model.minimumElo )
+                , ( "maximum_elo", model.maximumElo )
                 ]
             ++ List.filterMap resultQuery [ ( "result", model.result ) ]
         )
