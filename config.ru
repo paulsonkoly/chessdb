@@ -21,6 +21,7 @@ class App < Roda
   opts[:root] = Configuration::PROJECT_ROOT
   plugin :static ['/public']
   plugin :json
+  plugin :json_parser, parser: -> str { JSON.parse(str, symbolize_names: true) }
 
   route do |r|
     r.assets
@@ -37,6 +38,10 @@ class App < Roda
 
       r.get 'search' do
         AppErb.resolve_html(:game_search, binding)
+      end
+
+      r.post 'search' do
+        AppRepository.game_search(r.params)
       end
     end
 

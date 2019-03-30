@@ -48,4 +48,4 @@ update msg model =
                 ( model, Cmd.none )
 
         GamesReceived games ->
-            ( model, Cmd.none )
+            ( { model | games = Loaded games }, Cmd.none )

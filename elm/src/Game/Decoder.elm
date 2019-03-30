@@ -60,8 +60,8 @@ gamePropertiesDecoder =
         |> Pipeline.required "id" Decode.int
         |> Pipeline.required "white" Decode.string
         |> Pipeline.required "black" Decode.string
-        |> Pipeline.required "whiteElo" Decode.int
-        |> Pipeline.required "blackElo" Decode.int
+        |> Pipeline.required "white_elo" Decode.int
+        |> Pipeline.required "black_elo" Decode.int
         |> Pipeline.required "event" Decode.string
         |> Pipeline.required "site" Decode.string
         |> Pipeline.required "date" dateDecoder

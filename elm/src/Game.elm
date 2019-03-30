@@ -6,6 +6,7 @@ module Game exposing
     , Popularities
     , PopularityItem
     , outcomeFromString
+    , outcomeToString
     )
 
 import Array exposing (Array)
@@ -21,17 +22,30 @@ type Outcome
 outcomeFromString : String -> Maybe Outcome
 outcomeFromString str =
     case str of
-        "White won" ->
+        "1-0" ->
             Just WhiteWon
 
-        "Black won" ->
+        "0-1" ->
             Just BlackWon
 
-        "Draw" ->
+        "1/2-1/2" ->
             Just Draw
 
         _ ->
             Nothing
+
+
+outcomeToString : Outcome -> String
+outcomeToString outcome =
+    case outcome of
+        WhiteWon ->
+            "1-0"
+
+        BlackWon ->
+            "0-1"
+
+        Draw ->
+            "1/2-1/2"
 
 
 type alias GameProperties =

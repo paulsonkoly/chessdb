@@ -1,9 +1,26 @@
 module GameSearch.View exposing (view)
 
-import Debug as Debug
+import Date
+import Game exposing (GameProperties)
 import GameSearch.Model as Model exposing (Error, Model)
 import GameSearch.Msg exposing (FieldChange(..), Msg(..))
-import Html exposing (Html, button, div, form, input, label, span, text)
+import Html
+    exposing
+        ( Html
+        , button
+        , div
+        , form
+        , input
+        , label
+        , span
+        , table
+        , tbody
+        , td
+        , text
+        , th
+        , thead
+        , tr
+        )
 import Html.Attributes
     exposing
         ( action
@@ -16,6 +33,7 @@ import Html.Attributes
         , value
         )
 import Html.Events exposing (onInput, onSubmit)
+import Loadable
 
 
 viewEloFields : Error -> Html Msg
@@ -63,6 +81,33 @@ viewEloFields err =
             ]
         , div [ class "cell medium-12" ] [ errorMessage ]
         ]
+
+
+viewLoadedGames : List GameProperties -> Html Msg
+viewLoadedGames games =
+    let
+        header =
+            thead []
+                [ th [] [ text "White" ]
+                , th [] [ text "Black" ]
+                , th [] [ text "Result" ]
+                , th [] [ text "Date" ]
+                ]
+
+        body =
+            tbody [] <|
+                List.map
+                    (\game ->
+                        tr []
+                            [ td [] [ text game.white ]
+                            , td [] [ text game.black ]
+                            , td [] [ text (Game.outcomeToString game.result) ]
+                            , td [] [ text (Date.toIsoString game.date) ]
+                            ]
+                    )
+                    games
+    in
+    table [ class "hover" ] [ header, body ]
 
 
 view : Model -> Html Msg
@@ -172,7 +217,5 @@ view model =
                 ]
             ]
         , div [ class "medium-6 cell" ]
-            [ div [ class "callout" ]
-                [ text <| Debug.toString model ]
-            ]
+            [ Loadable.viewLoadable model.games viewLoadedGames ]
         ]

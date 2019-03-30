@@ -19,6 +19,14 @@ class Repository
     Fen.for(fen).popular_moves(@db)
   end
 
+  def game_search(filter_hash)
+    @db[:games]
+      .where(filter_hash)
+      .order_by(:id)
+      .limit(100)
+      .all
+  end
+
   private
 
   def game_columns
