@@ -9,7 +9,7 @@ module GameSearch.Model exposing
     )
 
 import Date exposing (Date)
-import Game exposing (GameProperties, Outcome)
+import Game exposing (GameProperties, Outcome(..))
 import GameSearch.Msg exposing (FieldChange(..), Msg(..))
 import Json.Encode as Encode exposing (Value)
 import Loadable exposing (Loadable(..))
@@ -132,5 +132,41 @@ jsonEncodedQuery model =
 
                 _ ->
                     Just ( name, Encode.string str )
+
+        numberQuery ( name, mint ) =
+            mint |> Maybe.andThen (\int -> Just ( name, Encode.int int ))
+
+        resultQuery ( name, mresult ) =
+            mresult
+                |> Maybe.andThen
+                    (\result ->
+                        Just ( name, Encode.int (resultToInt result) )
+                    )
+
+        resultToInt result =
+            case result of
+                WhiteWon ->
+                    0
+
+                BlackWon ->
+                    1
+
+                Draw ->
+                    2
     in
-    Encode.object (List.filterMap stringQuery [ ( "white", model.white ) ])
+    Encode.object
+        (List.filterMap stringQuery
+            [ ( "white", model.white )
+            , ( "black", model.black )
+            , ( "either_colour", model.eitherColour )
+            , ( "event", model.event )
+            , ( "site", model.site )
+            , ( "round", model.round )
+            , ( "eco", model.eco )
+            ]
+            ++ List.filterMap numberQuery
+                [ ( "minimum-elo", model.minimumElo )
+                , ( "maximum-elo", model.maximumElo )
+                ]
+            ++ List.filterMap resultQuery [ ( "result", model.result ) ]
+        )

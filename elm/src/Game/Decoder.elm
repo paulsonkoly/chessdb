@@ -64,7 +64,7 @@ gamePropertiesDecoder =
         |> Pipeline.required "black_elo" Decode.int
         |> Pipeline.required "event" Decode.string
         |> Pipeline.required "site" Decode.string
-        |> Pipeline.required "date" dateDecoder
+        |> Pipeline.required "date" (Decode.nullable dateDecoder)
         |> Pipeline.required "round" Decode.string
         |> Pipeline.required "result" outcomeDecoder
         |> Pipeline.required "eco" Decode.string

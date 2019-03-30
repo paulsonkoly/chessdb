@@ -56,7 +56,7 @@ type alias GameProperties =
     , blackElo : Int
     , event : String
     , site : String
-    , date : Date
+    , date : Maybe Date
     , round : String
     , result : Outcome
     , eco : String

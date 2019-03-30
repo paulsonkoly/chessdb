@@ -7,12 +7,13 @@ import GameSearch.Msg exposing (FieldChange(..), Msg(..))
 import Html
     exposing
         ( Html
-        , a
         , button
         , div
         , form
         , input
         , label
+        , option
+        , select
         , span
         , table
         , tbody
@@ -28,7 +29,6 @@ import Html.Attributes
         , class
         , disabled
         , for
-        , href
         , id
         , name
         , type_
@@ -86,6 +86,16 @@ viewEloFields err =
         ]
 
 
+viewResultSelect : Html Msg
+viewResultSelect =
+    select [ onInput (FormFieldChange << ResultChanged) ]
+        [ option [ value "Any" ] [ text "Any" ]
+        , option [ value "1-0" ] [ text "1-0" ]
+        , option [ value "0-1" ] [ text "0-1" ]
+        , option [ value "1/2-1/2" ] [ text "1/2-1/2" ]
+        ]
+
+
 viewLoadedGames : List GameProperties -> Html Msg
 viewLoadedGames games =
     let
@@ -97,6 +107,9 @@ viewLoadedGames games =
                 , th [] [ text "Date" ]
                 ]
 
+        date =
+            Maybe.map Date.toIsoString >> Maybe.withDefault "???"
+
         body =
             tbody [] <|
                 List.map
@@ -105,7 +118,7 @@ viewLoadedGames games =
                             [ td [] [ text game.white ]
                             , td [] [ text game.black ]
                             , td [] [ text (Game.outcomeToString game.result) ]
-                            , td [] [ text (Date.toIsoString game.date) ]
+                            , td [] [ text (date game.date) ]
                             ]
                     )
                     games
@@ -141,7 +154,7 @@ view model =
                         ]
                     , div [ class "grid-x grid-padding-x" ]
                         [ div [ class "cell medium-6" ]
-                            [ label [ for "black" ] [ text "Either colour" ]
+                            [ label [ for "either_colour" ] [ text "Either colour" ]
                             , input
                                 [ name "either_colour"
                                 , type_ "text"
@@ -153,7 +166,7 @@ view model =
                     , viewEloFields model.elosDontMatch
                     , div [ class "grid-x grid-padding-x" ]
                         [ div [ class "cell medium-6" ]
-                            [ label [ for "min_elo" ] [ text "Event" ]
+                            [ label [ for "event" ] [ text "Event" ]
                             , input
                                 [ name "event"
                                 , type_ "text"
@@ -162,7 +175,7 @@ view model =
                                 []
                             ]
                         , div [ class "cell medium-6" ]
-                            [ label [ for "man_elo" ] [ text "Site" ]
+                            [ label [ for "site" ] [ text "Site" ]
                             , input
                                 [ name "site"
                                 , type_ "text"
@@ -173,7 +186,7 @@ view model =
                         ]
                     , div [ class "grid-x grid-padding-x" ]
                         [ div [ class "cell medium-6" ]
-                            [ label [ for "min_elo" ] [ text "Date" ]
+                            [ label [ for "date" ] [ text "Date" ]
                             , input
                                 [ name "date"
                                 , type_ "text"
@@ -182,7 +195,7 @@ view model =
                                 []
                             ]
                         , div [ class "cell medium-6" ]
-                            [ label [ for "man_elo" ] [ text "Round" ]
+                            [ label [ for "round" ] [ text "Round" ]
                             , input
                                 [ name "round"
                                 , type_ "text"
@@ -193,16 +206,11 @@ view model =
                         ]
                     , div [ class "grid-x grid-padding-x" ]
                         [ div [ class "cell medium-6" ]
-                            [ label [ for "min_elo" ] [ text "Result" ]
-                            , input
-                                [ name "result"
-                                , type_ "text"
-                                , onInput (FormFieldChange << ResultChanged)
-                                ]
-                                []
+                            [ label [ for "result" ] [ text "Result" ]
+                            , viewResultSelect
                             ]
                         , div [ class "cell medium-6" ]
-                            [ label [ for "man_elo" ] [ text "ECO" ]
+                            [ label [ for "eco" ] [ text "ECO" ]
                             , input
                                 [ name "eco"
                                 , type_ "text"
