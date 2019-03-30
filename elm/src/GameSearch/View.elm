@@ -6,7 +6,8 @@ import GameSearch.Model as Model exposing (Error, Model)
 import GameSearch.Msg exposing (FieldChange(..), Msg(..))
 import Html
     exposing
-        ( Html
+        ( Attribute
+        , Html
         , button
         , div
         , form
@@ -39,26 +40,28 @@ import Loadable
 import Url.Builder as Url
 
 
+errorAttribute : Error -> List (Attribute msg)
+errorAttribute err =
+    case err of
+        Just _ ->
+            [ class "is-invalid-input" ]
+
+        Nothing ->
+            []
+
+
+viewError : Error -> Html Msg
+viewError err =
+    case err of
+        Just oops ->
+            span [ class "form-error", class "is-visible" ] [ text oops ]
+
+        Nothing ->
+            span [ class "form-error" ] []
+
+
 viewEloFields : Error -> Html Msg
 viewEloFields err =
-    let
-        errorAttribute =
-            case err of
-                Just _ ->
-                    [ class "is-invalid-input" ]
-
-                Nothing ->
-                    []
-
-        errorMessage =
-            case err of
-                Just oops ->
-                    span [ class "form-error", class "is-visible" ]
-                        [ text oops ]
-
-                Nothing ->
-                    span [ class "form-error" ] []
-    in
     div [ class "grid-x grid-padding-x" ]
         [ div [ class "cell medium-6" ]
             [ label [ for "min_elo" ] [ text "Minimum ELO" ]
@@ -67,7 +70,7 @@ viewEloFields err =
                  , type_ "text"
                  , onInput (FormFieldChange << MinimumEloChanged)
                  ]
-                    ++ errorAttribute
+                    ++ errorAttribute err
                 )
                 []
             ]
@@ -78,11 +81,11 @@ viewEloFields err =
                  , type_ "text"
                  , onInput (FormFieldChange << MaxiumEloChanged)
                  ]
-                    ++ errorAttribute
+                    ++ errorAttribute err
                 )
                 []
             ]
-        , div [ class "cell medium-12" ] [ errorMessage ]
+        , div [ class "cell medium-12" ] [ viewError err ]
         ]
 
 
@@ -227,11 +230,14 @@ view model =
                         , div [ class "cell medium-6" ]
                             [ label [ for "eco" ] [ text "ECO" ]
                             , input
-                                [ name "eco"
-                                , type_ "text"
-                                , onInput (FormFieldChange << EcoChanged)
-                                ]
+                                ([ name "eco"
+                                 , type_ "text"
+                                 , onInput (FormFieldChange << EcoChanged)
+                                 ]
+                                    ++ errorAttribute model.ecoInvalid
+                                )
                                 []
+                            , viewError model.ecoInvalid
                             ]
                         ]
                     , button

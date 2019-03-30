@@ -34,7 +34,7 @@ type alias Model =
     , date : Maybe Date
     , round : String
     , result : String
-    , ecoError : Error
+    , ecoInvalid : Error
     , eco : String
     , games : Loadable (List GameProperties)
     }
@@ -54,7 +54,7 @@ init =
     , date = Nothing
     , round = ""
     , result = ""
-    , ecoError = Nothing
+    , ecoInvalid = Nothing
     , eco = ""
     , games = Loading
     }
@@ -73,16 +73,31 @@ validateModel model =
 
                 _ ->
                     Nothing
+
+        ecoInvalid =
+            case String.toList model.eco of
+                [ a, b, c ] ->
+                    if 'A' <= a && a <= 'E' && '0' <= b && b <= '9' && '0' <= c && c <= '9' then
+                        Nothing
+
+                    else
+                        Just "Invalid ECO code."
+
+                [] ->
+                    Nothing
+
+                _ ->
+                    Just "Invalid ECO code."
     in
     { model
         | elosDontMatch = elosDontMatch
-        , ecoError = Nothing -- TODO
+        , ecoInvalid = ecoInvalid
     }
 
 
 isModelValid : Model -> Bool
 isModelValid model =
-    model.elosDontMatch == Nothing && model.ecoError == Nothing
+    model.elosDontMatch == Nothing && model.ecoInvalid == Nothing
 
 
 hasWhiteOrBlack : Model -> Bool

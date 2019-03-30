@@ -54,10 +54,10 @@ class Repository
       (Filter.new(:white) { |table, actual| table.where(white: actual) }   <<
        Filter.new(:black) { |table, actual| table.where(black: actual) }   <<
        Filter.new(:either_colour) do |table, actual|
-         table.where { Sequel.|({ white: actual }, {black: actual}) }
+         table.where { (white =~ actual) | (black =~ actual) }
        end                                                                 <<
        Filter.new(:opponent) do |table, actual|
-         table.where { Sequel.|({ white: actual }, {black: actual}) }
+         table.where { (white =~ actual) | (black =~ actual) }
        end                                                                 <<
        Filter.new(:minimum_elo) do |table, actual|
          table.where { (white_elo >= actual) & (black_elo >= actual) }
