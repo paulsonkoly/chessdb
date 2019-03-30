@@ -15,12 +15,17 @@ import Json.Encode as Encode exposing (Value)
 import Loadable exposing (Loadable(..))
 
 
-type Field e v
-    = Field ( Maybe e, v )
-
-
 type alias Error =
     Maybe String
+
+
+type Either a b
+    = Left a
+    | Right b
+
+
+type Decisive
+    = Decisive
 
 
 type alias Model =
@@ -34,11 +39,22 @@ type alias Model =
     , site : String
     , date : Maybe Date
     , round : String
-    , result : Maybe Outcome
+    , result : String
     , ecoError : Error
     , eco : String
     , games : Loadable (List GameProperties)
     }
+
+
+resultFromString : String -> Maybe (Either Decisive Outcome)
+resultFromString str =
+    case str of
+        "Decisive" ->
+            Just (Left Decisive)
+
+        _ ->
+            Game.outcomeFromString str
+                |> Maybe.map Right
 
 
 init : Model
@@ -53,7 +69,7 @@ init =
     , site = ""
     , date = Nothing
     , round = ""
-    , result = Nothing
+    , result = ""
     , ecoError = Nothing
     , eco = ""
     , games = Loading
@@ -116,7 +132,7 @@ updateModel msg model =
             { model | round = str }
 
         ResultChanged str ->
-            { model | result = Game.outcomeFromString str }
+            { model | result = str }
 
         EcoChanged str ->
             { model | eco = str }
@@ -135,24 +151,6 @@ jsonEncodedQuery model =
 
         numberQuery ( name, mint ) =
             mint |> Maybe.andThen (\int -> Just ( name, Encode.int int ))
-
-        resultQuery ( name, mresult ) =
-            mresult
-                |> Maybe.andThen
-                    (\result ->
-                        Just ( name, Encode.int (resultToInt result) )
-                    )
-
-        resultToInt result =
-            case result of
-                WhiteWon ->
-                    0
-
-                BlackWon ->
-                    1
-
-                Draw ->
-                    2
     in
     Encode.object
         (List.filterMap stringQuery
@@ -163,10 +161,10 @@ jsonEncodedQuery model =
             , ( "site", model.site )
             , ( "round", model.round )
             , ( "eco", model.eco )
+            , ( "result", model.result )
             ]
             ++ List.filterMap numberQuery
                 [ ( "minimum_elo", model.minimumElo )
                 , ( "maximum_elo", model.maximumElo )
                 ]
-            ++ List.filterMap resultQuery [ ( "result", model.result ) ]
         )

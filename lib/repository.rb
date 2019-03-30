@@ -66,9 +66,21 @@ class Repository
        Filter.new(:site) { |table, actual| table.where(site: actual) }     <<
        Filter.new(:date) { |table, actual| table.where(date: actual) }     <<
        Filter.new(:round) { |table, actual| table.where(round: actual) }   <<
-       Filter.new(:result) { |table, actual| table.where(result: actual) } <<
+       result_filter                                                       <<
        Filter.new(:eco) { |table, actual| table.where(eco: actual) }
       ).freeze
+  end
+
+  def result_filter
+    Filter.new(:result) do |table, actual|
+      case actual
+      when "1-0" then table.where(result: 0)
+      when "0-1" then table.where(result: 1)
+      when "Decisive" then table.where(result: 0).or(result: 1)
+      when "1/2-1/2" then table.where(result: 2)
+      else table
+      end
+    end
   end
 
   def game_columns

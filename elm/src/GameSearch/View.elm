@@ -92,6 +92,7 @@ viewResultSelect =
         [ option [ value "Any" ] [ text "Any" ]
         , option [ value "1-0" ] [ text "1-0" ]
         , option [ value "0-1" ] [ text "0-1" ]
+        , option [ value "Decisive" ] [ text "Decisive (1-0 or 0-1)" ]
         , option [ value "1/2-1/2" ] [ text "1/2-1/2" ]
         ]
 
