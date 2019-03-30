@@ -8,6 +8,18 @@
   </head>
 
   <body>
+    <div class="top-bar">
+      <div class="top-bar-left">
+        <ul class="menu">
+          <li class="menu-text">Chess DB</li>
+          <li <%= @active_menu == :search ? "class='is-active'" : "" %>>
+            <a href="/games/search">Game search</a>
+          </li>
+          <li><a href="#">Two</a></li>
+          <li><a href="#">Three</a></li>
+        </ul>
+      </div>
+    </div>
     <div class="grid-conatiner">
       <div class="grid-x grid-padding-x grid-padding-y">
         <div class="cell">

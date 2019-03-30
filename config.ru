@@ -1,22 +1,14 @@
 require 'roda'
 
-require_relative 'lib/cache'
-require_relative 'lib/erb_store'
-require_relative 'lib/repository'
-require_relative 'lib/configuration'
-
-AppCache = Cache.new
-AppErb = ERBStore.new
-AppErb <<
-  { token: :game_viewer, filename: 'templates/game_viewer.html.erb' } <<
-  { token: :game_search, filename: 'templates/game_search.html.erb' }
-AppConfiguration = Configuration.new
-AppRepository = Repository.new(AppConfiguration)
+require_relative 'lib/application'
 
 class App < Roda
+  app = Application.new
+
   plugin :assets,
     css: ['application.scss', 'svg-with-js.min.css'],
-    js: ['application.js', 'chessboard.js', 'jquery-min.js']
+    js: ['application.js', 'chessboard.js', 'jquery-min.js'],
+    dependencies: app.dependency_map
   plugin :public
   opts[:root] = Configuration::PROJECT_ROOT
   plugin :static ['/public']
@@ -29,19 +21,21 @@ class App < Roda
 
     r.on 'games' do
       r.get Integer do |id|
-        AppErb.resolve_html(:game_viewer, binding)
+        @active_menu = :none
+        app.erb_store.resolve_html(:game_viewer, binding)
       end
 
       r.get(/(\d+).json/) do |id|
-        { moves: AppRepository.moves_in_game(game_id: id).all }
+        { moves: @app.repository.moves_in_game(game_id: id).all }
       end
 
       r.get 'search' do
-        AppErb.resolve_html(:game_search, binding)
+        @active_menu = :search
+        app.erb_store.resolve_html(:game_search, binding)
       end
 
       r.post 'search' do
-        AppRepository.game_search(r.params)
+        app.repository.game_search(r.params)
       end
     end
 
@@ -51,7 +45,7 @@ class App < Roda
         fen = r.params['fen']
 
         data = AppCache.fetch(fen) do
-          AppRepository.popular_moves(fen: fen).all
+          app.repository.popular_moves(fen: fen).all
         end
 
         { token: token, moves: data }
