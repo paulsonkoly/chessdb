@@ -48,6 +48,10 @@
   @include bar-section;
 }
 
+table.game-list tbody tr {
+  @include button-like;
+}
+
 #popularity-card {
   min-height: 200px;
 }

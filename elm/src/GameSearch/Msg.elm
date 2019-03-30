@@ -22,3 +22,4 @@ type Msg
     = FormFieldChange FieldChange
     | FormSubmitted
     | GamesReceived (Result Http.Error (List GameProperties))
+    | GameLoadRequested Int

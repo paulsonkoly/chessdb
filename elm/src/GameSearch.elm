@@ -1,6 +1,7 @@
 module GameSearch exposing (main)
 
 import Browser
+import Browser.Navigation as Browser
 import Date exposing (Date)
 import Game exposing (..)
 import Game.Decoder exposing (gamesDecoder)
@@ -49,3 +50,8 @@ update msg model =
 
         GamesReceived games ->
             ( { model | games = Loaded games }, Cmd.none )
+
+        GameLoadRequested id ->
+            ( model
+            , Browser.load (Url.absolute [ "games", String.fromInt id ] [])
+            )

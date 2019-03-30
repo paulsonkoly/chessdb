@@ -7,6 +7,7 @@ import GameSearch.Msg exposing (FieldChange(..), Msg(..))
 import Html
     exposing
         ( Html
+        , a
         , button
         , div
         , form
@@ -27,13 +28,15 @@ import Html.Attributes
         , class
         , disabled
         , for
+        , href
         , id
         , name
         , type_
         , value
         )
-import Html.Events exposing (onInput, onSubmit)
+import Html.Events exposing (onClick, onInput, onSubmit)
 import Loadable
+import Url.Builder as Url
 
 
 viewEloFields : Error -> Html Msg
@@ -98,7 +101,7 @@ viewLoadedGames games =
             tbody [] <|
                 List.map
                     (\game ->
-                        tr []
+                        tr [ onClick (GameLoadRequested game.id) ]
                             [ td [] [ text game.white ]
                             , td [] [ text game.black ]
                             , td [] [ text (Game.outcomeToString game.result) ]
@@ -107,7 +110,7 @@ viewLoadedGames games =
                     )
                     games
     in
-    table [ class "hover" ] [ header, body ]
+    table [ class "hover", class "game-list" ] [ header, body ]
 
 
 view : Model -> Html Msg
