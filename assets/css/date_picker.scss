@@ -1,0 +1,157 @@
+@import "_settings";
+
+$datepicker-ns: elm-datepicker-- !default;
+$datepicker-hl: $chessdb-greyscale1;
+$datepicker-arrow: $chessdb-light-green;
+$datepicker-arrow-hover: $chessdb-green;
+$datepicker-picked-fg: $chessdb-light-green;
+$datepicker-picked-bg: $chessdb-background;
+$datepicker-border-color: $chessdb-greyscale1;
+$datepicker-row-border-color: $chessdb-greyscale1;
+
+.#{$datepicker-ns}container {
+    position: relative;
+}
+
+.#{$datepicker-ns}input:focus {
+    outline: 0;
+}
+
+.#{$datepicker-ns}picker {
+//  position: absolute;
+    border: 1px solid $datepicker-border-color;
+//  z-index: 10;
+    background-color: $chessdb-background;
+}
+
+.#{$datepicker-ns}picker-header,
+.#{$datepicker-ns}weekdays {
+    background: $datepicker-hl;
+}
+
+.#{$datepicker-ns}picker-header {
+    display: flex;
+    align-items: center;
+}
+
+.#{$datepicker-ns}prev-container,
+.#{$datepicker-ns}next-container {
+    flex: 0 1 auto;
+    cursor: pointer;
+}
+
+.#{$datepicker-ns}month-container {
+    flex: 1 1 auto;
+
+    padding: 0.5em;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.#{$datepicker-ns}month,
+.#{$datepicker-ns}year {
+    flex: 1 1 auto;
+
+    cursor: default;
+    text-align: center;
+}
+
+.#{$datepicker-ns}year {
+    font-size: 0.6em;
+    font-weight: 700;
+}
+
+.#{$datepicker-ns}prev,
+.#{$datepicker-ns}next {
+    border: 6px solid transparent;
+
+    background-color: inherit;
+    display: block;
+    width: 0;
+    height: 0;
+
+    padding: 0 0.2em;
+}
+
+.#{$datepicker-ns}prev {
+    border-right-color: $datepicker-arrow;
+
+    &:hover {
+        border-right-color: $datepicker-arrow-hover;
+    }
+}
+
+.#{$datepicker-ns}next {
+    border-left-color: $datepicker-arrow;
+
+    &:hover {
+        border-left-color: $datepicker-arrow-hover;
+    }
+}
+
+.#{$datepicker-ns}table {
+    border-spacing: 0;
+    border-collapse: collapse;
+
+    font-size: 0.8em;
+
+    td {
+        width: 2em;
+        height: 2em;
+
+        text-align: center;
+    }
+}
+
+.#{$datepicker-ns}row {
+    border-top: 1px solid $datepicker-row-border-color;
+}
+
+.#{$datepicker-ns}dow {
+    border-bottom: 1px solid $datepicker-border-color;
+
+    cursor: default;
+}
+
+.#{$datepicker-ns}day {
+    cursor: pointer;
+
+    &:hover {
+        background: $datepicker-hl;
+    }
+}
+
+.#{$datepicker-ns}disabled {
+    cursor: default;
+    color: #f00;
+
+    &:hover {
+        background: inherit;
+    }
+}
+
+.#{$datepicker-ns}picked {
+    color: $datepicker-picked-fg;
+    background: $datepicker-picked-bg;
+
+    &:hover {
+        background: $datepicker-picked-bg;
+    }
+}
+
+.#{$datepicker-ns}today {
+    font-weight: bold;
+}
+
+.#{$datepicker-ns}other-month {
+    color: $chessdb-greyscale2;
+
+    &.#{$datepicker-ns}disabled {
+        color: #f00;
+    }
+
+    &.#{$datepicker-ns}picked {
+        color: $datepicker-picked-fg;
+    }
+}

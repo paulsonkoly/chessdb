@@ -1,5 +1,6 @@
 module GameSearch.Msg exposing (FieldChange(..), Msg(..))
 
+import DatePicker
 import Game exposing (GameProperties)
 import Http
 
@@ -13,7 +14,6 @@ type FieldChange
     | MaxiumEloChanged String
     | EventChanged String
     | SiteChanged String
-    | DateChanged String
     | RoundChanged String
     | ResultChanged String
     | EcoChanged String
@@ -22,5 +22,6 @@ type FieldChange
 type Msg
     = FormFieldChange FieldChange
     | FormSubmitted
+    | SetDatePicker DatePicker.Msg
     | GamesReceived (Result Http.Error (List GameProperties))
     | GameLoadRequested Int

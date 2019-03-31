@@ -3,6 +3,8 @@ module GameSearch exposing (main)
 import Browser
 import Browser.Navigation as Browser
 import Date exposing (Date)
+import DatePicker exposing (DateEvent(..))
+import Debug
 import Game exposing (..)
 import Game.Decoder exposing (gamesDecoder)
 import GameSearch.Model as Model exposing (Model, init, validateModel)
@@ -17,16 +19,11 @@ import Url.Builder as Url
 
 main =
     Browser.element
-        { init = init
+        { init = Model.init
         , subscriptions = always Sub.none
         , update = update
         , view = view
         }
-
-
-init : () -> ( Model, Cmd Msg )
-init flags =
-    ( Model.init, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -34,6 +31,24 @@ update msg model =
     case msg of
         FormFieldChange f ->
             ( model |> Model.updateModel f |> Model.validateModel, Cmd.none )
+
+        SetDatePicker datePicked ->
+            let
+                ( newDatePicker, dateEvent ) =
+                    DatePicker.update
+                        Model.datePickerSettings
+                        datePicked
+                        model.datePicker
+
+                date =
+                    case dateEvent of
+                        Picked newDate ->
+                            Just newDate
+
+                        _ ->
+                            model.date
+            in
+            ( { model | date = date, datePicker = newDatePicker }, Cmd.none )
 
         FormSubmitted ->
             if Model.isModelValid model then

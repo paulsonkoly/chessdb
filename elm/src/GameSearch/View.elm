@@ -1,6 +1,7 @@
 module GameSearch.View exposing (view)
 
 import Date
+import DatePicker
 import Game exposing (GameProperties)
 import GameSearch.Model as Model exposing (Error, Model)
 import GameSearch.Msg exposing (FieldChange(..), Msg(..))
@@ -205,12 +206,11 @@ view model =
                     , div [ class "grid-x grid-padding-x" ]
                         [ div [ class "cell medium-6" ]
                             [ label [ for "date" ] [ text "Date" ]
-                            , input
-                                [ name "date"
-                                , type_ "text"
-                                , onInput (FormFieldChange << DateChanged)
-                                ]
-                                []
+                            , DatePicker.view
+                                model.date
+                                Model.datePickerSettings
+                                model.datePicker
+                                |> Html.map SetDatePicker
                             ]
                         , div [ class "cell medium-6" ]
                             [ label [ for "round" ] [ text "Round" ]

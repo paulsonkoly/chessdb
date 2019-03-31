@@ -1,6 +1,7 @@
 module GameSearch.Model exposing
     ( Error
     , Model
+    , datePickerSettings
     , hasEitherOrOpponent
     , hasWhiteOrBlack
     , init
@@ -11,6 +12,7 @@ module GameSearch.Model exposing
     )
 
 import Date exposing (Date)
+import DatePicker exposing (DatePicker)
 import Game exposing (GameProperties, Outcome(..))
 import GameSearch.Msg exposing (FieldChange(..), Msg(..))
 import Json.Encode as Encode exposing (Value)
@@ -32,6 +34,7 @@ type alias Model =
     , event : String
     , site : String
     , date : Maybe Date
+    , datePicker : DatePicker
     , round : String
     , result : String
     , ecoInvalid : Error
@@ -40,24 +43,40 @@ type alias Model =
     }
 
 
-init : Model
-init =
-    { white = ""
-    , black = ""
-    , eitherColour = ""
-    , opponent = ""
-    , elosDontMatch = Nothing
-    , minimumElo = Nothing
-    , maximumElo = Nothing
-    , event = ""
-    , site = ""
-    , date = Nothing
-    , round = ""
-    , result = ""
-    , ecoInvalid = Nothing
-    , eco = ""
-    , games = Loading
-    }
+datePickerSettings : DatePicker.Settings
+datePickerSettings =
+    let
+        default =
+            DatePicker.defaultSettings
+    in
+    { default | dateFormatter = Date.format "yyyy-MM-dd" }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    let
+        ( datePicker, datePickerCmd ) =
+            DatePicker.init
+    in
+    ( { white = ""
+      , black = ""
+      , eitherColour = ""
+      , opponent = ""
+      , elosDontMatch = Nothing
+      , minimumElo = Nothing
+      , maximumElo = Nothing
+      , event = ""
+      , site = ""
+      , date = Nothing
+      , datePicker = datePicker
+      , round = ""
+      , result = ""
+      , ecoInvalid = Nothing
+      , eco = ""
+      , games = Loading
+      }
+    , Cmd.map SetDatePicker datePickerCmd
+    )
 
 
 validateModel : Model -> Model
@@ -137,9 +156,6 @@ updateModel msg model =
         SiteChanged str ->
             { model | site = str }
 
-        DateChanged str ->
-            { model | date = Date.fromIsoString str |> Result.toMaybe }
-
         RoundChanged str ->
             { model | round = str }
 
@@ -162,7 +178,12 @@ jsonEncodedQuery model =
                     Just ( name, Encode.string str )
 
         numberQuery ( name, mint ) =
-            mint |> Maybe.andThen (\int -> Just ( name, Encode.int int ))
+            mint |> Maybe.map (\int -> ( name, Encode.int int ))
+
+        dateQuery ( name, mdate ) =
+            mdate
+                |> Maybe.map
+                    (\date -> ( name, Encode.string (Date.toIsoString date) ))
     in
     Encode.object
         (List.filterMap stringQuery
@@ -180,4 +201,5 @@ jsonEncodedQuery model =
                 [ ( "minimum_elo", model.minimumElo )
                 , ( "maximum_elo", model.maximumElo )
                 ]
+            ++ List.filterMap dateQuery [ ( "date", model.date ) ]
         )
