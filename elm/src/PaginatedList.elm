@@ -77,11 +77,6 @@ isLastPage paginated =
     currentPage paginated == numberOfPages paginated
 
 
-isPageValid : PaginatedList a -> Int -> Bool
-isPageValid paginated page =
-    1 <= page && page <= numberOfPages paginated
-
-
 {-| decodes Json encoded paginated list
 
 The encoding contains an offset, a count and a data field.
@@ -170,6 +165,15 @@ viewPaginatedNext paginated wrapper =
         )
 
 
+guard : Bool -> a -> Maybe a
+guard condition a =
+    if condition then
+        Just a
+
+    else
+        Nothing
+
+
 type Jump
     = Absolute Int
     | Relative Int
@@ -179,7 +183,7 @@ viewPaginatedEntry :
     PaginatedList a
     -> (Msg -> msg)
     -> Jump
-    -> Maybe (Html msg)
+    -> Html msg
 viewPaginatedEntry paginated wrapper jump =
     let
         destination =
@@ -196,27 +200,18 @@ viewPaginatedEntry paginated wrapper jump =
         click =
             wrapper (PaginationRequest (translateBack destination))
     in
-    if isPageValid paginated destination then
-        Just <|
-            li []
-                [ a
-                    [ attribute "aria-label" ("Page " ++ pageText)
-                    , onClick click
-                    ]
-                    [ text pageText ]
-                ]
-
-    else
-        Nothing
+    li []
+        [ a
+            [ attribute "aria-label" ("Page " ++ pageText)
+            , onClick click
+            ]
+            [ text pageText ]
+        ]
 
 
-viewEllipsis : PaginatedList a -> Maybe (Html msg)
-viewEllipsis paginated =
-    if numberOfPages paginated > 5 then
-        Just (li [ class "ellipsis", attribute "aria-hidden" "true" ] [])
-
-    else
-        Nothing
+viewEllipsis : Html msg
+viewEllipsis =
+    li [ class "ellipsis", attribute "aria-hidden" "true" ] []
 
 
 {-| html render for paginated data
@@ -247,21 +242,26 @@ viewPaginatedHtml paginated wrapper innerHtml =
                 [ ul [ class "pagination text-center" ]
                     (List.filterMap
                         identity
-                        [ Just <|
-                            viewPaginatedPrevious paginated wrapper
+                        [ Just (viewPaginatedPrevious paginated wrapper)
+                        , guard (current >= 3) <|
+                            viewPaginatedEntry paginated wrapper (Absolute 1)
+                        , guard (current > 3) viewEllipsis
+                        , guard (current > 1) <|
+                            viewPaginatedEntry paginated wrapper (Relative -1)
                         , Just <|
                             li [ class "current" ]
                                 [ span [ class "show-for-sr" ]
                                     [ text "You're on page" ]
                                 , text (String.fromInt current)
                                 ]
-                        , viewPaginatedEntry paginated wrapper (Relative 1)
-                        , viewPaginatedEntry paginated wrapper (Relative 2)
-                        , viewPaginatedEntry paginated wrapper (Relative 3)
-                        , viewEllipsis paginated
-                        , viewPaginatedEntry paginated wrapper (Absolute (last - 1))
-                        , viewPaginatedEntry paginated wrapper (Absolute last)
-                        , Just <| viewPaginatedNext paginated wrapper
+                        , guard (current < last) <|
+                            viewPaginatedEntry paginated wrapper (Relative 1)
+                        , guard (current < last - 1) <|
+                            viewPaginatedEntry paginated wrapper (Relative 2)
+                        , guard (current < last - 3) viewEllipsis
+                        , guard (current < last - 3) <|
+                            viewPaginatedEntry paginated wrapper (Absolute last)
+                        , Just (viewPaginatedNext paginated wrapper)
                         ]
                     )
                 ]
