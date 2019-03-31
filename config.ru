@@ -27,7 +27,9 @@ class App < Roda
       end
 
       r.get(/(\d+).json/) do |id|
-        { moves: app.repository.moves_in_game(game_id: id).all }
+        app.repository
+          .game(id: id)
+          .merge(moves: app.repository.moves_in_game(game_id: id).all)
       end
 
       r.get 'search' do

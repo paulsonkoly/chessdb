@@ -12,10 +12,9 @@ import Json.Decode.Pipeline as Pipeline
 
 gameDecoder : Decoder Game
 gameDecoder =
-    Decode.succeed Game
-        |> Pipeline.hardcoded ()
-        -- TODO
-        |> Pipeline.required "moves" (Decode.array <| moveDecoder)
+    Decode.map2 Game
+        gamePropertiesDecoder
+        (Decode.field "moves" (Decode.array <| moveDecoder))
 
 
 gamesDecoder : Decoder (List GameProperties)

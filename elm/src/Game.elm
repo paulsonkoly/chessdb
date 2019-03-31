@@ -76,7 +76,7 @@ type alias Move =
 
 
 type alias Game =
-    { todoGameProperties : ()
+    { properties : GameProperties
     , moves : Array Move
     }
 

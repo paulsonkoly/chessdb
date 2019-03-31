@@ -9,6 +9,10 @@ class Repository
     @db.loggers = [Logger.new($stdout)]
   end
 
+  def game(id:)
+    @db[:games].where(id: id).first
+  end
+
   def moves_in_game(game_id:)
     @db[:moves]
       .select(*game_columns)

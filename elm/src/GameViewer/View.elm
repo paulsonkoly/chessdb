@@ -30,7 +30,7 @@ viewLoaded model game =
             game.moves
     in
     div [ class "grid-x", class "grid-margin-x" ]
-        [ div [ class "cell", class "small-6" ]
+        [ div [ class "cell", class "medium-6" ]
             [ div [ class "grid-y", class "grid-margin-y" ]
                 [ div [ class "cell" ]
                     [ div [ id "board-container", style "position" "relative" ]
@@ -45,8 +45,12 @@ viewLoaded model game =
                 , div [ class "cell" ] [ viewPopularities model.popularities ]
                 ]
             ]
-        , div [ class "cell", class "small-4" ]
-            [ viewMoveList (Array.toList moves) model.move ]
+        , div [ class "cell", class "medium-4" ]
+            [ viewMoveList
+                (Array.toList moves)
+                model.move
+                game.properties.result
+            ]
         ]
 
 
@@ -54,8 +58,8 @@ viewLoaded model game =
 --------------------------------------------------------------------------------
 
 
-viewMoveList : List Move -> Int -> Html Msg
-viewMoveList moves currentMove =
+viewMoveList : List Move -> Int -> Outcome -> Html Msg
+viewMoveList moves currentMove outcome =
     div [ class "card" ]
         [ div [ class "grid-y", style "height" "600px" ]
             [ div
@@ -63,7 +67,17 @@ viewMoveList moves currentMove =
                 , class "medium-cell-block-y"
                 , id "movelist-scroll"
                 ]
-                (List.indexedMap (viewMovePair currentMove) (pairwise moves))
+                (List.indexedMap (viewMovePair currentMove) (pairwise moves)
+                    ++ [ div [ class "grid-x" ]
+                            [ div
+                                [ class "cell"
+                                , class "auto"
+                                , class "medium-offset-1"
+                                ]
+                                [ text (outcomeToString outcome) ]
+                            ]
+                       ]
+                )
             ]
         ]
 
@@ -204,10 +218,10 @@ viewNormalPopularities { items } =
 viewPopularityItem : PopularityItem -> Html msg
 viewPopularityItem item =
     div [ class "grid-x" ]
-        [ div [ class "cell", class "small-2" ] [ text item.nextSan ]
-        , div [ class "cell", class "small-3" ]
+        [ div [ class "cell", class "medium-2" ] [ text item.nextSan ]
+        , div [ class "cell", class "medium-3" ]
             [ text <| String.fromInt <| item.totalCount ]
-        , div [ class "cell", class "large-7" ]
+        , div [ class "cell", class "medium-7" ]
             [ div [ class "popularity-bar" ] (viewPopularityItemBar item) ]
         ]
 
