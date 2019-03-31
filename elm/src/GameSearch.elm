@@ -6,7 +6,7 @@ import Date exposing (Date)
 import DatePicker exposing (DateEvent(..))
 import Debug
 import Game exposing (..)
-import Game.Decoder exposing (gamesDecoder)
+import Game.Decoder exposing (gamePropertiesDecoder)
 import GameSearch.Model as Model exposing (Model, init, validateModel)
 import GameSearch.Msg exposing (Msg(..))
 import GameSearch.View exposing (view)
@@ -14,6 +14,7 @@ import Html exposing (Html)
 import Http
 import Json.Encode as Encode
 import Loadable exposing (..)
+import PaginatedList exposing (paginatedListDecoder)
 import Url.Builder as Url
 
 
@@ -51,6 +52,10 @@ update msg model =
             ( { model | date = date, datePicker = newDatePicker }, Cmd.none )
 
         FormSubmitted ->
+            let
+                gamesDecoder =
+                    paginatedListDecoder gamePropertiesDecoder
+            in
             if Model.isModelValid model then
                 ( model
                 , Http.post
@@ -62,6 +67,13 @@ update msg model =
 
             else
                 ( model, Cmd.none )
+
+        PaginationRequested (PaginatedList.PaginationRequest offset) ->
+            let
+                newGames =
+                    Loadable.map (PaginatedList.setOffset offset) model.games
+            in
+            update FormSubmitted { model | games = newGames }
 
         GamesReceived games ->
             ( { model | games = Loaded games }, Cmd.none )

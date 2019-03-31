@@ -36,7 +36,11 @@ class App < Roda
       end
 
       r.post 'search' do
-        app.repository.game_search(r.params)
+        {
+          count: app.repository.game_count(r.params),
+          offset: r.params.fetch(:offset, 0),
+          data: app.repository.game_search(r.params)
+        }
       end
     end
 

@@ -1,6 +1,6 @@
 module Game.Decoder exposing
     ( gameDecoder
-    , gamesDecoder
+    , gamePropertiesDecoder
     , popularitiesDecoder
     )
 

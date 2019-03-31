@@ -38,6 +38,7 @@ import Html.Attributes
         )
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Loadable
+import PaginatedList exposing (PaginatedList, viewPaginatedHtml)
 import Url.Builder as Url
 
 
@@ -101,8 +102,8 @@ viewResultSelect =
         ]
 
 
-viewLoadedGames : List GameProperties -> Html Msg
-viewLoadedGames games =
+viewGameProperties : List GameProperties -> Html Msg
+viewGameProperties games =
     let
         header =
             thead []
@@ -129,6 +130,11 @@ viewLoadedGames games =
                     games
     in
     table [ class "hover", class "game-list" ] [ header, body ]
+
+
+viewLoadedGames : PaginatedList GameProperties -> Html Msg
+viewLoadedGames paginated =
+    viewPaginatedHtml paginated PaginationRequested viewGameProperties
 
 
 view : Model -> Html Msg

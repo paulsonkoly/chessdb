@@ -17,6 +17,7 @@ import Game exposing (GameProperties, Outcome(..))
 import GameSearch.Msg exposing (FieldChange(..), Msg(..))
 import Json.Encode as Encode exposing (Value)
 import Loadable exposing (Loadable(..))
+import PaginatedList exposing (PaginatedList(..))
 
 
 type alias Error =
@@ -39,7 +40,7 @@ type alias Model =
     , result : String
     , ecoInvalid : Error
     , eco : String
-    , games : Loadable (List GameProperties)
+    , games : Loadable (PaginatedList GameProperties)
     }
 
 
@@ -184,6 +185,22 @@ jsonEncodedQuery model =
             mdate
                 |> Maybe.map
                     (\date -> ( name, Encode.string (Date.toIsoString date) ))
+
+        offsetQuery ( name, ldbl ) =
+            case ldbl of
+                Loaded (Ok data) ->
+                    let
+                        offset =
+                            PaginatedList.getOffset data
+                    in
+                    if offset > 0 then
+                        Just ( name, Encode.int offset )
+
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing
     in
     Encode.object
         (List.filterMap stringQuery
@@ -202,4 +219,5 @@ jsonEncodedQuery model =
                 , ( "maximum_elo", model.maximumElo )
                 ]
             ++ List.filterMap dateQuery [ ( "date", model.date ) ]
+            ++ List.filterMap offsetQuery [ ( "offset", model.games ) ]
         )

@@ -22,9 +22,16 @@ class Repository
   end
 
   def game_search(filter_hash)
+    (game_search_filter << game_search_offset)
+      .run(@db[:games], filter_hash)
+      .order_by(:id).limit(20).all
+  end
+
+  def game_count(filter_hash)
     game_search_filter
       .run(@db[:games], filter_hash)
-      .order_by(:id).limit(100).all
+      .select(Sequel.function(:count).*)
+      .first[:count]
   end
 
   # Composable filter objects.
@@ -84,6 +91,12 @@ class Repository
       else table
       end
     end
+  end
+
+  def game_search_offset
+    @game_search_offset ||= Filter.new(:offset) do |table, actual|
+      table.offset(actual)
+    end.freeze
   end
 
   def game_columns
