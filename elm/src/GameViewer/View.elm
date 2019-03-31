@@ -1,4 +1,4 @@
-module View exposing
+module GameViewer.View exposing
     ( MoveNumbers
     , view
     , viewButtons
@@ -10,12 +10,12 @@ import Array
 import FontAwesome.Icon as I
 import FontAwesome.Solid as S
 import Game exposing (..)
+import GameViewer.Model exposing (..)
+import GameViewer.Msg exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Loadable exposing (..)
-import Model exposing (..)
-import Msg exposing (..)
 
 
 view : Model -> Html Msg

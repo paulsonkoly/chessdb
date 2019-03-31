@@ -1,4 +1,4 @@
-module Model exposing
+module GameViewer.Model exposing
     ( Model
     , init
     )

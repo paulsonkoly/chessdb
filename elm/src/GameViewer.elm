@@ -6,16 +6,16 @@ import Browser.Dom as Dom
 import Browser.Events as Events
 import Game exposing (..)
 import Game.Decoder exposing (..)
+import GameViewer.Model exposing (..)
+import GameViewer.Msg exposing (Msg(..), Scrolling(..))
+import GameViewer.View exposing (..)
 import Http
 import Json.Decode as Decode
 import Loadable exposing (..)
-import Model exposing (..)
-import Msg exposing (Msg(..), Scrolling(..))
 import Platform.Cmd
 import Platform.Sub
 import Task
 import Url.Builder as Url
-import View exposing (..)
 
 
 port signalDomRendered : () -> Cmd msg

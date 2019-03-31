@@ -1,4 +1,4 @@
-module Msg exposing (Msg(..), Scrolling(..))
+module GameViewer.Msg exposing (Msg(..), Scrolling(..))
 
 import Game exposing (..)
 import Http
