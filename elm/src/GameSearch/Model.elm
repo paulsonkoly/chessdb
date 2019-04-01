@@ -38,8 +38,11 @@ type alias FormFields =
     , maximumElo : Maybe Int
     , event : String
     , site : String
-    , date : Maybe Date
-    , datePicker : DatePicker
+    , fromDate : Maybe Date
+    , fromDatePicker : DatePicker
+    , toDate : Maybe Date
+    , toDatePicker : DatePicker
+    , datesDontMatch : Error
     , round : String
     , result : String
     , ecoInvalid : Error
@@ -80,8 +83,11 @@ init _ =
                 , maximumElo = Nothing
                 , event = ""
                 , site = ""
-                , date = Nothing
-                , datePicker = datePicker
+                , fromDate = Nothing
+                , fromDatePicker = datePicker
+                , toDate = Nothing
+                , toDatePicker = datePicker
+                , datesDontMatch = Nothing
                 , round = ""
                 , result = ""
                 , ecoInvalid = Nothing
@@ -93,7 +99,8 @@ init _ =
     in
     ( model
     , Cmd.batch
-        [ Cmd.map SetDatePicker datePickerCmd
+        [ Cmd.map FromDatePicked datePickerCmd
+        , Cmd.map ToDatePicked datePickerCmd
         , sendQuery model.formFields model.pagination
         ]
     )
@@ -136,13 +143,30 @@ validateFields fields =
 
                 _ ->
                     Just "Invalid ECO code."
+
+        datesDontMatch =
+            case Maybe.map2 Date.compare fields.fromDate fields.toDate of
+                Just GT ->
+                    Just "From date can't be after To date"
+
+                _ ->
+                    Nothing
     in
-    { fields | elosDontMatch = elosDontMatch, ecoInvalid = ecoInvalid }
+    { fields
+        | elosDontMatch = elosDontMatch
+        , ecoInvalid = ecoInvalid
+        , datesDontMatch = datesDontMatch
+    }
 
 
 areFieldsValid : FormFields -> Bool
 areFieldsValid fields =
-    fields.elosDontMatch == Nothing && fields.ecoInvalid == Nothing
+    fields.elosDontMatch
+        == Nothing
+        && fields.ecoInvalid
+        == Nothing
+        && fields.datesDontMatch
+        == Nothing
 
 
 hasWhiteOrBlack : FormFields -> Bool
@@ -227,6 +251,9 @@ jsonEncodedFields fields pagination =
                 [ ( "minimum_elo", fields.minimumElo )
                 , ( "maximum_elo", fields.maximumElo )
                 ]
-            ++ List.filterMap dateQuery [ ( "date", fields.date ) ]
+            ++ List.filterMap dateQuery
+                [ ( "from_date", fields.fromDate )
+                , ( "to_date", fields.toDate )
+                ]
             ++ Pagination.encode pagination
         )

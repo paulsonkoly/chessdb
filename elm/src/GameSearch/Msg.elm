@@ -44,7 +44,8 @@ jsonResponseDecoder =
 type Msg
     = FormFieldChange FieldChange
     | FormSubmitted
-    | SetDatePicker DatePicker.Msg
+    | FromDatePicked DatePicker.Msg
+    | ToDatePicked DatePicker.Msg
     | PaginationRequested Pagination.Msg
     | GamesReceived (Result Http.Error ServerResponse)
     | GameLoadRequested Int

@@ -41,7 +41,7 @@ update msg model =
             in
             ( newModel, Cmd.none )
 
-        SetDatePicker datePicked ->
+        FromDatePicked datePicked ->
             let
                 fields =
                     model.formFields
@@ -50,7 +50,7 @@ update msg model =
                     DatePicker.update
                         Model.datePickerSettings
                         datePicked
-                        fields.datePicker
+                        fields.fromDatePicker
 
                 date =
                     case dateEvent of
@@ -58,15 +58,46 @@ update msg model =
                             Just newDate
 
                         _ ->
-                            fields.date
+                            fields.fromDate
 
                 newFields =
                     { fields
-                        | date = date
-                        , datePicker = newDatePicker
+                        | fromDate = date
+                        , fromDatePicker = newDatePicker
                     }
+                        |> Model.validateFields
             in
             ( { model | formFields = newFields }, Cmd.none )
+
+        ToDatePicked datePicked ->
+            let
+                fields =
+                    model.formFields
+
+                ( newDatePicker, dateEvent ) =
+                    DatePicker.update
+                        Model.datePickerSettings
+                        datePicked
+                        fields.toDatePicker
+
+                date =
+                    case dateEvent of
+                        Picked newDate ->
+                            Just newDate
+
+                        _ ->
+                            fields.toDate
+
+                newFields =
+                    { fields
+                        | toDate = date
+                        , toDatePicker = newDatePicker
+                    }
+                        |> Model.validateFields
+            in
+            ( { model | formFields = newFields }
+            , Cmd.none
+            )
 
         FormSubmitted ->
             let

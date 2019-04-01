@@ -78,7 +78,12 @@ class Repository
        end                                                                 <<
        Filter.new(:event) { |table, actual| table.where(event: actual) }   <<
        Filter.new(:site) { |table, actual| table.where(site: actual) }     <<
-       Filter.new(:date) { |table, actual| table.where(date: actual) }     <<
+       Filter.new(:from_date) do |table, actual|
+         table.where { date >= actual }
+       end                                                                 <<
+       Filter.new(:to_date) do |table, actual|
+         table.where { date <= actual }
+       end                                                                 <<
        Filter.new(:round) { |table, actual| table.where(round: actual) }   <<
        result_filter                                                       <<
        Filter.new(:eco) { |table, actual| table.where(eco: actual) }

@@ -91,6 +91,40 @@ viewEloFields err =
         ]
 
 
+viewDateFields : Model.FormFields -> Html Msg
+viewDateFields fields =
+    let
+        settings =
+            Model.datePickerSettings
+
+        newSettings =
+            { settings
+                | inputAttributes =
+                    settings.inputAttributes
+                        ++ errorAttribute fields.datesDontMatch
+            }
+    in
+    div [ class "grid-x grid-padding-x" ]
+        [ div [ class "cell medium-6" ]
+            [ label [ for "date" ] [ text "From date" ]
+            , DatePicker.view
+                fields.fromDate
+                newSettings
+                fields.fromDatePicker
+                |> Html.map FromDatePicked
+            ]
+        , div [ class "cell medium-6" ]
+            [ label [ for "date" ] [ text "To date" ]
+            , DatePicker.view
+                fields.toDate
+                newSettings
+                fields.toDatePicker
+                |> Html.map ToDatePicked
+            ]
+        , div [ class "cell medium-12" ] [ viewError fields.datesDontMatch ]
+        ]
+
+
 viewResultSelect : Html Msg
 viewResultSelect =
     select [ onInput (FormFieldChange << ResultChanged) ]
@@ -181,6 +215,7 @@ viewForm fields =
                 ]
             ]
         , viewEloFields fields.elosDontMatch
+        , viewDateFields fields
         , div [ class "grid-x grid-padding-x" ]
             [ div [ class "cell medium-6" ]
                 [ label [ for "event" ] [ text "Event" ]
@@ -203,14 +238,6 @@ viewForm fields =
             ]
         , div [ class "grid-x grid-padding-x" ]
             [ div [ class "cell medium-6" ]
-                [ label [ for "date" ] [ text "Date" ]
-                , DatePicker.view
-                    fields.date
-                    Model.datePickerSettings
-                    fields.datePicker
-                    |> Html.map SetDatePicker
-                ]
-            , div [ class "cell medium-6" ]
                 [ label [ for "round" ] [ text "Round" ]
                 , input
                     [ name "round"
