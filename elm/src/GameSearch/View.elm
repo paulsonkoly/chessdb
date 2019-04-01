@@ -3,8 +3,8 @@ module GameSearch.View exposing (view)
 import Date
 import DatePicker
 import Game exposing (GameProperties)
-import GameSearch.Model as Model exposing (Error, Model)
-import GameSearch.Msg exposing (FieldChange(..), Msg(..))
+import GameSearch.Model as Model exposing (Model)
+import GameSearch.Msg as Msg exposing (FieldChange(..), Msg(..))
 import Html
     exposing
         ( Attribute
@@ -42,7 +42,7 @@ import Pagination exposing (Pagination, viewPaginationHtml)
 import Url.Builder as Url
 
 
-errorAttribute : Error -> List (Attribute msg)
+errorAttribute : Model.Error -> List (Attribute msg)
 errorAttribute err =
     case err of
         Just _ ->
@@ -52,7 +52,7 @@ errorAttribute err =
             []
 
 
-viewError : Error -> Html Msg
+viewError : Model.Error -> Html Msg
 viewError err =
     case err of
         Just oops ->
@@ -62,7 +62,7 @@ viewError err =
             span [ class "form-error" ] []
 
 
-viewEloFields : Error -> Html Msg
+viewEloFields : Model.Error -> Html Msg
 viewEloFields err =
     div [ class "grid-x grid-padding-x" ]
         [ div [ class "cell medium-6" ]
@@ -132,123 +132,125 @@ viewGameProperties games =
     table [ class "hover", class "game-list" ] [ header, body ]
 
 
+viewForm : Model.FormFields -> Html Msg
+viewForm fields =
+    form [ onSubmit FormSubmitted ]
+        [ div [ class "grid-x grid-padding-x" ]
+            [ div [ class "cell medium-6" ]
+                [ label [ for "white" ] [ text "White" ]
+                , input
+                    [ name "white"
+                    , type_ "text"
+                    , disabled (Model.hasEitherOrOpponent fields)
+                    , onInput (FormFieldChange << WhiteChanged)
+                    ]
+                    []
+                ]
+            , div [ class "cell medium-6" ]
+                [ label [ for "black" ] [ text "Black" ]
+                , input
+                    [ name "black"
+                    , type_ "text"
+                    , disabled (Model.hasEitherOrOpponent fields)
+                    , onInput (FormFieldChange << BlackChanged)
+                    ]
+                    []
+                ]
+            ]
+        , div [ class "grid-x grid-padding-x" ]
+            [ div [ class "cell medium-6" ]
+                [ label [ for "either_colour" ]
+                    [ text "Either colour" ]
+                , input
+                    [ name "either_colour"
+                    , type_ "text"
+                    , disabled (Model.hasWhiteOrBlack fields)
+                    , onInput (FormFieldChange << EitherColourChanged)
+                    ]
+                    []
+                ]
+            , div [ class "cell medium-6" ]
+                [ label [ for "opponent" ] [ text "Opponent" ]
+                , input
+                    [ name "opponent"
+                    , type_ "text"
+                    , disabled (Model.hasWhiteOrBlack fields)
+                    , onInput (FormFieldChange << OpponentChanged)
+                    ]
+                    []
+                ]
+            ]
+        , viewEloFields fields.elosDontMatch
+        , div [ class "grid-x grid-padding-x" ]
+            [ div [ class "cell medium-6" ]
+                [ label [ for "event" ] [ text "Event" ]
+                , input
+                    [ name "event"
+                    , type_ "text"
+                    , onInput (FormFieldChange << EventChanged)
+                    ]
+                    []
+                ]
+            , div [ class "cell medium-6" ]
+                [ label [ for "site" ] [ text "Site" ]
+                , input
+                    [ name "site"
+                    , type_ "text"
+                    , onInput (FormFieldChange << SiteChanged)
+                    ]
+                    []
+                ]
+            ]
+        , div [ class "grid-x grid-padding-x" ]
+            [ div [ class "cell medium-6" ]
+                [ label [ for "date" ] [ text "Date" ]
+                , DatePicker.view
+                    fields.date
+                    Model.datePickerSettings
+                    fields.datePicker
+                    |> Html.map SetDatePicker
+                ]
+            , div [ class "cell medium-6" ]
+                [ label [ for "round" ] [ text "Round" ]
+                , input
+                    [ name "round"
+                    , type_ "text"
+                    , onInput (FormFieldChange << RoundChanged)
+                    ]
+                    []
+                ]
+            ]
+        , div [ class "grid-x grid-padding-x" ]
+            [ div [ class "cell medium-6" ]
+                [ label [ for "result" ] [ text "Result" ]
+                , viewResultSelect
+                ]
+            , div [ class "cell medium-6" ]
+                [ label [ for "eco" ] [ text "ECO" ]
+                , input
+                    ([ name "eco"
+                     , type_ "text"
+                     , onInput (FormFieldChange << EcoChanged)
+                     ]
+                        ++ errorAttribute fields.ecoInvalid
+                    )
+                    []
+                , viewError fields.ecoInvalid
+                ]
+            ]
+        , button
+            [ class "button"
+            , disabled (not (Model.areFieldsValid fields))
+            ]
+            [ text "Query" ]
+        ]
+
+
 view : Model -> Html Msg
 view model =
     div [ class "grid-x grid-margin-x" ]
         [ div [ class "medium-6 cell" ]
-            [ div [ class "callout" ]
-                [ form [ onSubmit FormSubmitted ]
-                    [ div [ class "grid-x grid-padding-x" ]
-                        [ div [ class "cell medium-6" ]
-                            [ label [ for "white" ] [ text "White" ]
-                            , input
-                                [ name "white"
-                                , type_ "text"
-                                , disabled (Model.hasEitherOrOpponent model)
-                                , onInput (FormFieldChange << WhiteChanged)
-                                ]
-                                []
-                            ]
-                        , div [ class "cell medium-6" ]
-                            [ label [ for "black" ] [ text "Black" ]
-                            , input
-                                [ name "black"
-                                , type_ "text"
-                                , disabled (Model.hasEitherOrOpponent model)
-                                , onInput (FormFieldChange << BlackChanged)
-                                ]
-                                []
-                            ]
-                        ]
-                    , div [ class "grid-x grid-padding-x" ]
-                        [ div [ class "cell medium-6" ]
-                            [ label [ for "either_colour" ]
-                                [ text "Either colour" ]
-                            , input
-                                [ name "either_colour"
-                                , type_ "text"
-                                , disabled (Model.hasWhiteOrBlack model)
-                                , onInput (FormFieldChange << EitherColourChanged)
-                                ]
-                                []
-                            ]
-                        , div [ class "cell medium-6" ]
-                            [ label [ for "opponent" ] [ text "Opponent" ]
-                            , input
-                                [ name "opponent"
-                                , type_ "text"
-                                , disabled (Model.hasWhiteOrBlack model)
-                                , onInput (FormFieldChange << OpponentChanged)
-                                ]
-                                []
-                            ]
-                        ]
-                    , viewEloFields model.elosDontMatch
-                    , div [ class "grid-x grid-padding-x" ]
-                        [ div [ class "cell medium-6" ]
-                            [ label [ for "event" ] [ text "Event" ]
-                            , input
-                                [ name "event"
-                                , type_ "text"
-                                , onInput (FormFieldChange << EventChanged)
-                                ]
-                                []
-                            ]
-                        , div [ class "cell medium-6" ]
-                            [ label [ for "site" ] [ text "Site" ]
-                            , input
-                                [ name "site"
-                                , type_ "text"
-                                , onInput (FormFieldChange << SiteChanged)
-                                ]
-                                []
-                            ]
-                        ]
-                    , div [ class "grid-x grid-padding-x" ]
-                        [ div [ class "cell medium-6" ]
-                            [ label [ for "date" ] [ text "Date" ]
-                            , DatePicker.view
-                                model.date
-                                Model.datePickerSettings
-                                model.datePicker
-                                |> Html.map SetDatePicker
-                            ]
-                        , div [ class "cell medium-6" ]
-                            [ label [ for "round" ] [ text "Round" ]
-                            , input
-                                [ name "round"
-                                , type_ "text"
-                                , onInput (FormFieldChange << RoundChanged)
-                                ]
-                                []
-                            ]
-                        ]
-                    , div [ class "grid-x grid-padding-x" ]
-                        [ div [ class "cell medium-6" ]
-                            [ label [ for "result" ] [ text "Result" ]
-                            , viewResultSelect
-                            ]
-                        , div [ class "cell medium-6" ]
-                            [ label [ for "eco" ] [ text "ECO" ]
-                            , input
-                                ([ name "eco"
-                                 , type_ "text"
-                                 , onInput (FormFieldChange << EcoChanged)
-                                 ]
-                                    ++ errorAttribute model.ecoInvalid
-                                )
-                                []
-                            , viewError model.ecoInvalid
-                            ]
-                        ]
-                    , button
-                        [ class "button"
-                        , disabled (not (Model.isModelValid model))
-                        ]
-                        [ text "Query" ]
-                    ]
-                ]
-            ]
+            [ div [ class "callout" ] [ viewForm model.formFields ] ]
         , div [ class "medium-6 cell" ]
             [ Loadable.viewLoadable model.games viewGameProperties
             , Html.map PaginationRequested (viewPaginationHtml model.pagination)

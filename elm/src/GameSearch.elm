@@ -7,7 +7,7 @@ import DatePicker exposing (DateEvent(..))
 import Debug
 import Game exposing (..)
 import Game.Decoder exposing (gamePropertiesDecoder)
-import GameSearch.Model as Model exposing (Model, init, validateModel)
+import GameSearch.Model as Model exposing (Model)
 import GameSearch.Msg as Msg exposing (Msg(..))
 import GameSearch.View exposing (view)
 import Html exposing (Html)
@@ -30,15 +30,27 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         FormFieldChange f ->
-            ( model |> Model.updateModel f |> Model.validateModel, Cmd.none )
+            let
+                newModel =
+                    { model
+                        | formFields =
+                            model.formFields
+                                |> Model.updateFields f
+                                |> Model.validateFields
+                    }
+            in
+            ( newModel, Cmd.none )
 
         SetDatePicker datePicked ->
             let
+                fields =
+                    model.formFields
+
                 ( newDatePicker, dateEvent ) =
                     DatePicker.update
                         Model.datePickerSettings
                         datePicked
-                        model.datePicker
+                        fields.datePicker
 
                 date =
                     case dateEvent of
@@ -46,17 +58,28 @@ update msg model =
                             Just newDate
 
                         _ ->
-                            model.date
+                            fields.date
+
+                newFields =
+                    { fields
+                        | date = date
+                        , datePicker = newDatePicker
+                    }
             in
-            ( { model | date = date, datePicker = newDatePicker }, Cmd.none )
+            ( { model | formFields = newFields }, Cmd.none )
 
         FormSubmitted ->
             let
+                newPagination =
+                    Pagination.init
+
                 newModel =
-                    { model | pagination = Pagination.init }
+                    { model | pagination = newPagination }
             in
-            if Model.isModelValid model then
-                ( newModel, Model.sendQuery newModel )
+            if Model.areFieldsValid model.formFields then
+                ( newModel
+                , Model.sendQuery model.formFields newPagination
+                )
 
             else
                 ( model, Cmd.none )
@@ -69,7 +92,7 @@ update msg model =
                 newModel =
                     { model | pagination = newPagination }
             in
-            ( newModel, Model.sendQuery newModel )
+            ( newModel, Model.sendQuery model.formFields newPagination )
 
         GamesReceived (Ok (Msg.ServerResponse { games, offset, count })) ->
             ( { model

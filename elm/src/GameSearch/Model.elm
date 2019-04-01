@@ -1,15 +1,16 @@
 module GameSearch.Model exposing
     ( Error
+    , FormFields
     , Model
+    , areFieldsValid
     , datePickerSettings
     , hasEitherOrOpponent
     , hasWhiteOrBlack
     , init
-    , isModelValid
-    , jsonEncodedQuery
+    , jsonEncodedFields
     , sendQuery
-    , updateModel
-    , validateModel
+    , updateFields
+    , validateFields
     )
 
 import Date exposing (Date)
@@ -27,7 +28,7 @@ type alias Error =
     Maybe String
 
 
-type alias Model =
+type alias FormFields =
     { white : String
     , black : String
     , eitherColour : String
@@ -43,6 +44,11 @@ type alias Model =
     , result : String
     , ecoInvalid : Error
     , eco : String
+    }
+
+
+type alias Model =
+    { formFields : FormFields
     , pagination : Pagination
     , games : Loadable (List GameProperties)
     }
@@ -64,21 +70,23 @@ init _ =
             DatePicker.init
 
         model =
-            { white = ""
-            , black = ""
-            , eitherColour = ""
-            , opponent = ""
-            , elosDontMatch = Nothing
-            , minimumElo = Nothing
-            , maximumElo = Nothing
-            , event = ""
-            , site = ""
-            , date = Nothing
-            , datePicker = datePicker
-            , round = ""
-            , result = ""
-            , ecoInvalid = Nothing
-            , eco = ""
+            { formFields =
+                { white = ""
+                , black = ""
+                , eitherColour = ""
+                , opponent = ""
+                , elosDontMatch = Nothing
+                , minimumElo = Nothing
+                , maximumElo = Nothing
+                , event = ""
+                , site = ""
+                , date = Nothing
+                , datePicker = datePicker
+                , round = ""
+                , result = ""
+                , ecoInvalid = Nothing
+                , eco = ""
+                }
             , pagination = Pagination.init
             , games = Loading
             }
@@ -86,25 +94,25 @@ init _ =
     ( model
     , Cmd.batch
         [ Cmd.map SetDatePicker datePickerCmd
-        , sendQuery model
+        , sendQuery model.formFields model.pagination
         ]
     )
 
 
-sendQuery : Model -> Cmd Msg
-sendQuery model =
+sendQuery : FormFields -> Pagination -> Cmd Msg
+sendQuery fields pagination =
     Http.post
         { url = Url.absolute [ "games", "search" ] []
-        , body = Http.jsonBody (jsonEncodedQuery model)
+        , body = Http.jsonBody (jsonEncodedFields fields pagination)
         , expect = Http.expectJson GamesReceived Msg.jsonResponseDecoder
         }
 
 
-validateModel : Model -> Model
-validateModel model =
+validateFields : FormFields -> FormFields
+validateFields fields =
     let
         compareElos =
-            Maybe.map2 (<=) model.minimumElo model.maximumElo
+            Maybe.map2 (<=) fields.minimumElo fields.maximumElo
 
         elosDontMatch =
             case compareElos of
@@ -115,7 +123,7 @@ validateModel model =
                     Nothing
 
         ecoInvalid =
-            case String.toList model.eco of
+            case String.toList fields.eco of
                 [ a, b, c ] ->
                     if 'A' <= a && a <= 'E' && '0' <= b && b <= '9' && '0' <= c && c <= '9' then
                         Nothing
@@ -129,66 +137,63 @@ validateModel model =
                 _ ->
                     Just "Invalid ECO code."
     in
-    { model
-        | elosDontMatch = elosDontMatch
-        , ecoInvalid = ecoInvalid
-    }
+    { fields | elosDontMatch = elosDontMatch, ecoInvalid = ecoInvalid }
 
 
-isModelValid : Model -> Bool
-isModelValid model =
-    model.elosDontMatch == Nothing && model.ecoInvalid == Nothing
+areFieldsValid : FormFields -> Bool
+areFieldsValid fields =
+    fields.elosDontMatch == Nothing && fields.ecoInvalid == Nothing
 
 
-hasWhiteOrBlack : Model -> Bool
-hasWhiteOrBlack model =
-    model.white /= "" || model.black /= ""
+hasWhiteOrBlack : FormFields -> Bool
+hasWhiteOrBlack fields =
+    fields.white /= "" || fields.black /= ""
 
 
-hasEitherOrOpponent : Model -> Bool
-hasEitherOrOpponent model =
-    model.eitherColour /= "" || model.opponent /= ""
+hasEitherOrOpponent : FormFields -> Bool
+hasEitherOrOpponent fields =
+    fields.eitherColour /= "" || fields.opponent /= ""
 
 
-updateModel : FieldChange -> Model -> Model
-updateModel msg model =
+updateFields : FieldChange -> FormFields -> FormFields
+updateFields msg fields =
     case msg of
         WhiteChanged str ->
-            { model | white = str }
+            { fields | white = str }
 
         BlackChanged str ->
-            { model | black = str }
+            { fields | black = str }
 
         EitherColourChanged str ->
-            { model | eitherColour = str }
+            { fields | eitherColour = str }
 
         OpponentChanged str ->
-            { model | opponent = str }
+            { fields | opponent = str }
 
         MinimumEloChanged str ->
-            { model | minimumElo = String.toInt str }
+            { fields | minimumElo = String.toInt str }
 
         MaxiumEloChanged str ->
-            { model | maximumElo = String.toInt str }
+            { fields | maximumElo = String.toInt str }
 
         EventChanged str ->
-            { model | event = str }
+            { fields | event = str }
 
         SiteChanged str ->
-            { model | site = str }
+            { fields | site = str }
 
         RoundChanged str ->
-            { model | round = str }
+            { fields | round = str }
 
         ResultChanged str ->
-            { model | result = str }
+            { fields | result = str }
 
         EcoChanged str ->
-            { model | eco = str }
+            { fields | eco = str }
 
 
-jsonEncodedQuery : Model -> Encode.Value
-jsonEncodedQuery model =
+jsonEncodedFields : FormFields -> Pagination -> Encode.Value
+jsonEncodedFields fields pagination =
     let
         stringQuery ( name, str ) =
             case str of
@@ -208,20 +213,20 @@ jsonEncodedQuery model =
     in
     Encode.object
         (List.filterMap stringQuery
-            [ ( "white", model.white )
-            , ( "black", model.black )
-            , ( "either_colour", model.eitherColour )
-            , ( "opponent", model.opponent )
-            , ( "event", model.event )
-            , ( "site", model.site )
-            , ( "round", model.round )
-            , ( "eco", model.eco )
-            , ( "result", model.result )
+            [ ( "white", fields.white )
+            , ( "black", fields.black )
+            , ( "either_colour", fields.eitherColour )
+            , ( "opponent", fields.opponent )
+            , ( "event", fields.event )
+            , ( "site", fields.site )
+            , ( "round", fields.round )
+            , ( "eco", fields.eco )
+            , ( "result", fields.result )
             ]
             ++ List.filterMap numberQuery
-                [ ( "minimum_elo", model.minimumElo )
-                , ( "maximum_elo", model.maximumElo )
+                [ ( "minimum_elo", fields.minimumElo )
+                , ( "maximum_elo", fields.maximumElo )
                 ]
-            ++ List.filterMap dateQuery [ ( "date", model.date ) ]
-            ++ [ ( "offset", Encode.int model.pagination.offset ) ]
+            ++ List.filterMap dateQuery [ ( "date", fields.date ) ]
+            ++ [ ( "offset", Encode.int pagination.offset ) ]
         )
