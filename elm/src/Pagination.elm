@@ -1,10 +1,9 @@
-module PaginatedList exposing
+module Pagination exposing
     ( Msg(..)
-    , PaginatedList
-    , getOffset
-    , paginatedListDecoder
-    , setOffset
-    , viewPaginatedHtml
+    , Pagination
+    , init
+    , paginationDecoder
+    , viewPaginationHtml
     )
 
 import Html exposing (Html, a, div, li, nav, span, text, ul)
@@ -13,38 +12,26 @@ import Html.Events exposing (onClick)
 import Json.Decode as Decode exposing (Decoder)
 
 
-type PaginatedList a
-    = PaginatedList
-        { offset : Int
-        , count : Int
-        , data : List a
-        }
+type alias Pagination =
+    { offset : Int
+    , count : Int
+    }
 
 
-getOffset : PaginatedList a -> Int
-getOffset (PaginatedList { offset }) =
-    offset
-
-
-setOffset : Int -> PaginatedList a -> PaginatedList a
-setOffset offset (PaginatedList record) =
-    PaginatedList { record | offset = offset }
+init : Pagination
+init =
+    { offset = 0, count = 0 }
 
 
 {-| triggered with the offset
 -}
 type Msg
-    = PaginationRequest Int
+    = Request Int
 
 
 itemsPerPage : Int
 itemsPerPage =
     20
-
-
-paginatedData : PaginatedList a -> List a
-paginatedData (PaginatedList { data }) =
-    data
 
 
 translate : Int -> Int
@@ -57,37 +44,36 @@ translateBack a =
     (a - 1) * itemsPerPage
 
 
-currentPage : PaginatedList a -> Int
-currentPage (PaginatedList { offset }) =
+currentPage : Pagination -> Int
+currentPage { offset } =
     translate offset
 
 
-numberOfPages : PaginatedList a -> Int
-numberOfPages (PaginatedList { count }) =
+numberOfPages : Pagination -> Int
+numberOfPages { count } =
     translate count
 
 
-isFirstPage : PaginatedList a -> Bool
+isFirstPage : Pagination -> Bool
 isFirstPage paginated =
     currentPage paginated == 1
 
 
-isLastPage : PaginatedList a -> Bool
+isLastPage : Pagination -> Bool
 isLastPage paginated =
     currentPage paginated == numberOfPages paginated
 
 
 {-| decodes Json encoded paginated list
 
-The encoding contains an offset, a count and a data field.
+The encoding contains an offset, and a count fileds.
 
 -}
-paginatedListDecoder : Decoder a -> Decoder (PaginatedList a)
-paginatedListDecoder internDecode =
-    Decode.map3 (\a b c -> PaginatedList { offset = a, count = b, data = c })
+paginationDecoder : Decoder Pagination
+paginationDecoder =
+    Decode.map2 Pagination
         (Decode.field "offset" Decode.int)
         (Decode.field "count" Decode.int)
-        (Decode.field "data" (Decode.list internDecode))
 
 
 
@@ -105,20 +91,14 @@ disabledClass bool =
         []
 
 
-viewPaginatedPrevious :
-    PaginatedList a
-    -> (Msg -> msg)
-    -> Html msg
-viewPaginatedPrevious paginated wrapper =
+viewPaginatedPrevious : Pagination -> Html Msg
+viewPaginatedPrevious paginated =
     let
         disabled =
             isFirstPage paginated
 
         destination =
             currentPage paginated - 1
-
-        click =
-            wrapper (PaginationRequest (translateBack destination))
     in
     li
         ([ class "pagination-previous" ] ++ disabledClass (isFirstPage paginated))
@@ -128,27 +108,21 @@ viewPaginatedPrevious paginated wrapper =
          else
             [ a
                 [ attribute "aria-label" "Previous Page"
-                , onClick click
+                , onClick (Request (translateBack destination))
                 ]
                 [ text "Previous" ]
             ]
         )
 
 
-viewPaginatedNext :
-    PaginatedList a
-    -> (Msg -> msg)
-    -> Html msg
-viewPaginatedNext paginated wrapper =
+viewPaginatedNext : Pagination -> Html Msg
+viewPaginatedNext paginated =
     let
         disabled =
             isLastPage paginated
 
         destination =
             currentPage paginated + 1
-
-        click =
-            wrapper (PaginationRequest (translateBack destination))
     in
     li
         ([ class "pagination-next" ] ++ disabledClass disabled)
@@ -158,7 +132,7 @@ viewPaginatedNext paginated wrapper =
          else
             [ a
                 [ attribute "aria-label" "Next Page"
-                , onClick click
+                , onClick (Request (translateBack destination))
                 ]
                 [ text "Next" ]
             ]
@@ -179,12 +153,8 @@ type Jump
     | Relative Int
 
 
-viewPaginatedEntry :
-    PaginatedList a
-    -> (Msg -> msg)
-    -> Jump
-    -> Html msg
-viewPaginatedEntry paginated wrapper jump =
+viewPaginatedEntry : Pagination -> Jump -> Html Msg
+viewPaginatedEntry paginated jump =
     let
         destination =
             case jump of
@@ -196,14 +166,11 @@ viewPaginatedEntry paginated wrapper jump =
 
         pageText =
             String.fromInt destination
-
-        click =
-            wrapper (PaginationRequest (translateBack destination))
     in
     li []
         [ a
             [ attribute "aria-label" ("Page " ++ pageText)
-            , onClick click
+            , onClick (Request (translateBack destination))
             ]
             [ text pageText ]
         ]
@@ -214,40 +181,32 @@ viewEllipsis =
     li [ class "ellipsis", attribute "aria-hidden" "true" ] []
 
 
-{-| html render for paginated data
-wrapper : Msg -> msg wraps our message type with the apps outer layer message
-constructor
-innerHtml : List a -> Html msg is the Html to be rendered for the paginated data
+{-| html render for pagination
 -}
-viewPaginatedHtml :
-    PaginatedList a
-    -> (Msg -> msg)
-    -> (List a -> Html msg)
-    -> Html msg
-viewPaginatedHtml paginated wrapper innerHtml =
-    if numberOfPages paginated <= 1 then
-        innerHtml (paginatedData paginated)
+viewPaginationHtml : Pagination -> Html Msg
+viewPaginationHtml paginated =
+    let
+        current =
+            currentPage paginated
 
-    else
-        let
-            current =
-                currentPage paginated
+        last =
+            numberOfPages paginated
+    in
+    div []
+        (if numberOfPages paginated <= 1 then
+            []
 
-            last =
-                numberOfPages paginated
-        in
-        div []
-            [ innerHtml (paginatedData paginated)
-            , nav [ attribute "aria-label" "Pagination" ]
+         else
+            [ nav [ attribute "aria-label" "Pagination" ]
                 [ ul [ class "pagination text-center" ]
                     (List.filterMap
                         identity
-                        [ Just (viewPaginatedPrevious paginated wrapper)
+                        [ Just (viewPaginatedPrevious paginated)
                         , guard (current >= 3) <|
-                            viewPaginatedEntry paginated wrapper (Absolute 1)
+                            viewPaginatedEntry paginated (Absolute 1)
                         , guard (current > 3) viewEllipsis
                         , guard (current > 1) <|
-                            viewPaginatedEntry paginated wrapper (Relative -1)
+                            viewPaginatedEntry paginated (Relative -1)
                         , Just <|
                             li [ class "current" ]
                                 [ span [ class "show-for-sr" ]
@@ -255,14 +214,15 @@ viewPaginatedHtml paginated wrapper innerHtml =
                                 , text (String.fromInt current)
                                 ]
                         , guard (current < last) <|
-                            viewPaginatedEntry paginated wrapper (Relative 1)
+                            viewPaginatedEntry paginated (Relative 1)
                         , guard (current < last - 1) <|
-                            viewPaginatedEntry paginated wrapper (Relative 2)
+                            viewPaginatedEntry paginated (Relative 2)
                         , guard (current < last - 3) viewEllipsis
                         , guard (current < last - 3) <|
-                            viewPaginatedEntry paginated wrapper (Absolute last)
-                        , Just (viewPaginatedNext paginated wrapper)
+                            viewPaginatedEntry paginated (Absolute last)
+                        , Just (viewPaginatedNext paginated)
                         ]
                     )
                 ]
             ]
+        )

@@ -8,13 +8,12 @@ import Debug
 import Game exposing (..)
 import Game.Decoder exposing (gamePropertiesDecoder)
 import GameSearch.Model as Model exposing (Model, init, validateModel)
-import GameSearch.Msg exposing (Msg(..))
+import GameSearch.Msg as Msg exposing (Msg(..))
 import GameSearch.View exposing (view)
 import Html exposing (Html)
-import Http
 import Json.Encode as Encode
 import Loadable exposing (..)
-import PaginatedList exposing (paginatedListDecoder)
+import Pagination exposing (paginationDecoder)
 import Url.Builder as Url
 
 
@@ -52,31 +51,37 @@ update msg model =
             ( { model | date = date, datePicker = newDatePicker }, Cmd.none )
 
         FormSubmitted ->
-            let
-                gamesDecoder =
-                    paginatedListDecoder gamePropertiesDecoder
-            in
             if Model.isModelValid model then
-                ( model
-                , Http.post
-                    { url = Url.absolute [ "games", "search" ] []
-                    , body = Http.jsonBody (Model.jsonEncodedQuery model)
-                    , expect = Http.expectJson GamesReceived gamesDecoder
-                    }
-                )
+                ( model, Model.sendQuery model )
 
             else
                 ( model, Cmd.none )
 
-        PaginationRequested (PaginatedList.PaginationRequest offset) ->
+        PaginationRequested (Pagination.Request offset) ->
             let
-                newGames =
-                    Loadable.map (PaginatedList.setOffset offset) model.games
-            in
-            update FormSubmitted { model | games = newGames }
+                newPagination =
+                    model.pagination |> (\p -> { p | offset = offset })
 
-        GamesReceived games ->
-            ( { model | games = Loaded games }, Cmd.none )
+                newModel =
+                    { model | pagination = newPagination }
+            in
+            update FormSubmitted newModel
+
+        GamesReceived (Ok (Msg.ServerResponse { games, offset, count })) ->
+            ( { model
+                | games = Loaded (Ok games)
+                , pagination = { offset = offset, count = count }
+              }
+            , Cmd.none
+            )
+
+        GamesReceived (Err oops) ->
+            ( { model
+                | games = Loaded (Err oops)
+                , pagination = { offset = 0, count = 0 }
+              }
+            , Cmd.none
+            )
 
         GameLoadRequested id ->
             ( model

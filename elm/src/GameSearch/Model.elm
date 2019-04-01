@@ -7,6 +7,7 @@ module GameSearch.Model exposing
     , init
     , isModelValid
     , jsonEncodedQuery
+    , sendQuery
     , updateModel
     , validateModel
     )
@@ -14,10 +15,12 @@ module GameSearch.Model exposing
 import Date exposing (Date)
 import DatePicker exposing (DatePicker)
 import Game exposing (GameProperties, Outcome(..))
-import GameSearch.Msg exposing (FieldChange(..), Msg(..))
+import GameSearch.Msg as Msg exposing (FieldChange(..), Msg(..))
+import Http
 import Json.Encode as Encode exposing (Value)
 import Loadable exposing (Loadable(..))
-import PaginatedList exposing (PaginatedList(..))
+import Pagination exposing (Pagination)
+import Url.Builder as Url
 
 
 type alias Error =
@@ -40,7 +43,8 @@ type alias Model =
     , result : String
     , ecoInvalid : Error
     , eco : String
-    , games : Loadable (PaginatedList GameProperties)
+    , pagination : Pagination
+    , games : Loadable (List GameProperties)
     }
 
 
@@ -58,26 +62,42 @@ init _ =
     let
         ( datePicker, datePickerCmd ) =
             DatePicker.init
+
+        model =
+            { white = ""
+            , black = ""
+            , eitherColour = ""
+            , opponent = ""
+            , elosDontMatch = Nothing
+            , minimumElo = Nothing
+            , maximumElo = Nothing
+            , event = ""
+            , site = ""
+            , date = Nothing
+            , datePicker = datePicker
+            , round = ""
+            , result = ""
+            , ecoInvalid = Nothing
+            , eco = ""
+            , pagination = Pagination.init
+            , games = Loading
+            }
     in
-    ( { white = ""
-      , black = ""
-      , eitherColour = ""
-      , opponent = ""
-      , elosDontMatch = Nothing
-      , minimumElo = Nothing
-      , maximumElo = Nothing
-      , event = ""
-      , site = ""
-      , date = Nothing
-      , datePicker = datePicker
-      , round = ""
-      , result = ""
-      , ecoInvalid = Nothing
-      , eco = ""
-      , games = Loading
-      }
-    , Cmd.map SetDatePicker datePickerCmd
+    ( model
+    , Cmd.batch
+        [ Cmd.map SetDatePicker datePickerCmd
+        , sendQuery model
+        ]
     )
+
+
+sendQuery : Model -> Cmd Msg
+sendQuery model =
+    Http.post
+        { url = Url.absolute [ "games", "search" ] []
+        , body = Http.jsonBody (jsonEncodedQuery model)
+        , expect = Http.expectJson GamesReceived Msg.jsonResponseDecoder
+        }
 
 
 validateModel : Model -> Model
@@ -185,22 +205,6 @@ jsonEncodedQuery model =
             mdate
                 |> Maybe.map
                     (\date -> ( name, Encode.string (Date.toIsoString date) ))
-
-        offsetQuery ( name, ldbl ) =
-            case ldbl of
-                Loaded (Ok data) ->
-                    let
-                        offset =
-                            PaginatedList.getOffset data
-                    in
-                    if offset > 0 then
-                        Just ( name, Encode.int offset )
-
-                    else
-                        Nothing
-
-                _ ->
-                    Nothing
     in
     Encode.object
         (List.filterMap stringQuery
@@ -219,5 +223,5 @@ jsonEncodedQuery model =
                 , ( "maximum_elo", model.maximumElo )
                 ]
             ++ List.filterMap dateQuery [ ( "date", model.date ) ]
-            ++ List.filterMap offsetQuery [ ( "offset", model.games ) ]
+            ++ [ ( "offset", Encode.int model.pagination.offset ) ]
         )

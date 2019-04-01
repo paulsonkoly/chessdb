@@ -38,7 +38,7 @@ import Html.Attributes
         )
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Loadable
-import PaginatedList exposing (PaginatedList, viewPaginatedHtml)
+import Pagination exposing (Pagination, viewPaginationHtml)
 import Url.Builder as Url
 
 
@@ -130,11 +130,6 @@ viewGameProperties games =
                     games
     in
     table [ class "hover", class "game-list" ] [ header, body ]
-
-
-viewLoadedGames : PaginatedList GameProperties -> Html Msg
-viewLoadedGames paginated =
-    viewPaginatedHtml paginated PaginationRequested viewGameProperties
 
 
 view : Model -> Html Msg
@@ -255,5 +250,7 @@ view model =
                 ]
             ]
         , div [ class "medium-6 cell" ]
-            [ Loadable.viewLoadable model.games viewLoadedGames ]
+            [ Loadable.viewLoadable model.games viewGameProperties
+            , Html.map PaginationRequested (viewPaginationHtml model.pagination)
+            ]
         ]
