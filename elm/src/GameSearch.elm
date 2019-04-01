@@ -88,6 +88,7 @@ update msg model =
             let
                 newPagination =
                     Pagination.setOffset offset model.pagination
+                        |> Pagination.setBusy True
 
                 newModel =
                     { model | pagination = newPagination }

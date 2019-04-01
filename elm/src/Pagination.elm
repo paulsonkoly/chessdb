@@ -4,6 +4,7 @@ module Pagination exposing
     , decoder
     , encode
     , init
+    , setBusy
     , setOffset
     , view
     )
@@ -15,21 +16,32 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
 
 
+type alias Record =
+    { offset : Int
+    , count : Int
+    , busy : Bool
+    }
+
+
 type Pagination
-    = Pagination
-        { offset : Int
-        , count : Int
-        }
+    = Pagination Record
 
 
 init : Pagination
 init =
-    Pagination { offset = 0, count = 0 }
+    Pagination { offset = 0, count = 0, busy = False }
 
 
 setOffset : Int -> Pagination -> Pagination
-setOffset offset (Pagination { count }) =
-    Pagination { offset = offset, count = count }
+setOffset offset (Pagination pagination) =
+    Pagination { pagination | offset = offset }
+
+
+{-| show the user that we are waiting for the pagination request to complete
+-}
+setBusy : Bool -> Pagination -> Pagination
+setBusy bool (Pagination pagination) =
+    Pagination { pagination | busy = bool }
 
 
 {-| triggered with the offset
@@ -53,22 +65,22 @@ translateBack a =
     (a - 1) * itemsPerPage
 
 
-currentPage : Pagination -> Int
-currentPage (Pagination { offset }) =
+currentPage : Record -> Int
+currentPage { offset } =
     translate offset
 
 
-numberOfPages : Pagination -> Int
-numberOfPages (Pagination { count }) =
+numberOfPages : Record -> Int
+numberOfPages { count } =
     translate count
 
 
-isFirstPage : Pagination -> Bool
+isFirstPage : Record -> Bool
 isFirstPage paginated =
     currentPage paginated == 1
 
 
-isLastPage : Pagination -> Bool
+isLastPage : Record -> Bool
 isLastPage paginated =
     currentPage paginated == numberOfPages paginated
 
@@ -80,7 +92,7 @@ The encoding contains an offset, and a count fileds.
 -}
 decoder : Decoder Pagination
 decoder =
-    Decode.map2 (\a b -> Pagination { offset = a, count = b })
+    Decode.map2 (\a b -> Pagination { offset = a, count = b, busy = False })
         (Decode.field "offset" Decode.int)
         (Decode.field "count" Decode.int)
 
@@ -110,17 +122,17 @@ disabledClass bool =
         []
 
 
-viewPaginatedPrevious : Pagination -> Html Msg
+viewPaginatedPrevious : Record -> Html Msg
 viewPaginatedPrevious paginated =
     let
         disabled =
-            isFirstPage paginated
+            isFirstPage paginated || paginated.busy
 
         destination =
             currentPage paginated - 1
     in
     li
-        ([ class "pagination-previous" ] ++ disabledClass (isFirstPage paginated))
+        ([ class "pagination-previous" ] ++ disabledClass disabled)
         (if disabled then
             [ text "Previous" ]
 
@@ -134,11 +146,11 @@ viewPaginatedPrevious paginated =
         )
 
 
-viewPaginatedNext : Pagination -> Html Msg
+viewPaginatedNext : Record -> Html Msg
 viewPaginatedNext paginated =
     let
         disabled =
-            isLastPage paginated
+            isLastPage paginated || paginated.busy
 
         destination =
             currentPage paginated + 1
@@ -172,7 +184,7 @@ type Jump
     | Relative Int
 
 
-viewPaginatedEntry : Pagination -> Jump -> Html Msg
+viewPaginatedEntry : Record -> Jump -> Html Msg
 viewPaginatedEntry paginated jump =
     let
         destination =
@@ -188,9 +200,11 @@ viewPaginatedEntry paginated jump =
     in
     li []
         [ a
-            [ attribute "aria-label" ("Page " ++ pageText)
-            , onClick (Request (translateBack destination))
-            ]
+            ([ attribute "aria-label" ("Page " ++ pageText)
+             , onClick (Request (translateBack destination))
+             ]
+                ++ disabledClass paginated.busy
+            )
             [ text pageText ]
         ]
 
@@ -203,7 +217,7 @@ viewEllipsis =
 {-| html render for pagination
 -}
 view : Pagination -> Html Msg
-view paginated =
+view (Pagination paginated) =
     let
         current =
             currentPage paginated
@@ -216,7 +230,8 @@ view paginated =
             []
 
          else
-            [ nav [ attribute "aria-label" "Pagination" ]
+            [ nav
+                [ attribute "aria-label" "Pagination" ]
                 [ ul [ class "pagination text-center" ]
                     (List.filterMap
                         identity
