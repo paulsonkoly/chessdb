@@ -38,7 +38,7 @@ import Html.Attributes
         )
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Loadable
-import Pagination exposing (Pagination, viewPaginationHtml)
+import Pagination exposing (Pagination)
 import Url.Builder as Url
 
 
@@ -253,6 +253,6 @@ view model =
             [ div [ class "callout" ] [ viewForm model.formFields ] ]
         , div [ class "medium-6 cell" ]
             [ Loadable.viewLoadable model.games viewGameProperties
-            , Html.map PaginationRequested (viewPaginationHtml model.pagination)
+            , Html.map PaginationRequested (Pagination.view model.pagination)
             ]
         ]

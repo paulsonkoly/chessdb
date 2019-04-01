@@ -10,7 +10,7 @@ import Game exposing (GameProperties)
 import Game.Decoder exposing (gamePropertiesDecoder)
 import Http
 import Json.Decode as Decode exposing (Decoder)
-import Pagination
+import Pagination exposing (Pagination)
 
 
 type FieldChange
@@ -30,17 +30,15 @@ type FieldChange
 type ServerResponse
     = ServerResponse
         { games : List GameProperties
-        , offset : Int
-        , count : Int
+        , pagination : Pagination
         }
 
 
 jsonResponseDecoder : Decoder ServerResponse
 jsonResponseDecoder =
-    Decode.map3 (\a b c -> ServerResponse { games = a, offset = b, count = c })
+    Decode.map2 (\a b -> ServerResponse { games = a, pagination = b })
         (Decode.field "data" (Decode.list gamePropertiesDecoder))
-        (Decode.field "offset" Decode.int)
-        (Decode.field "count" Decode.int)
+        Pagination.decoder
 
 
 type Msg

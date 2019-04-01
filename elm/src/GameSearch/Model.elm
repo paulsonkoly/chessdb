@@ -228,5 +228,5 @@ jsonEncodedFields fields pagination =
                 , ( "maximum_elo", fields.maximumElo )
                 ]
             ++ List.filterMap dateQuery [ ( "date", fields.date ) ]
-            ++ [ ( "offset", Encode.int pagination.offset ) ]
+            ++ Pagination.encode pagination
         )

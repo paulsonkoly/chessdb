@@ -1,26 +1,35 @@
 module Pagination exposing
     ( Msg(..)
     , Pagination
+    , decoder
+    , encode
     , init
-    , paginationDecoder
-    , viewPaginationHtml
+    , setOffset
+    , view
     )
 
 import Html exposing (Html, a, div, li, nav, span, text, ul)
 import Html.Attributes exposing (attribute, class, disabled, href)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 
 
-type alias Pagination =
-    { offset : Int
-    , count : Int
-    }
+type Pagination
+    = Pagination
+        { offset : Int
+        , count : Int
+        }
 
 
 init : Pagination
 init =
-    { offset = 0, count = 0 }
+    Pagination { offset = 0, count = 0 }
+
+
+setOffset : Int -> Pagination -> Pagination
+setOffset offset (Pagination { count }) =
+    Pagination { offset = offset, count = count }
 
 
 {-| triggered with the offset
@@ -45,12 +54,12 @@ translateBack a =
 
 
 currentPage : Pagination -> Int
-currentPage { offset } =
+currentPage (Pagination { offset }) =
     translate offset
 
 
 numberOfPages : Pagination -> Int
-numberOfPages { count } =
+numberOfPages (Pagination { count }) =
     translate count
 
 
@@ -69,11 +78,21 @@ isLastPage paginated =
 The encoding contains an offset, and a count fileds.
 
 -}
-paginationDecoder : Decoder Pagination
-paginationDecoder =
-    Decode.map2 Pagination
+decoder : Decoder Pagination
+decoder =
+    Decode.map2 (\a b -> Pagination { offset = a, count = b })
         (Decode.field "offset" Decode.int)
         (Decode.field "count" Decode.int)
+
+
+{-| encodes a pagination request into JSon
+
+we incode an offset fields sent to the server
+
+-}
+encode : Pagination -> List ( String, Value )
+encode (Pagination { offset }) =
+    [ ( "offset", Encode.int offset ) ]
 
 
 
@@ -183,8 +202,8 @@ viewEllipsis =
 
 {-| html render for pagination
 -}
-viewPaginationHtml : Pagination -> Html Msg
-viewPaginationHtml paginated =
+view : Pagination -> Html Msg
+view paginated =
     let
         current =
             currentPage paginated

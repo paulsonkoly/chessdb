@@ -13,7 +13,7 @@ import GameSearch.View exposing (view)
 import Html exposing (Html)
 import Json.Encode as Encode
 import Loadable exposing (..)
-import Pagination exposing (paginationDecoder)
+import Pagination
 import Url.Builder as Url
 
 
@@ -87,17 +87,17 @@ update msg model =
         PaginationRequested (Pagination.Request offset) ->
             let
                 newPagination =
-                    model.pagination |> (\p -> { p | offset = offset })
+                    Pagination.setOffset offset model.pagination
 
                 newModel =
                     { model | pagination = newPagination }
             in
             ( newModel, Model.sendQuery model.formFields newPagination )
 
-        GamesReceived (Ok (Msg.ServerResponse { games, offset, count })) ->
+        GamesReceived (Ok (Msg.ServerResponse { games, pagination })) ->
             ( { model
                 | games = Loaded (Ok games)
-                , pagination = { offset = offset, count = count }
+                , pagination = pagination
               }
             , Cmd.none
             )
@@ -105,7 +105,7 @@ update msg model =
         GamesReceived (Err oops) ->
             ( { model
                 | games = Loaded (Err oops)
-                , pagination = { offset = 0, count = 0 }
+                , pagination = Pagination.init
               }
             , Cmd.none
             )
