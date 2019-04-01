@@ -51,8 +51,12 @@ update msg model =
             ( { model | date = date, datePicker = newDatePicker }, Cmd.none )
 
         FormSubmitted ->
+            let
+                newModel =
+                    { model | pagination = Pagination.init }
+            in
             if Model.isModelValid model then
-                ( model, Model.sendQuery model )
+                ( newModel, Model.sendQuery newModel )
 
             else
                 ( model, Cmd.none )
@@ -65,7 +69,7 @@ update msg model =
                 newModel =
                     { model | pagination = newPagination }
             in
-            update FormSubmitted newModel
+            ( newModel, Model.sendQuery newModel )
 
         GamesReceived (Ok (Msg.ServerResponse { games, offset, count })) ->
             ( { model
