@@ -7,6 +7,7 @@ module GameViewer.View exposing
     )
 
 import Array
+import Date
 import FontAwesome.Icon as I
 import FontAwesome.Solid as S
 import Game exposing (..)
@@ -28,13 +29,46 @@ viewLoaded model game =
     let
         moves =
             game.moves
+
+        players =
+            game.properties.white
+                ++ " ("
+                ++ String.fromInt game.properties.whiteElo
+                ++ ") - "
+                ++ game.properties.black
+                ++ " ("
+                ++ String.fromInt game.properties.blackElo
+                ++ ")"
     in
     div [ class "grid-x", class "grid-margin-x" ]
-        [ div [ class "cell", class "medium-6" ]
+        [ div [ class "cell", class "medium-4" ]
+            [ div [ class "grid-y", class "grid-margin-y" ]
+                [ div [ class "cell" ]
+                    [ h3 [] [ text players ]
+                    , hr [] []
+                    , text
+                        (game.properties.site
+                            ++ " "
+                            ++ game.properties.event
+                            ++ " "
+                            ++ game.properties.round
+                        )
+                    , br [] []
+                    , text
+                        (Maybe.withDefault "" <|
+                            Maybe.map Date.toIsoString game.properties.date
+                        )
+                    ]
+                , div [ class "cell" ] [ viewPopularities model.popularities ]
+                ]
+            ]
+        , div [ class "cell", class "medium-5" ]
             [ div [ class "grid-y", class "grid-margin-y" ]
                 [ div [ class "cell" ]
                     [ div [ id "board-container", style "position" "relative" ]
-                        [ div [ id "chessboard", style "width" "400px" ] [] ]
+                        [ div [ id "chessboard" ] [] ]
+
+                    --, style "width" "400px" ] [] ]
                     ]
                 , div [ class "cell" ]
                     [ viewButtons
@@ -42,10 +76,9 @@ viewLoaded model game =
                         , lastMoveNumber = Array.length moves - 1
                         }
                     ]
-                , div [ class "cell" ] [ viewPopularities model.popularities ]
                 ]
             ]
-        , div [ class "cell", class "medium-4" ]
+        , div [ class "cell", class "medium-3" ]
             [ viewMoveList
                 (Array.toList moves)
                 model.move
@@ -198,7 +231,7 @@ viewPopularities : Loadable Popularities -> Html msg
 viewPopularities popularities =
     div [ class "card", id "popularity-card" ]
         (div [ class "card-divider" ]
-            [ text "Move popularities"
+            [ text "Moves in this position"
             , div [ class "popularity-bar", style "float" "right" ]
                 [ div [ class "white-won" ] [ text "1-0" ]
                 , div [ class "draw" ] [ text "1/2-1/2" ]

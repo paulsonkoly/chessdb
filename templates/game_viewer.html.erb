@@ -1,29 +1,18 @@
-<div class="grid-x">
-  <div class="cell small-3">
-    <h5>
-      Morovic Fernandez, Ivan<span class="elo">(2535)</span> - Korchnoi, Viktor<span class="elo">(2615)</span>
-    </h5>
-    <hr />
-    Santiago m, Santiago CHI, 
-  </div>
-  <div class="cell small-8"/>
-    <div id="game_viewer"></div>
-  </div>
-  <script>
-    var app = Elm.GameViewer.init({
-      node: document.getElementById("game_viewer"),
-      flags: <%= id %>
+<div id="game_viewer"></div>
+<script>
+  var app = Elm.GameViewer.init({
+    node: document.getElementById("game_viewer"),
+    flags: <%= id %>
+});
+  var chessboard;
+
+  app.ports.signalDomRendered.subscribe(function (msg) {
+    requestAnimationFrame(function() {
+      chessboard = ChessBoard('chessboard', 'start');
+    });
   });
-    var chessboard;
 
-    app.ports.signalDomRendered.subscribe(function (msg) {
-      requestAnimationFrame(function() {
-        chessboard = ChessBoard('chessboard', 'start');
-      });
-    });
-
-    app.ports.signalFenChanged.subscribe(function (fen) {
-      chessboard.position(fen);
-    });
-  </script>
-</div>
+  app.ports.signalFenChanged.subscribe(function (fen) {
+    chessboard.position(fen);
+  });
+</script>
