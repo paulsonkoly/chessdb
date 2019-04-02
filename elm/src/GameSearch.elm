@@ -105,7 +105,10 @@ update msg model =
                     Pagination.init
 
                 newModel =
-                    { model | pagination = newPagination }
+                    { model
+                        | pagination = newPagination
+                        , queriedFields = model.formFields
+                    }
             in
             if Model.areFieldsValid model.formFields then
                 ( newModel
@@ -124,7 +127,7 @@ update msg model =
                 newModel =
                     { model | pagination = newPagination }
             in
-            ( newModel, Model.sendQuery model.formFields newPagination )
+            ( newModel, Model.sendQuery model.queriedFields newPagination )
 
         GamesReceived (Ok (Msg.ServerResponse { games, pagination })) ->
             ( { model

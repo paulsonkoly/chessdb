@@ -52,6 +52,7 @@ type alias FormFields =
 
 type alias Model =
     { formFields : FormFields
+    , queriedFields : FormFields
     , pagination : Pagination
     , games : Loadable (List GameProperties)
     }
@@ -72,27 +73,30 @@ init _ =
         ( datePicker, datePickerCmd ) =
             DatePicker.init
 
+        newFields =
+            { white = ""
+            , black = ""
+            , eitherColour = ""
+            , opponent = ""
+            , elosDontMatch = Nothing
+            , minimumElo = Nothing
+            , maximumElo = Nothing
+            , event = ""
+            , site = ""
+            , fromDate = Nothing
+            , fromDatePicker = datePicker
+            , toDate = Nothing
+            , toDatePicker = datePicker
+            , datesDontMatch = Nothing
+            , round = ""
+            , result = ""
+            , ecoInvalid = Nothing
+            , eco = ""
+            }
+
         model =
-            { formFields =
-                { white = ""
-                , black = ""
-                , eitherColour = ""
-                , opponent = ""
-                , elosDontMatch = Nothing
-                , minimumElo = Nothing
-                , maximumElo = Nothing
-                , event = ""
-                , site = ""
-                , fromDate = Nothing
-                , fromDatePicker = datePicker
-                , toDate = Nothing
-                , toDatePicker = datePicker
-                , datesDontMatch = Nothing
-                , round = ""
-                , result = ""
-                , ecoInvalid = Nothing
-                , eco = ""
-                }
+            { formFields = newFields
+            , queriedFields = newFields
             , pagination = Pagination.init
             , games = Loading
             }
@@ -101,7 +105,7 @@ init _ =
     , Cmd.batch
         [ Cmd.map FromDatePicked datePickerCmd
         , Cmd.map ToDatePicked datePickerCmd
-        , sendQuery model.formFields model.pagination
+        , sendQuery model.queriedFields model.pagination
         ]
     )
 
