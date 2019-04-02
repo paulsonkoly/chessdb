@@ -90,7 +90,7 @@ type alias Popularities =
 type alias PopularityItem =
     { nextSan : String
     , whiteWon : Int
-    , draw : Int
     , blackWon : Int
+    , draw : Int
     , totalCount : Int
     }

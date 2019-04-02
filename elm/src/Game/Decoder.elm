@@ -36,7 +36,7 @@ outcomeDecoder =
                             Decode.fail ""
                     )
     in
-    Decode.oneOf [ whoWon 0 WhiteWon, whoWon 1 BlackWon, whoWon 2 Draw ]
+    Decode.oneOf [ whoWon 0 BlackWon, whoWon 1 WhiteWon, whoWon 2 Draw ]
 
 
 dateDecoder : Decoder Date
