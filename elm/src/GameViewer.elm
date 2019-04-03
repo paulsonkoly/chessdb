@@ -33,30 +33,66 @@ main =
         }
 
 
-cmdFetchPopularitiesFor : String -> Int -> Cmd Msg
-cmdFetchPopularitiesFor fen token =
+cmdFetchPopularitiesFor : Model -> Cmd Msg
+cmdFetchPopularitiesFor model =
     let
-        url =
-            Url.absolute [ "moves", "popularities" ]
-                [ Url.string "fen" fen
-                , Url.int "token" token
+        initialQuery =
+            [ Url.string "fen" "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+            , Url.int "castle" 15
+            , Url.int "active_colour" 1
+            ]
+
+        moveQuery move =
+            List.filterMap identity
+                [ Just (Url.string "fen" move.fenPosition)
+                , Just (Url.int "castle" move.castlingAvailability)
+                , Just (Url.int "active_colour" move.activeColour)
+                , move.enPassant |> Maybe.map (Url.int "en_passant")
                 ]
+
+        mQuery =
+            (if model.move == -1 then
+                Just initialQuery
+
+             else
+                model.game
+                    |> Loadable.toMaybe
+                    |> Maybe.map .moves
+                    |> Maybe.andThen (Array.get model.move)
+                    |> Maybe.map moveQuery
+            )
+                |> Maybe.map (\l -> Url.int "token" model.token :: l)
+
+        mUrl =
+            mQuery |> Maybe.map (Url.absolute [ "moves", "popularities" ])
     in
-    Http.get
-        { url = url
-        , expect = Http.expectJson PopularitiesReceived popularitiesDecoder
-        }
+    Maybe.withDefault Cmd.none <|
+        Maybe.map
+            (\url ->
+                Http.get
+                    { url = url
+                    , expect =
+                        Http.expectJson
+                            PopularitiesReceived
+                            popularitiesDecoder
+                    }
+            )
+            mUrl
 
 
 init : Int -> ( Model, Cmd Msg )
 init id =
-    ( { game = Loading, move = -1, token = 1, popularities = Loading }
+    let
+        model =
+            { game = Loading, move = -1, token = 1, popularities = Loading }
+    in
+    ( model
     , Cmd.batch
         [ Http.get
             { url = "/games/" ++ String.fromInt id ++ ".json"
             , expect = Http.expectJson GameReceived gameDecoder
             }
-        , cmdFetchPopularitiesFor "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR" 1
+        , cmdFetchPopularitiesFor model
         ]
     )
 
@@ -124,17 +160,20 @@ update msg model =
                 let
                     mfen =
                         getFen newMoveNumber model
-                in
-                case mfen of
-                    Just fen ->
-                        ( { model
+
+                    newModel =
+                        { model
                             | move = newMoveNumber
                             , token = model.token + 1
                             , popularities = Loading
-                          }
+                        }
+                in
+                case mfen of
+                    Just fen ->
+                        ( newModel
                         , Cmd.batch
                             [ signalFenChanged fen
-                            , cmdFetchPopularitiesFor fen (model.token + 1)
+                            , cmdFetchPopularitiesFor newModel
                             , scrollTo scroll newMoveNumber
                             ]
                         )

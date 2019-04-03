@@ -21,8 +21,8 @@ class Repository
       .order_append(:active_colour)
   end
 
-  def popular_moves(fen:)
-    Fen.for(fen).popular_moves(@db)
+  def popular_moves(fen:, castle:, active_colour:, en_passant:)
+    Fen.for(fen, castle, active_colour, en_passant).popular_moves(@db)
   end
 
   def game_search(filter_hash)
@@ -136,17 +136,21 @@ class Repository
 
   # @api private
   class Fen
-    def self.for(fen)
+    def self.for(fen, castle, active_colour, en_passant)
       case fen
       when 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR' then Initial
       else Normal
-      end.new(fen)
+      end.new(fen, castle, active_colour, en_passant)
     end
 
-    def initialize(fen)
+    def initialize(fen, castle, active_colour, en_passant)
       @fen = fen
+      @castle = castle
+      @active_colour = active_colour
+      @en_passant = en_passant
     end
-    attr_reader :fen
+
+    attr_reader(* %i[fen castle active_colour en_passant])
 
     def popular_moves(db)
       db[:moves]
@@ -174,7 +178,12 @@ class Repository
     # @api private
     class Normal < Fen
       def condition
-        { fen_position: fen }
+        {
+          fen_position: fen,
+          castling_availability: castle,
+          active_colour: active_colour.to_s,
+          en_passant: en_passant
+        }
       end
 
       def next_san_column

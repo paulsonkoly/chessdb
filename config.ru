@@ -15,6 +15,7 @@ class App < Roda
   plugin :static ['/public']
   plugin :json
   plugin :json_parser, parser: -> str { JSON.parse(str, symbolize_names: true) }
+  plugin :halt
 
   route do |r|
     r.assets
@@ -48,11 +49,25 @@ class App < Roda
 
     r.on 'moves' do
       r.get 'popularities' do
-        token = r.params['token'].to_i
-        fen = r.params['fen']
+        begin
+          token = Integer(r.params.fetch('token', 0))
+          fen = r.params['fen']
+          castle = Integer(r.params.fetch('castle', 0))
+          active_colour = Integer(r.params.fetch('active_colour', 0))
+          en_passant = r.params['en_passant']&.yield_self do |i|
+            Integer(i)
+          end
+        rescue ArgumentError
+          halt 400
+        end
 
-        data = app.cache.fetch(fen) do
-          app.repository.popular_moves(fen: fen).all
+        hash = [fen, castle, active_colour, en_passant].hash
+
+        data = app.cache.fetch(hash) do
+          app.repository.popular_moves(fen: fen,
+                                       castle: castle,
+                                       active_colour: active_colour,
+                                       en_passant: en_passant).all
         end
 
         { token: token, moves: data }

@@ -1,6 +1,7 @@
 module Loadable exposing
     ( Loadable(..)
     , map
+    , toMaybe
     , viewLoadable
     , viewLoadableList
     )
@@ -26,6 +27,16 @@ map f loadable =
 
         Loading ->
             Loading
+
+
+toMaybe : Loadable a -> Maybe a
+toMaybe loadable =
+    case loadable of
+        Loaded (Ok data) ->
+            Just data
+
+        _ ->
+            Nothing
 
 
 viewLoadable : Loadable a -> (a -> Html msg) -> Html msg
