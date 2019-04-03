@@ -1,13 +1,11 @@
 port module MoveExplorer exposing (main)
 
 import Browser
-import Game exposing (Popularities)
-import Game.Decoder exposing (popularitiesDecoder)
 import Html exposing (div)
 import Http
 import Loadable exposing (Loadable(..))
 import Maybe.Extra as Maybe
-import Popularities
+import Popularities exposing (Popularities)
 import Url.Builder as Url
 
 
@@ -56,7 +54,7 @@ cmdFetchPopularitiesFor model =
     Http.get
         { url = url
         , expect =
-            Http.expectJson PopularitiesReceived popularitiesDecoder
+            Http.expectJson PopularitiesReceived Popularities.decoder
         }
 
 
@@ -102,4 +100,4 @@ update msg model =
 
 
 view model =
-    Popularities.viewPopularities model.popularities
+    Popularities.view model.popularities

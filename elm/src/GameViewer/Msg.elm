@@ -2,6 +2,7 @@ module GameViewer.Msg exposing (Msg(..), Scrolling(..))
 
 import Game exposing (..)
 import Http
+import Popularities exposing (Popularities)
 
 
 type Scrolling

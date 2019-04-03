@@ -1,7 +1,6 @@
 module Game.Decoder exposing
     ( gameDecoder
     , gamePropertiesDecoder
-    , popularitiesDecoder
     )
 
 import Date exposing (Date)
@@ -80,20 +79,3 @@ moveDecoder =
         |> Pipeline.required "castling_availability" Decode.int
         |> Pipeline.required "halfmove_clock" Decode.int
         |> Pipeline.required "en_passant" (Decode.nullable Decode.int)
-
-
-popularitiesDecoder : Decoder Popularities
-popularitiesDecoder =
-    Decode.succeed Popularities
-        |> Pipeline.required "token" Decode.int
-        |> Pipeline.required "moves" (Decode.list popularityItemDecoder)
-
-
-popularityItemDecoder : Decoder PopularityItem
-popularityItemDecoder =
-    Decode.succeed PopularityItem
-        |> Pipeline.required "next_san" Decode.string
-        |> Pipeline.required "white_won" Decode.int
-        |> Pipeline.required "black_won" Decode.int
-        |> Pipeline.required "draw" Decode.int
-        |> Pipeline.required "total_count" Decode.int

@@ -3,8 +3,6 @@ module Game exposing
     , GameProperties
     , Move
     , Outcome(..)
-    , Popularities
-    , PopularityItem
     , outcomeFromString
     , outcomeToString
     )
@@ -78,19 +76,4 @@ type alias Move =
 type alias Game =
     { properties : GameProperties
     , moves : Array Move
-    }
-
-
-type alias Popularities =
-    { token : Int
-    , items : List PopularityItem
-    }
-
-
-type alias PopularityItem =
-    { nextSan : String
-    , whiteWon : Int
-    , blackWon : Int
-    , draw : Int
-    , totalCount : Int
     }

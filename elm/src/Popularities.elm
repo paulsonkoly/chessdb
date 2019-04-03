@@ -1,13 +1,57 @@
-module Popularities exposing (viewPopularities)
+module Popularities exposing
+    ( Popularities
+    , decoder
+    , validateToken
+    , view
+    )
 
-import Game exposing (Popularities, PopularityItem)
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, id, style)
+import Json.Decode as Decode exposing (Decoder)
+import Json.Decode.Pipeline as Pipeline
 import Loadable exposing (Loadable(..))
 
 
-viewPopularities : Loadable Popularities -> Html msg
-viewPopularities popularities =
+type Popularities
+    = Popularities
+        { token : Int
+        , items : List PopularityItem
+        }
+
+
+validateToken : Int -> Popularities -> Bool
+validateToken other (Popularities { token }) =
+    token == other
+
+
+type alias PopularityItem =
+    { nextSan : String
+    , whiteWon : Int
+    , blackWon : Int
+    , draw : Int
+    , totalCount : Int
+    }
+
+
+decoder : Decoder Popularities
+decoder =
+    Decode.succeed (\a b -> Popularities { token = a, items = b })
+        |> Pipeline.required "token" Decode.int
+        |> Pipeline.required "moves" (Decode.list popularityItemDecoder)
+
+
+popularityItemDecoder : Decoder PopularityItem
+popularityItemDecoder =
+    Decode.succeed PopularityItem
+        |> Pipeline.required "next_san" Decode.string
+        |> Pipeline.required "white_won" Decode.int
+        |> Pipeline.required "black_won" Decode.int
+        |> Pipeline.required "draw" Decode.int
+        |> Pipeline.required "total_count" Decode.int
+
+
+view : Loadable Popularities -> Html msg
+view popularities =
     div [ class "card", id "popularity-card" ]
         (div [ class "card-divider" ]
             [ text "Moves in this position"
@@ -22,7 +66,7 @@ viewPopularities popularities =
 
 
 viewNormalPopularities : Popularities -> List (Html msg)
-viewNormalPopularities { items } =
+viewNormalPopularities (Popularities { items }) =
     items
         |> List.map viewPopularityItem
 

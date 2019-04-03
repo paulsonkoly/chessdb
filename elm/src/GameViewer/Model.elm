@@ -3,8 +3,9 @@ module GameViewer.Model exposing
     , init
     )
 
-import Game exposing (Game, Popularities)
+import Game exposing (Game)
 import Loadable exposing (Loadable(..))
+import Popularities exposing (Popularities)
 
 
 type alias Model =

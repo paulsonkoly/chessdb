@@ -14,6 +14,7 @@ import Json.Decode as Decode
 import Loadable exposing (..)
 import Platform.Cmd
 import Platform.Sub
+import Popularities exposing (Popularities)
 import Task
 import Url.Builder as Url
 
@@ -77,7 +78,7 @@ cmdFetchPopularitiesFor model =
                     , expect =
                         Http.expectJson
                             PopularitiesReceived
-                            popularitiesDecoder
+                            Popularities.decoder
                     }
             )
             mUrl
@@ -144,7 +145,12 @@ update msg model =
 
         ------------------------------------------------------------------------
         PopularitiesReceived receivedData ->
-            ( if getToken receivedData == Just model.token then
+            let
+                receivedValid =
+                    Result.toMaybe receivedData
+                        |> Maybe.map (Popularities.validateToken model.token)
+            in
+            ( if receivedValid == Just True then
                 { model | popularities = Loaded receivedData }
 
               else
@@ -213,8 +219,3 @@ scrollTo scroll moveNumber =
 
         NoScroll ->
             Cmd.none
-
-
-getToken : Result Http.Error Popularities -> Maybe Int
-getToken popularities =
-    Result.toMaybe popularities |> Maybe.map .token
