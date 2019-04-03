@@ -14,4 +14,5 @@ type Msg
     = GameReceived (Result Http.Error Game)
     | PopularitiesReceived (Result Http.Error Popularities)
     | SetMoveNumberTo Int Scrolling
+    | PopularitiesEvent Popularities.Msg
     | Noop

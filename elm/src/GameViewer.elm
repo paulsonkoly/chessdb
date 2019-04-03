@@ -163,6 +163,9 @@ update msg model =
             , Cmd.none
             )
 
+        PopularitiesEvent _ ->
+            ( model, Cmd.none )
+
         ------------------------------------------------------------------------
         SetMoveNumberTo newMoveNumber scroll ->
             if model.move /= newMoveNumber then

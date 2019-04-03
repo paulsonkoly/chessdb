@@ -1,5 +1,6 @@
 module Popularities exposing
-    ( Popularities
+    ( Msg(..)
+    , Popularities
     , decoder
     , validateToken
     , view
@@ -7,6 +8,7 @@ module Popularities exposing
 
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, id, style)
+import Html.Events exposing (onClick)
 import Json.Decode as Decode exposing (Decoder)
 import Json.Decode.Pipeline as Pipeline
 import Loadable exposing (Loadable(..))
@@ -33,6 +35,10 @@ type alias PopularityItem =
     }
 
 
+type Msg
+    = MoveClicked String
+
+
 decoder : Decoder Popularities
 decoder =
     Decode.succeed (\a b -> Popularities { token = a, items = b })
@@ -50,7 +56,7 @@ popularityItemDecoder =
         |> Pipeline.required "total_count" Decode.int
 
 
-view : Loadable Popularities -> Html msg
+view : Loadable Popularities -> Html Msg
 view popularities =
     div [ class "card", id "popularity-card" ]
         (div [ class "card-divider" ]
@@ -65,15 +71,15 @@ view popularities =
         )
 
 
-viewNormalPopularities : Popularities -> List (Html msg)
+viewNormalPopularities : Popularities -> List (Html Msg)
 viewNormalPopularities (Popularities { items }) =
     items
         |> List.map viewPopularityItem
 
 
-viewPopularityItem : PopularityItem -> Html msg
+viewPopularityItem : PopularityItem -> Html Msg
 viewPopularityItem item =
-    div [ class "grid-x" ]
+    div [ class "grid-x", onClick (MoveClicked item.nextSan) ]
         [ div [ class "cell", class "medium-2" ] [ text item.nextSan ]
         , div [ class "cell", class "medium-3" ]
             [ text <| String.fromInt <| item.totalCount ]

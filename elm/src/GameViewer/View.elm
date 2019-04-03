@@ -59,7 +59,10 @@ viewLoaded model game =
                             Maybe.map Date.toIsoString game.properties.date
                         )
                     ]
-                , div [ class "cell" ] [ Popularities.view model.popularities ]
+                , div [ class "cell" ]
+                    [ Html.map PopularitiesEvent
+                        (Popularities.view model.popularities)
+                    ]
                 ]
             ]
         , div [ class "cell", class "medium-5" ]

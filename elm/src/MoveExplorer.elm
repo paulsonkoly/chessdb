@@ -1,7 +1,7 @@
 port module MoveExplorer exposing (main)
 
 import Browser
-import Html exposing (div)
+import Html exposing (Html, div)
 import Http
 import Loadable exposing (Loadable(..))
 import Maybe.Extra as Maybe
@@ -27,6 +27,7 @@ type alias Model =
 type Msg
     = SetPosition String Int Int (Maybe Int)
     | PopularitiesReceived (Result Http.Error Popularities)
+    | PopularitiesEvent Popularities.Msg
 
 
 main =
@@ -98,6 +99,10 @@ update msg model =
                 ]
             )
 
+        PopularitiesEvent _ ->
+            ( model, Cmd.none )
 
+
+view : Model -> Html Msg
 view model =
-    Popularities.view model.popularities
+    Html.map PopularitiesEvent (Popularities.view model.popularities)
