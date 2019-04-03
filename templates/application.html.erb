@@ -15,7 +15,9 @@
           <li <%= @active_menu == :search ? "class='is-active'" : "" %>>
             <a href="/games/search">Game search</a>
           </li>
-          <li><a href="#">Two</a></li>
+          <li <%= @active_menu == :explorer ? "class='is-active'" : "" %>>
+            <a href="/moves/explorer">Move explorer</a>
+          </li>
           <li><a href="#">Three</a></li>
         </ul>
       </div>

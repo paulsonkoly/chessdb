@@ -48,7 +48,12 @@ class App < Roda
     end
 
     r.on 'moves' do
-      r.get 'popularities' do
+      r.get 'explorer' do
+        @active_menu = :explorer
+        app.erb_store.resolve_html(:move_explorer, binding)
+      end
+
+      r.get 'popularities.json' do
         begin
           token = Integer(r.params.fetch('token', 0))
           fen = r.params['fen']

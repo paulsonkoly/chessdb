@@ -1,0 +1,17 @@
+<div id="move_explorer"></div>
+<script>
+  var app = Elm.MoveExplorer.init({
+    node: document.getElementById("move_explorer")
+  });
+  var chessboard;
+
+  app.ports.signalDomRendered.subscribe(function (msg) {
+    requestAnimationFrame(function() {
+      chessboard = ChessBoard('chessboard', 'start');
+    });
+  });
+
+  app.ports.signalFenChanged.subscribe(function (fen) {
+    chessboard.position(fen);
+  });
+</script>

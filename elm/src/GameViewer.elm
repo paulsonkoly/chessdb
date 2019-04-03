@@ -67,7 +67,7 @@ cmdFetchPopularitiesFor model =
                 |> Maybe.map (\l -> Url.int "token" model.token :: l)
 
         mUrl =
-            mQuery |> Maybe.map (Url.absolute [ "moves", "popularities" ])
+            mQuery |> Maybe.map (Url.absolute [ "moves", "popularities.json" ])
     in
     Maybe.withDefault Cmd.none <|
         Maybe.map
