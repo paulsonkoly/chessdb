@@ -33,6 +33,18 @@ main =
         }
 
 
+getMoveProperty : Int -> Model -> (Move -> a) -> a -> Maybe a
+getMoveProperty ix model f default =
+    if ix == -1 then
+        Just default
+
+    else
+        Loadable.toMaybe model.game
+            |> Maybe.map .moves
+            |> Maybe.andThen (Array.get ix)
+            |> Maybe.map f
+
+
 cmdFetchPopularitiesFor : Model -> Cmd Msg
 cmdFetchPopularitiesFor model =
     let
@@ -51,16 +63,7 @@ cmdFetchPopularitiesFor model =
                 ]
 
         mQuery =
-            (if model.move == -1 then
-                Just initialQuery
-
-             else
-                model.game
-                    |> Loadable.toMaybe
-                    |> Maybe.map .moves
-                    |> Maybe.andThen (Array.get model.move)
-                    |> Maybe.map moveQuery
-            )
+            getMoveProperty model.move model moveQuery initialQuery
                 |> Maybe.map (\l -> Url.int "token" model.token :: l)
 
         mUrl =
@@ -159,7 +162,10 @@ update msg model =
             if model.move /= newMoveNumber then
                 let
                     mfen =
-                        getFen newMoveNumber model
+                        getMoveProperty newMoveNumber
+                            model
+                            .fenPosition
+                            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 
                     newModel =
                         { model
@@ -209,24 +215,6 @@ scrollTo scroll moveNumber =
             Cmd.none
 
 
-getFen : Int -> Model -> Maybe String
-getFen ix model =
-    if ix == -1 then
-        Just "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-
-    else
-        case model.game of
-            Loading ->
-                Nothing
-
-            Loaded errGame ->
-                Result.toMaybe errGame
-                    |> Maybe.map .moves
-                    |> Maybe.andThen (Array.get ix)
-                    |> Maybe.map .fenPosition
-
-
 getToken : Result Http.Error Popularities -> Maybe Int
 getToken popularities =
-    Result.toMaybe popularities
-        |> Maybe.map .token
+    Result.toMaybe popularities |> Maybe.map .token
