@@ -1,11 +1,13 @@
 port module MoveExplorer exposing (main)
 
+import Board
 import Browser
 import Html exposing (Html, div)
 import Http
 import Loadable exposing (Loadable(..))
 import Maybe.Extra as Maybe
 import Popularities exposing (Popularities)
+import Position
 import Url.Builder as Url
 
 
@@ -99,7 +101,7 @@ update msg model =
                 ]
             )
 
-        PopularitiesEvent _ ->
+        PopularitiesEvent (Popularities.MoveClicked move) ->
             ( model, Cmd.none )
 
 
