@@ -25,6 +25,7 @@ module Board exposing
     , b6
     , b7
     , b8
+    , bishopScanner
     , boardParser
     , c1
     , c2

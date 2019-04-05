@@ -64,7 +64,7 @@ makeMove move position =
             in
             Ok { position | board = newB, castlingAvailability = castle }
 
-        Normal King Nothing _ destination nothing ->
+        Normal King Nothing _ destination Nothing ->
             let
                 src =
                     sourceSquare move position
@@ -94,13 +94,29 @@ makeMove move position =
                         }
                     )
 
-        Normal Knight disambiguity _ destination nothing ->
+        Normal Knight disambiguity _ destination Nothing ->
             let
                 src =
                     sourceSquare move position
 
                 pc =
                     Piece position.activeColour Knight
+
+                upd sq =
+                    position.board
+                        |> Board.putPiece destination (Just pc)
+                        |> Board.putPiece sq Nothing
+            in
+            src
+                |> Result.map (\sq -> { position | board = upd sq })
+
+        Normal Bishop disambiguity _ destination Nothing ->
+            let
+                src =
+                    sourceSquare move position
+
+                pc =
+                    Piece position.activeColour Bishop
 
                 upd sq =
                     position.board
@@ -162,6 +178,28 @@ sourceSquare move position =
                         (Board.knightScanner position.board condition destination)
             in
             Result.fromMaybe "Knight not found" msource
+
+        Normal Bishop disambiguity _ destination Nothing ->
+            let
+                piece =
+                    Board.Piece position.activeColour Bishop
+
+                condition b ix =
+                    case disambiguity of
+                        Just (FileDisambiguity fd) ->
+                            Board.get ix b == Just piece && Board.file ix == fd
+
+                        Just (RankDisambiguity rd) ->
+                            Board.get ix b == Just piece && Board.rank ix == rd
+
+                        Nothing ->
+                            Board.get ix b == Just piece
+
+                msource =
+                    Board.run
+                        (Board.bishopScanner position.board condition destination)
+            in
+            Result.fromMaybe "Bishop not found" msource
 
         _ ->
             Err "Unexpected move case"

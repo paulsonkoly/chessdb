@@ -3,8 +3,6 @@ module PositionTests exposing (suite)
 import Board exposing (..)
 import Expect exposing (Expectation)
 import Position exposing (..)
-import Random
-import Shrink
 import Test exposing (..)
 
 
@@ -246,5 +244,38 @@ suite =
                             (Result.map .castlingAvailability (castle Long Black))
                             (Ok 3)
                 ]
+            ]
+        , let
+            wb =
+                Just (Piece White Bishop)
+
+            b =
+                emptyBoard
+                    |> putPiece d3 wb
+
+            pos =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = White
+                , enPassant = Nothing
+                }
+
+            move kind to =
+                makeMove (Normal kind Nothing False to Nothing) pos
+          in
+          describe "bishop moves"
+            [ test "removes the bishop from where it came from" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map (.board >> get d3) (move Bishop g6))
+                        (Ok Nothing)
+            , test "puts the bishop on the new square" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map (.board >> get g6) (move Bishop g6))
+                        (Ok wb)
+            , test "reports Bishop not found if bishop is not there" <|
+                \_ ->
+                    Expect.equal (move Bishop f6) (Err "Bishop not found")
             ]
         ]
