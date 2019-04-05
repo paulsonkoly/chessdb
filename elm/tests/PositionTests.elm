@@ -10,40 +10,36 @@ import Test exposing (..)
 
 suite : Test
 suite =
-    let
-        wk =
-            Just (Piece White King)
-
-        wn =
-            Just (Piece White Knight)
-
-        b =
-            emptyBoard
-                |> putPiece e3 wk
-                |> putPiece e6 wk
-                |> putPiece b1 wn
-
-        pos =
-            { board = b
-            , castlingAvailability = 15
-            , activeColour = White
-            , enPassant = Nothing
-            }
-
-        move kind to =
-            makeMove (Normal kind Nothing False to Nothing) pos
-    in
     describe "Position"
-        [ describe "king moves"
+        [ let
+            wk =
+                Just (Piece White King)
+
+            b =
+                emptyBoard
+                    |> putPiece e1 wk
+                    |> putPiece e8 wk
+
+            pos =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = White
+                , enPassant = Nothing
+                }
+
+            move kind to =
+                makeMove (Normal kind Nothing False to Nothing) pos
+          in
+          describe "king moves"
             [ test "removes the king from where it came from" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get e3) (move King e4))
+                        (Result.map (.board >> get e1) (move King e2))
                         (Ok Nothing)
             , test "puts the king on the new square" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get e4) (move King e4))
+                        (Result.map (.board >> get f2) (move King f2))
                         (Ok wk)
             , test "reports king not found if king is not there" <|
                 \_ ->
@@ -51,10 +47,28 @@ suite =
             , test "removes all castling rights for the moving side" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (move King e4))
+                        (Result.map .castlingAvailability (move King d1))
                         (Ok 12)
             ]
-        , describe "knight moves"
+        , let
+            wn =
+                Just (Piece White Knight)
+
+            b =
+                emptyBoard
+                    |> putPiece b1 wn
+
+            pos =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = White
+                , enPassant = Nothing
+                }
+
+            move kind to =
+                makeMove (Normal kind Nothing False to Nothing) pos
+          in
+          describe "knight moves"
             [ test "removes the knight from where it came from" <|
                 \_ ->
                     Expect.equal
@@ -90,5 +104,147 @@ suite =
                     Expect.equal
                         (Result.map (.board >> get b1) fromB1)
                         (Ok Nothing)
+            ]
+        , let
+            wk =
+                Just (Piece White King)
+
+            wr =
+                Just (Piece White Rook)
+
+            bk =
+                Just (Piece Black King)
+
+            br =
+                Just (Piece Black Rook)
+
+            b =
+                emptyBoard
+                    |> putPiece e1 wk
+                    |> putPiece e8 bk
+                    |> putPiece a1 wr
+                    |> putPiece h1 wr
+                    |> putPiece a8 br
+                    |> putPiece h8 br
+
+            pos col =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = col
+                , enPassant = Nothing
+                }
+
+            castle kind colour =
+                makeMove (Castle kind) (pos colour)
+          in
+          describe "castles"
+            [ describe "white short"
+                [ test "removes the king from e1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get e1) (castle Short White))
+                            (Ok Nothing)
+                , test "puts the king to g1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get g1) (castle Short White))
+                            (Ok wk)
+                , test "removes the rook from h1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get h1) (castle Short White))
+                            (Ok Nothing)
+                , test "puts the rook to f1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get f1) (castle Short White))
+                            (Ok wr)
+                , test "changes the castling rights" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map .castlingAvailability (castle Short White))
+                            (Ok 12)
+                ]
+            , describe "white long"
+                [ test "removes the king from e1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get e1) (castle Long White))
+                            (Ok Nothing)
+                , test "puts the king to c1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get c1) (castle Long White))
+                            (Ok wk)
+                , test "removes the rook from a1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get a1) (castle Long White))
+                            (Ok Nothing)
+                , test "puts the rook to d1" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get d1) (castle Long White))
+                            (Ok wr)
+                , test "changes the castling rights" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map .castlingAvailability (castle Long White))
+                            (Ok 12)
+                ]
+            , describe "black short"
+                [ test "removes the king from e8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get e8) (castle Short Black))
+                            (Ok Nothing)
+                , test "puts the king to g8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get g8) (castle Short Black))
+                            (Ok bk)
+                , test "removes the rook from h8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get h8) (castle Short Black))
+                            (Ok Nothing)
+                , test "puts the rook to f8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get f8) (castle Short Black))
+                            (Ok br)
+                , test "changes the castling rights" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map .castlingAvailability (castle Short Black))
+                            (Ok 3)
+                ]
+            , describe "black long"
+                [ test "removes the king from e8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get e8) (castle Long Black))
+                            (Ok Nothing)
+                , test "puts the king to c8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get c8) (castle Long Black))
+                            (Ok bk)
+                , test "removes the rook from a8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get a8) (castle Long Black))
+                            (Ok Nothing)
+                , test "puts the rook to d8" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map (.board >> get d8) (castle Long Black))
+                            (Ok br)
+                , test "changes the castling rights" <|
+                    \_ ->
+                        Expect.equal
+                            (Result.map .castlingAvailability (castle Long Black))
+                            (Ok 3)
+                ]
             ]
         ]

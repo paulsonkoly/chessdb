@@ -4,6 +4,7 @@ import Bitwise as Bit
 import Board
     exposing
         ( Board
+        , Castle(..)
         , Colour(..)
         , Disambiguity(..)
         , File(..)
@@ -27,6 +28,42 @@ type alias Position =
 makeMove : Move -> Position -> Result String Position
 makeMove move position =
     case move of
+        Castle kind ->
+            let
+                ( rank, castleMask ) =
+                    case position.activeColour of
+                        White ->
+                            ( Rank 1, 12 )
+
+                        Black ->
+                            ( Rank 8, 3 )
+
+                ( kToFile, rFromFile, rToFile ) =
+                    case kind of
+                        Short ->
+                            ( Board.fileG, Board.fileH, Board.fileF )
+
+                        Long ->
+                            ( Board.fileC, Board.fileA, Board.fileD )
+
+                king =
+                    Just (Piece position.activeColour King)
+
+                rook =
+                    Just (Piece position.activeColour Rook)
+
+                castle =
+                    Bit.and position.castlingAvailability castleMask
+
+                newB =
+                    position.board
+                        |> Board.putPiece (Board.square Board.fileE rank) Nothing
+                        |> Board.putPiece (Board.square rFromFile rank) Nothing
+                        |> Board.putPiece (Board.square kToFile rank) king
+                        |> Board.putPiece (Board.square rToFile rank) rook
+            in
+            Ok { position | board = newB, castlingAvailability = castle }
+
         Normal King Nothing _ destination nothing ->
             let
                 src =

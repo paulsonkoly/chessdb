@@ -1,5 +1,6 @@
 module Board exposing
     ( Board
+    , Castle(..)
     , Colour(..)
     , Disambiguity(..)
     , File(..)
@@ -59,6 +60,14 @@ module Board exposing
     , f7
     , f8
     , file
+    , fileA
+    , fileB
+    , fileC
+    , fileD
+    , fileE
+    , fileF
+    , fileG
+    , fileH
     , flip
     , g1
     , g2
