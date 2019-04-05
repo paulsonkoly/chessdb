@@ -22,7 +22,7 @@ suite =
 
             pos =
                 { board = b
-                , castlingAvailability = 0
+                , castlingAvailability = 15
                 , activeColour = White
                 , enPassant = Nothing
                 }
@@ -47,5 +47,10 @@ suite =
             , test "it reports king not found if king is not there" <|
                 \_ ->
                     Expect.equal (newPos a1) (Err "King not found")
+            , test "removes all castling rights for the moving side" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (newPos e4))
+                        (Ok 12)
             ]
         ]

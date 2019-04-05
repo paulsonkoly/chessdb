@@ -38,11 +38,22 @@ makeMove move position =
                     position.board
                         |> Board.putPiece destination (Just pc)
                         |> Board.putPiece sq Nothing
+
+                castle =
+                    case position.activeColour of
+                        White ->
+                            Bit.and position.castlingAvailability 12
+
+                        Black ->
+                            Bit.and position.castlingAvailability 3
             in
             src
                 |> Result.map
                     (\sq ->
-                        { position | board = upd sq }
+                        { position
+                            | board = upd sq
+                            , castlingAvailability = castle
+                        }
                     )
 
         _ ->
