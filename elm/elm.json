@@ -17,6 +17,7 @@
             "elm/parser": "1.1.0",
             "elm/url": "1.0.0",
             "elm-community/maybe-extra": "5.0.0",
+            "elm-explorations/test": "1.2.1",
             "folkertdev/elm-state": "3.0.1",
             "justinmimbs/date": "3.1.2",
             "lattyware/elm-fontawesome": "2.2.0"
@@ -24,6 +25,7 @@
         "indirect": {
             "elm/bytes": "1.0.8",
             "elm/file": "1.0.5",
+            "elm/random": "1.0.0",
             "elm/svg": "1.0.1",
             "elm/time": "1.0.0",
             "elm/virtual-dom": "1.0.2"

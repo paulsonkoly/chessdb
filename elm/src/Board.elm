@@ -57,6 +57,7 @@ module Board exposing
     , f6
     , f7
     , f8
+    , file
     , flip
     , g1
     , g2
@@ -75,10 +76,14 @@ module Board exposing
     , h6
     , h7
     , h8
+    , hDist
     , kingScanner
     , moveParser
     , putPiece
+    , rank
     , run
+    , square
+    , vDist
     )
 
 import Array exposing (Array)
