@@ -78,6 +78,7 @@ module Board exposing
     , h8
     , hDist
     , kingScanner
+    , knightScanner
     , moveParser
     , putPiece
     , rank

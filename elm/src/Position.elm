@@ -56,6 +56,22 @@ makeMove move position =
                         }
                     )
 
+        Normal Knight Nothing _ destination nothing ->
+            let
+                src =
+                    sourceSquare move position
+
+                pc =
+                    Piece position.activeColour Knight
+
+                upd sq =
+                    position.board
+                        |> Board.putPiece destination (Just pc)
+                        |> Board.putPiece sq Nothing
+            in
+            src
+                |> Result.map (\sq -> { position | board = upd sq })
+
         _ ->
             Err "Not implemented yet"
 
@@ -86,6 +102,22 @@ sourceSquare move position =
                         )
             in
             Result.fromMaybe "King not found" msource
+
+        Normal Knight Nothing _ destination Nothing ->
+            let
+                piece =
+                    Board.Piece position.activeColour Knight
+
+                msource =
+                    Board.run
+                        (Board.knightScanner position.board
+                            (\b ix ->
+                                Board.get ix b == Just piece
+                            )
+                            destination
+                        )
+            in
+            Result.fromMaybe "Knight not found" msource
 
         _ ->
             Err "Unexpected move case"
