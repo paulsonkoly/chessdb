@@ -277,5 +277,34 @@ suite =
             , test "reports Bishop not found if bishop is not there" <|
                 \_ ->
                     Expect.equal (move Bishop f6) (Err "Bishop not found")
+            , test "stops at pieces with ray casting" <|
+                \_ ->
+                    let
+                        rayBoard =
+                            emptyBoard
+                                |> putPiece a1 wb
+                                |> putPiece c3 (Just (Piece White King))
+                    in
+                    Expect.equal
+                        (Result.map (.board >> get e5) (move Bishop e5))
+                        (Err "Bishop not found")
+            , test "disambiguates correctly" <|
+                \_ ->
+                    let
+                        rayBoard =
+                            emptyBoard
+                                |> putPiece a1 wb
+                                |> putPiece h8 wb
+
+                        disambiguity =
+                            Just (FileDisambiguity fileA)
+
+                        fromA1 =
+                            makeMove (Normal Bishop disambiguity False e5 Nothing)
+                                { pos | board = rayBoard }
+                    in
+                    Expect.equal
+                        (Result.map (.board >> get a1) fromA1)
+                        (Ok Nothing)
             ]
         ]
