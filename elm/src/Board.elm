@@ -159,9 +159,9 @@ emptyBoard =
     Board (Array.repeat 64 Nothing)
 
 
-putPiece : Square -> Piece -> Board -> Board
+putPiece : Square -> Maybe Piece -> Board -> Board
 putPiece (Square ix) piece (Board data) =
-    Board (Array.set ix (Just piece) data)
+    Board (Array.set ix piece data)
 
 
 get : Square -> Board -> Maybe Piece
@@ -644,7 +644,7 @@ updateWithFenItem count board item =
         FenPiece piece ->
             Parser.succeed
                 (Parser.Loop
-                    ( count + 1, putPiece (Square count) piece board )
+                    ( count + 1, putPiece (Square count) (Just piece) board )
                 )
 
         FenGap (Rank i) ->

@@ -1,4 +1,4 @@
-module Position exposing (Position)
+module Position exposing (Position, makeMove)
 
 import Bitwise as Bit
 import Board
@@ -8,17 +8,14 @@ import Board
         , File(..)
         , Kind(..)
         , Move(..)
+        , Piece(..)
         , Rank(..)
         , Square(..)
         )
 import State
 
 
-type Position
-    = Position Record
-
-
-type alias Record =
+type alias Position =
     { board : Board
     , castlingAvailability : Int
     , activeColour : Colour
@@ -26,7 +23,33 @@ type alias Record =
     }
 
 
-sourceSquare : Move -> Record -> Result String Square
+makeMove : Move -> Position -> Result String Position
+makeMove move position =
+    case move of
+        Normal King Nothing _ destination nothing ->
+            let
+                src =
+                    sourceSquare move position
+
+                pc =
+                    Piece position.activeColour King
+
+                upd sq =
+                    position.board
+                        |> Board.putPiece destination (Just pc)
+                        |> Board.putPiece sq Nothing
+            in
+            src
+                |> Result.map
+                    (\sq ->
+                        { position | board = upd sq }
+                    )
+
+        _ ->
+            Err "Not implemented yet"
+
+
+sourceSquare : Move -> Position -> Result String Square
 sourceSquare move position =
     case move of
         Castle _ ->
@@ -58,7 +81,7 @@ sourceSquare move position =
 
 
 updateCastlingAvailability : Move -> Position -> Position
-updateCastlingAvailability move (Position position) =
+updateCastlingAvailability move position =
     let
         colourVal =
             case position.activeColour of
@@ -100,17 +123,15 @@ updateCastlingAvailability move (Position position) =
                     _ ->
                         0
     in
-    Position
-        { position
-            | castlingAvailability =
-                Bit.and position.castlingAvailability clearMask
-        }
+    { position
+        | castlingAvailability =
+            Bit.and position.castlingAvailability clearMask
+    }
 
 
 updateActiveColour : Move -> Position -> Position
-updateActiveColour _ (Position position) =
-    Position
-        { position | activeColour = Board.flip position.activeColour }
+updateActiveColour _ position =
+    { position | activeColour = Board.flip position.activeColour }
 
 
 
