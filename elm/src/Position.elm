@@ -5,6 +5,7 @@ import Board
     exposing
         ( Board
         , Colour(..)
+        , Disambiguity(..)
         , File(..)
         , Kind(..)
         , Move(..)
@@ -56,7 +57,7 @@ makeMove move position =
                         }
                     )
 
-        Normal Knight Nothing _ destination nothing ->
+        Normal Knight disambiguity _ destination nothing ->
             let
                 src =
                     sourceSquare move position
@@ -103,19 +104,25 @@ sourceSquare move position =
             in
             Result.fromMaybe "King not found" msource
 
-        Normal Knight Nothing _ destination Nothing ->
+        Normal Knight disambiguity _ destination Nothing ->
             let
                 piece =
                     Board.Piece position.activeColour Knight
 
+                condition b ix =
+                    case disambiguity of
+                        Just (FileDisambiguity fd) ->
+                            Board.get ix b == Just piece && Board.file ix == fd
+
+                        Just (RankDisambiguity rd) ->
+                            Board.get ix b == Just piece && Board.rank ix == rd
+
+                        Nothing ->
+                            Board.get ix b == Just piece
+
                 msource =
                     Board.run
-                        (Board.knightScanner position.board
-                            (\b ix ->
-                                Board.get ix b == Just piece
-                            )
-                            destination
-                        )
+                        (Board.knightScanner position.board condition destination)
             in
             Result.fromMaybe "Knight not found" msource
 

@@ -1,6 +1,7 @@
 module Board exposing
     ( Board
     , Colour(..)
+    , Disambiguity(..)
     , File(..)
     , Kind(..)
     , Move(..)
@@ -291,7 +292,7 @@ file (Square ix) =
 
 rank : Square -> Rank
 rank (Square ix) =
-    Rank (7 - (ix // 8))
+    Rank (8 - (ix // 8))
 
 
 hDist : File -> File -> Int
@@ -306,7 +307,7 @@ vDist (Rank x) (Rank y) =
 
 square : File -> Rank -> Square
 square (File f) (Rank r) =
-    Square (8 * (7 - r) + f)
+    Square (8 * (8 - r) + f)
 
 
 a8 =

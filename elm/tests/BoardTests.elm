@@ -12,7 +12,7 @@ fsquare : Fuzzer Square
 fsquare =
     let
         r =
-            Random.map Rank (Random.int 0 7)
+            Random.map Rank (Random.int 1 8)
 
         f =
             Random.map File (Random.int 0 7)

@@ -4,7 +4,6 @@ import Browser
 import Browser.Navigation as Browser
 import Date exposing (Date)
 import DatePicker exposing (DateEvent(..))
-import Debug
 import Game exposing (..)
 import Game.Decoder exposing (gamePropertiesDecoder)
 import GameSearch.Model as Model exposing (Model)
