@@ -92,7 +92,9 @@ module Board exposing
     , knightScanner
     , moveParser
     , putPiece
+    , queenScanner
     , rank
+    , rookScanner
     , run
     , square
     , vDist

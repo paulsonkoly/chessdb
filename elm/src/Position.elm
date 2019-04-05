@@ -94,29 +94,13 @@ makeMove move position =
                         }
                     )
 
-        Normal Knight disambiguity _ destination Nothing ->
+        Normal kind disambiguity _ destination Nothing ->
             let
                 src =
                     sourceSquare move position
 
                 pc =
-                    Piece position.activeColour Knight
-
-                upd sq =
-                    position.board
-                        |> Board.putPiece destination (Just pc)
-                        |> Board.putPiece sq Nothing
-            in
-            src
-                |> Result.map (\sq -> { position | board = upd sq })
-
-        Normal Bishop disambiguity _ destination Nothing ->
-            let
-                src =
-                    sourceSquare move position
-
-                pc =
-                    Piece position.activeColour Bishop
+                    Piece position.activeColour kind
 
                 upd sq =
                     position.board
@@ -157,10 +141,10 @@ sourceSquare move position =
             in
             Result.fromMaybe "King not found" msource
 
-        Normal Knight disambiguity _ destination Nothing ->
+        Normal kind disambiguity _ destination Nothing ->
             let
                 piece =
-                    Board.Piece position.activeColour Knight
+                    Board.Piece position.activeColour kind
 
                 condition b ix =
                     case disambiguity of
@@ -173,33 +157,28 @@ sourceSquare move position =
                         Nothing ->
                             Board.get ix b == Just piece
 
-                msource =
-                    Board.run
-                        (Board.knightScanner position.board condition destination)
+                scan scanner =
+                    Board.run (scanner position.board condition destination)
             in
-            Result.fromMaybe "Knight not found" msource
+            case kind of
+                Knight ->
+                    scan Board.knightScanner
+                        |> Result.fromMaybe "Knight not found"
 
-        Normal Bishop disambiguity _ destination Nothing ->
-            let
-                piece =
-                    Board.Piece position.activeColour Bishop
+                Bishop ->
+                    scan Board.bishopScanner
+                        |> Result.fromMaybe "Bishop not found"
 
-                condition b ix =
-                    case disambiguity of
-                        Just (FileDisambiguity fd) ->
-                            Board.get ix b == Just piece && Board.file ix == fd
+                Queen ->
+                    scan Board.queenScanner
+                        |> Result.fromMaybe "Queen not found"
 
-                        Just (RankDisambiguity rd) ->
-                            Board.get ix b == Just piece && Board.rank ix == rd
+                Rook ->
+                    scan Board.rookScanner
+                        |> Result.fromMaybe "Rook not found"
 
-                        Nothing ->
-                            Board.get ix b == Just piece
-
-                msource =
-                    Board.run
-                        (Board.bishopScanner position.board condition destination)
-            in
-            Result.fromMaybe "Bishop not found" msource
+                _ ->
+                    Err "Unexpected piece kind"
 
         _ ->
             Err "Unexpected move case"

@@ -97,7 +97,9 @@ suite =
                             Just (RankDisambiguity (Rank 1))
 
                         fromB1 =
-                            makeMove (Normal Knight disambiguity False c3 Nothing) knightsPos
+                            makeMove
+                                (Normal Knight disambiguity False c3 Nothing)
+                                knightsPos
                     in
                     Expect.equal
                         (Result.map (.board >> get b1) fromB1)
@@ -284,9 +286,13 @@ suite =
                             emptyBoard
                                 |> putPiece a1 wb
                                 |> putPiece c3 (Just (Piece White King))
+
+                        fromA1 =
+                            makeMove (Normal Bishop Nothing False e5 Nothing)
+                                { pos | board = rayBoard }
                     in
                     Expect.equal
-                        (Result.map (.board >> get e5) (move Bishop e5))
+                        (Result.map (.board >> get e5) fromA1)
                         (Err "Bishop not found")
             , test "disambiguates correctly" <|
                 \_ ->
@@ -306,5 +312,100 @@ suite =
                     Expect.equal
                         (Result.map (.board >> get a1) fromA1)
                         (Ok Nothing)
+            ]
+        , let
+            wr =
+                Just (Piece White Rook)
+
+            b =
+                emptyBoard
+                    |> putPiece d3 wr
+
+            pos =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = White
+                , enPassant = Nothing
+                }
+
+            move kind to =
+                makeMove (Normal kind Nothing False to Nothing) pos
+          in
+          describe "rook moves"
+            [ test "removes the rook from where it came from" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map (.board >> get d3) (move Rook f3))
+                        (Ok Nothing)
+            , test "puts the rook on the new square" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map (.board >> get f3) (move Rook f3))
+                        (Ok wr)
+            , test "reports Rook not found if rook is not there" <|
+                \_ ->
+                    Expect.equal (move Rook e4) (Err "Rook not found")
+            , test "stops at pieces with ray casting" <|
+                \_ ->
+                    let
+                        rayBoard =
+                            emptyBoard
+                                |> putPiece d3 wr
+                                |> putPiece e3 (Just (Piece White King))
+
+                        fromD3 =
+                            makeMove (Normal Rook Nothing False f3 Nothing)
+                                { pos | board = rayBoard }
+                    in
+                    Expect.equal
+                        (Result.map (.board >> get f3) fromD3)
+                        (Err "Rook not found")
+            , test "disambiguates correctly" <|
+                \_ ->
+                    let
+                        rayBoard =
+                            emptyBoard
+                                |> putPiece a2 wr
+                                |> putPiece h2 wr
+
+                        disambiguity =
+                            Just (FileDisambiguity fileA)
+
+                        fromA2 =
+                            makeMove (Normal Rook disambiguity False e2 Nothing)
+                                { pos | board = rayBoard }
+                    in
+                    Expect.equal
+                        (Result.map (.board >> get a2) fromA2)
+                        (Ok Nothing)
+            ]
+        , let
+            wq =
+                Just (Piece White Queen)
+
+            b =
+                emptyBoard |> putPiece d3 wq
+
+            pos =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = White
+                , enPassant = Nothing
+                }
+
+            move kind to =
+                makeMove (Normal kind Nothing False to Nothing) pos
+          in
+          describe "queen moves"
+            [ test "can do bishop moves" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map (.board >> get g6) (move Queen g6))
+                        (Ok wq)
+            , test "can do rook moves" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map (.board >> get f3) (move Queen f3))
+                        (Ok wq)
             ]
         ]
