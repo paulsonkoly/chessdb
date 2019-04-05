@@ -27,22 +27,25 @@ suite =
                 , enPassant = Nothing
                 }
 
-            m =
-                Normal King Nothing False e4 Nothing
+            move sq =
+                Normal King Nothing False sq Nothing
 
-            newPos =
-                makeMove m pos
+            newPos sq =
+                makeMove (move sq) pos
           in
           describe "king moves"
             [ test "removes the king from where it came from" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get e3) newPos)
+                        (Result.map (.board >> get e3) (newPos e4))
                         (Ok Nothing)
             , test "it puts the king on the new square" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get e4) newPos)
+                        (Result.map (.board >> get e4) (newPos e4))
                         (Ok wk)
+            , test "it reports king not found if king is not there" <|
+                \_ ->
+                    Expect.equal (newPos a1) (Err "King not found")
             ]
         ]
