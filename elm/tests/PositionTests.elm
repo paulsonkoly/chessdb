@@ -42,11 +42,6 @@ suite =
             , test "reports king not found if king is not there" <|
                 \_ ->
                     Expect.equal (move King a1) (Err "King not found")
-            , test "removes all castling rights for the moving side" <|
-                \_ ->
-                    Expect.equal
-                        (Result.map .castlingAvailability (move King d1))
-                        (Ok 12)
             ]
         , let
             wn =
@@ -407,5 +402,109 @@ suite =
                     Expect.equal
                         (Result.map (.board >> get f3) (move Queen f3))
                         (Ok wq)
+            ]
+        , let
+            wr =
+                Just (Piece White Rook)
+
+            wk =
+                Just (Piece White King)
+
+            br =
+                Just (Piece Black Rook)
+
+            bk =
+                Just (Piece Black King)
+
+            wn =
+                Just (Piece White Knight)
+
+            bn =
+                Just (Piece Black Knight)
+
+            b =
+                emptyBoard
+                    |> putPiece a1 wr
+                    |> putPiece e1 wk
+                    |> putPiece h1 wr
+                    |> putPiece b3 bn
+                    |> putPiece g3 bn
+                    |> putPiece b6 wn
+                    |> putPiece g6 wn
+                    |> putPiece a8 br
+                    |> putPiece e8 bk
+                    |> putPiece h8 br
+
+            position =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = White
+                , enPassant = Nothing
+                }
+
+            move colour kind to =
+                makeMove (Normal kind Nothing False to Nothing)
+                    { position | activeColour = colour }
+
+            capture colour kind to =
+                makeMove (Normal kind Nothing True to Nothing)
+                    { position | activeColour = colour }
+          in
+          describe "castling right changes"
+            [ test "a move from a1 removes whites long castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (move White Rook c1))
+                        (Ok 13)
+            , test "a move to a1 removes whites long castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (capture Black Knight a1))
+                        (Ok 13)
+            , test "a move from e1 removes whites all castles" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (move White King e2))
+                        (Ok 12)
+            , test "a move from h1 removes whites short castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (move White Rook g1))
+                        (Ok 14)
+            , test "a move to h1 removes whites short castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (capture Black Knight h1))
+                        (Ok 14)
+            , test "a move from a8 removes blacks long castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (move Black Rook c8))
+                        (Ok 7)
+            , test "a move to a8 removes blacks long castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (capture White Knight a8))
+                        (Ok 7)
+            , test "a move from e8 removes blacks all castles" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (move Black King e7))
+                        (Ok 3)
+            , test "a move from h8 removes blacks short castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (move Black Rook g8))
+                        (Ok 11)
+            , test "a move to h8 removes blacks short castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (capture White Knight h8))
+                        (Ok 11)
+            , test "a move from h1 to h8 removes both sides short castle" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map .castlingAvailability (capture White Rook h8))
+                        (Ok 10)
             ]
         ]

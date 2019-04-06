@@ -96,7 +96,7 @@ makeMove move position =
 
         Normal kind disambiguity _ destination Nothing ->
             let
-                src =
+                rSource =
                     sourceSquare move position
 
                 pc =
@@ -106,9 +106,21 @@ makeMove move position =
                     position.board
                         |> Board.putPiece destination (Just pc)
                         |> Board.putPiece sq Nothing
+
+                castle source =
+                    updateCastlingAvailability
+                        source
+                        destination
+                        position.castlingAvailability
             in
-            src
-                |> Result.map (\sq -> { position | board = upd sq })
+            rSource
+                |> Result.map
+                    (\source ->
+                        { position
+                            | board = upd source
+                            , castlingAvailability = castle source
+                        }
+                    )
 
         _ ->
             Err "Not implemented yet"
@@ -184,53 +196,59 @@ sourceSquare move position =
             Err "Unexpected move case"
 
 
-updateCastlingAvailability : Move -> Position -> Position
-updateCastlingAvailability move position =
+updateCastlingAvailability : Square -> Square -> Int -> Int
+updateCastlingAvailability source destination castling =
     let
-        colourVal =
-            case position.activeColour of
-                White ->
-                    0
+        a1Mask =
+            if source == Board.a1 || destination == Board.a1 then
+                2
 
-                Black ->
-                    1
+            else
+                0
+
+        e1Mask =
+            if source == Board.e1 || destination == Board.e1 then
+                3
+
+            else
+                0
+
+        h1Mask =
+            if source == Board.h1 || destination == Board.h1 then
+                1
+
+            else
+                0
+
+        a8Mask =
+            if source == Board.a8 || destination == Board.a8 then
+                8
+
+            else
+                0
+
+        e8Mask =
+            if source == Board.e8 || destination == Board.e8 then
+                12
+
+            else
+                0
+
+        h8Mask =
+            if source == Board.h8 || destination == Board.h8 then
+                4
+
+            else
+                0
 
         mask =
-            Bit.complement (Bit.shiftLeftBy (colourVal * 2) 3)
-
-        clearMask =
-            Bit.complement <|
-                case move of
-                    Castle _ ->
-                        mask
-
-                    Normal King _ _ _ _ ->
-                        mask
-
-                    Normal Rook _ _ _ _ ->
-                        case
-                            ( sourceSquare move position
-                            , position.activeColour
-                            )
-                        of
-                            h1 ->
-                                1
-
-                    -- a1 ->
-                    --     2
-                    -- h8 ->
-                    --     4
-                    -- a8 ->
-                    --     8
-                    -- _ ->
-                    --     0
-                    _ ->
-                        0
+            Bit.or a1Mask e1Mask
+                |> Bit.or h1Mask
+                |> Bit.or a8Mask
+                |> Bit.or e8Mask
+                |> Bit.or h8Mask
     in
-    { position
-        | castlingAvailability =
-            Bit.and position.castlingAvailability clearMask
-    }
+    Bit.and (Bit.complement mask) castling
 
 
 updateActiveColour : Move -> Position -> Position
