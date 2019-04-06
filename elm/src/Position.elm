@@ -7,13 +7,11 @@ import Board
         , Castle(..)
         , Colour(..)
         , Disambiguity(..)
-        , File(..)
         , Kind(..)
         , Move(..)
         , Piece(..)
-        , Rank(..)
-        , Square(..)
         )
+import Board.Square as Board exposing (File(..), Rank(..), Square(..))
 import State
 
 

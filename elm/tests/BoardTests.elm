@@ -1,6 +1,7 @@
 module BoardTests exposing (suite)
 
 import Board exposing (..)
+import Board.Square as Board exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string, tuple)
 import Random
