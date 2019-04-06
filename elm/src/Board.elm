@@ -775,10 +775,10 @@ rookScanner : Board -> (Board -> Square -> Bool) -> Square -> Scanner
 rookScanner board condition start =
     List.foldl find
         (State.state Nothing)
-        [ rayScanner board condition 8 (always True) start
+        [ rayScanner board condition 8 (always False) start
         , rayScanner board condition 1 (\ix -> file ix == fileH) start
         , rayScanner board condition -1 (\ix -> file ix == fileA) start
-        , rayScanner board condition -8 (always True) start
+        , rayScanner board condition -8 (always False) start
         ]
 
 
