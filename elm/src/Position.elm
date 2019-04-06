@@ -11,6 +11,7 @@ import Board
         , Move(..)
         , Piece(..)
         )
+import Board.Scanner as Scanner
 import Board.Square as Board exposing (File(..), Rank(..), Square(..))
 import State
 
@@ -141,8 +142,8 @@ sourceSquare move position =
                     Board.Piece position.activeColour King
 
                 msource =
-                    Board.run
-                        (Board.kingScanner position.board
+                    Scanner.run
+                        (Scanner.king position.board
                             (\b ix ->
                                 Board.get ix b == Just piece
                             )
@@ -168,23 +169,23 @@ sourceSquare move position =
                             Board.get ix b == Just piece
 
                 scan scanner =
-                    Board.run (scanner position.board condition destination)
+                    Scanner.run (scanner position.board condition destination)
             in
             case kind of
                 Knight ->
-                    scan Board.knightScanner
+                    scan Scanner.knight
                         |> Result.fromMaybe "Knight not found"
 
                 Bishop ->
-                    scan Board.bishopScanner
+                    scan Scanner.bishop
                         |> Result.fromMaybe "Bishop not found"
 
                 Queen ->
-                    scan Board.queenScanner
+                    scan Scanner.queen
                         |> Result.fromMaybe "Queen not found"
 
                 Rook ->
-                    scan Board.rookScanner
+                    scan Scanner.rook
                         |> Result.fromMaybe "Rook not found"
 
                 _ ->

@@ -6,25 +6,18 @@ module Board exposing
     , Kind(..)
     , Move(..)
     , Piece(..)
-    , bishopScanner
     , boardParser
     , emptyBoard
     , flip
     , get
-    , kingScanner
-    , knightScanner
     , moveParser
     , putPiece
-    , queenScanner
-    , rookScanner
-    , run
     )
 
 import Array exposing (Array)
 import Board.Square exposing (..)
 import Maybe.Extra as Maybe
 import Parser exposing ((|.), (|=), Parser, Step)
-import State exposing (State)
 
 
 type Kind
@@ -242,149 +235,3 @@ boardParser =
                     |= fenLineParser count board
                     |. Parser.token "/"
         )
-
-
-{-| Composable scanners for looking for pieces
--}
-type alias Scanner =
-    State () (Maybe Square)
-
-
-{-| Finds the first Just
--}
-find : Scanner -> Scanner -> Scanner
-find st1 st2 =
-    st1
-        |> State.andThen
-            (\v1 ->
-                case v1 of
-                    Just x ->
-                        State.embed (always (Just x))
-
-                    Nothing ->
-                        st2
-            )
-
-
-run : Scanner -> Maybe Square
-run scanner =
-    State.finalValue () scanner
-
-
-rayScanner :
-    Board
-    -> (Board -> Square -> Bool)
-    -> Int
-    -> (Square -> Bool)
-    -> Square
-    -> Scanner
-rayScanner board condition delta limit start =
-    offsetBy delta start
-        |> State.tailRecM
-            (State.state
-                << Maybe.unwrap
-                    (State.Done Nothing)
-                    (\sq ->
-                        if condition board sq then
-                            State.Done (Just sq)
-
-                        else if limit sq || get sq board /= Nothing then
-                            State.Done Nothing
-
-                        else
-                            State.Loop (offsetBy delta sq)
-                    )
-            )
-
-
-{-| Scans the board from a given square in bishop moves stopping at the edge
-of the board, a non empty square, or the first index where condition is true.
-If such found returns Just that index.
--}
-bishopScanner : Board -> (Board -> Square -> Bool) -> Square -> Scanner
-bishopScanner board condition start =
-    List.foldl find
-        (State.state Nothing)
-        [ rayScanner board condition 9 (\ix -> file ix == fileH) start
-        , rayScanner board condition 7 (\ix -> file ix == fileA) start
-        , rayScanner board condition -9 (\ix -> file ix == fileA) start
-        , rayScanner board condition -7 (\ix -> file ix == fileH) start
-        ]
-
-
-{-| Scans the board from a given square in rook moves stopping at the edge
-of the board, a non empty square, or the first index where condition is true.
-If such found returns Just that index.
--}
-rookScanner : Board -> (Board -> Square -> Bool) -> Square -> Scanner
-rookScanner board condition start =
-    List.foldl find
-        (State.state Nothing)
-        [ rayScanner board condition 8 (always False) start
-        , rayScanner board condition 1 (\ix -> file ix == fileH) start
-        , rayScanner board condition -1 (\ix -> file ix == fileA) start
-        , rayScanner board condition -8 (always False) start
-        ]
-
-
-{-| Scans the board from a given square in queen moves stopping at the edge
-of the board, a non empty square, or the first index where condition is true.
-If such found returns Just that index.
--}
-queenScanner : Board -> (Board -> Square -> Bool) -> Square -> Scanner
-queenScanner board condition start =
-    find
-        (bishopScanner board condition start)
-        (rookScanner board condition start)
-
-
-knightScanner : Board -> (Board -> Square -> Bool) -> Square -> Scanner
-knightScanner board condition start =
-    let
-        checkSq other =
-            if
-                2
-                    < hDist (file start) (file other)
-                    || 2
-                    < vDist (rank start) (rank other)
-            then
-                Nothing
-
-            else if condition board other then
-                Just other
-
-            else
-                Nothing
-
-        forDelta delta =
-            State.state <| Maybe.andThen checkSq <| offsetBy delta start
-    in
-    [ 17, 10, -6, -15, -17, -10, 6, 15 ]
-        |> List.map forDelta
-        |> List.foldl find (State.state Nothing)
-
-
-kingScanner : Board -> (Board -> Square -> Bool) -> Square -> Scanner
-kingScanner board condition start =
-    let
-        checkSq other =
-            if
-                1
-                    < hDist (file start) (file other)
-                    || 1
-                    < vDist (rank start) (rank other)
-            then
-                Nothing
-
-            else if condition board other then
-                Just other
-
-            else
-                Nothing
-
-        forDelta delta =
-            State.state <| Maybe.andThen checkSq <| offsetBy delta start
-    in
-    [ 9, 1, -7, -8, -9, -1, 7, 8 ]
-        |> List.map forDelta
-        |> List.foldl find (State.state Nothing)

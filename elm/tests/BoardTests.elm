@@ -1,6 +1,7 @@
 module BoardTests exposing (suite)
 
 import Board exposing (..)
+import Board.Scanner as Scanner exposing (Scanner)
 import Board.Square as Board exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string, tuple)
@@ -40,9 +41,9 @@ suite =
                             get sq b == Just (Piece White King)
 
                         s =
-                            kingScanner b p d3
+                            Scanner.king b p d3
                     in
-                    Expect.equal (Just c2) (run s)
+                    Expect.equal (Just c2) (Scanner.run s)
             , test "it doesn't find king too far away" <|
                 \_ ->
                     let
@@ -53,9 +54,9 @@ suite =
                             get sq b == Just (Piece White King)
 
                         s =
-                            kingScanner b p e3
+                            Scanner.king b p e3
                     in
-                    Expect.equal Nothing (run s)
+                    Expect.equal Nothing (Scanner.run s)
             , fuzz (tuple ( fsquare, fsquare )) "on random square" <|
                 \( k, o ) ->
                     let
@@ -66,7 +67,7 @@ suite =
                             get sq b == Just (Piece White King)
 
                         s =
-                            kingScanner b p o
+                            Scanner.king b p o
 
                         vd =
                             vDist (rank k) (rank o)
@@ -75,9 +76,9 @@ suite =
                             hDist (file k) (file o)
                     in
                     if vd <= 1 && hd <= 1 && k /= o then
-                        Expect.equal (Just k) (run s)
+                        Expect.equal (Just k) (Scanner.run s)
 
                     else
-                        Expect.equal Nothing (run s)
+                        Expect.equal Nothing (Scanner.run s)
             ]
         ]
