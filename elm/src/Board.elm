@@ -814,7 +814,7 @@ knightScanner board condition start =
         forDelta delta =
             State.state <| Maybe.andThen checkSq <| offsetBy delta start
     in
-    [ 17, 10, -6, -15, -7, -10, 6, 15 ]
+    [ 17, 10, -6, -15, -17, -10, 6, 15 ]
         |> List.map forDelta
         |> List.foldl find (State.state Nothing)
 
