@@ -20,7 +20,7 @@ type alias Position =
     { board : Board
     , castlingAvailability : Int
     , activeColour : Colour
-    , enPassant : Maybe Int
+    , enPassant : Maybe Square
     }
 
 
@@ -81,6 +81,13 @@ make moveE position =
                         source
                         move.destination
                         position.castlingAvailability
+
+                newEnPassant source =
+                    enPassant
+                        position.activeColour
+                        move.kind
+                        source
+                        move.destination
             in
             rSource
                 |> Result.map
@@ -88,6 +95,7 @@ make moveE position =
                         { position
                             | board = upd source
                             , castlingAvailability = castle source
+                            , enPassant = newEnPassant source
                         }
                     )
 
@@ -209,11 +217,16 @@ updateActiveColour _ position =
     { position | activeColour = Board.flip position.activeColour }
 
 
+enPassant : Colour -> Kind -> Square -> Square -> Maybe Square
+enPassant colour kind source destination =
+    case
+        ( ( colour, kind ), Board.rank source, Board.rank destination )
+    of
+        ( ( White, Pawn ), Rank 2, Rank 4 ) ->
+            Board.offsetBy 8 destination
 
-{-
-   updateEnPassant : Move -> Position -> Position
-   updateEnPassant : Move (Position position) =
-       case move of
-           Move Pawn
-           ()
--}
+        ( ( Black, Pawn ), Rank 7, Rank 5 ) ->
+            Board.offsetBy -8 destination
+
+        _ ->
+            Nothing

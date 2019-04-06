@@ -91,6 +91,14 @@ suite =
                             (make (move Pawn a4) pos)
                         )
                         (Ok wp)
+            , test "double advances set the en passant square" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            .enPassant
+                            (make (move Pawn a4) pos)
+                        )
+                        (Ok (Just a3))
             , test "can't make double pawn advances from the wrong squares" <|
                 \_ ->
                     Expect.err
