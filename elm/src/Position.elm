@@ -26,79 +26,70 @@ type alias Position =
 
 make : Move -> Position -> Result String Position
 make moveE position =
-    case moveE of
-        Castle kind ->
-            let
-                ( rank, castleMask ) =
-                    case position.activeColour of
-                        White ->
-                            ( Rank 1, 12 )
+    let
+        rSource =
+            sourceSquare moveE position
 
-                        Black ->
-                            ( Rank 8, 3 )
+        newBoard =
+            pieces moveE position.activeColour position.board
 
-                ( kToFile, rFromFile, rToFile ) =
-                    case kind of
-                        Short ->
-                            ( Board.fileG, Board.fileH, Board.fileF )
+        newCastle =
+            castles moveE position.castlingAvailability
 
-                        Long ->
-                            ( Board.fileC, Board.fileA, Board.fileD )
+        newEnPassant =
+            enPassant moveE position.activeColour
+    in
+    rSource
+        |> Result.map
+            (\source ->
+                { position
+                    | board = newBoard source
+                    , castlingAvailability = newCastle source
+                    , enPassant = newEnPassant source
+                }
+            )
 
-                king =
-                    Just (Piece position.activeColour King)
 
-                rook =
-                    Just (Piece position.activeColour Rook)
+pieces : Move -> Colour -> Board -> Square -> Board
+pieces moveE colour board source =
+    let
+        movedPiece move =
+            Piece colour <|
+                Maybe.withDefault move.kind move.promotion
+    in
+    case ( colour, moveE ) of
+        ( White, Castle Short ) ->
+            board
+                |> Board.putPiece Board.g1 (Just (Piece White King))
+                |> Board.putPiece Board.f1 (Just (Piece White Rook))
+                |> Board.putPiece Board.e1 Nothing
+                |> Board.putPiece Board.h1 Nothing
 
-                castle =
-                    Bit.and position.castlingAvailability castleMask
+        ( White, Castle Long ) ->
+            board
+                |> Board.putPiece Board.c1 (Just (Piece White King))
+                |> Board.putPiece Board.d1 (Just (Piece White Rook))
+                |> Board.putPiece Board.e1 Nothing
+                |> Board.putPiece Board.a1 Nothing
 
-                newB =
-                    position.board
-                        |> Board.putPiece (Board.square Board.fileE rank) Nothing
-                        |> Board.putPiece (Board.square rFromFile rank) Nothing
-                        |> Board.putPiece (Board.square kToFile rank) king
-                        |> Board.putPiece (Board.square rToFile rank) rook
-            in
-            Ok { position | board = newB, castlingAvailability = castle }
+        ( Black, Castle Short ) ->
+            board
+                |> Board.putPiece Board.g8 (Just (Piece Black King))
+                |> Board.putPiece Board.f8 (Just (Piece Black Rook))
+                |> Board.putPiece Board.e8 Nothing
+                |> Board.putPiece Board.h8 Nothing
 
-        Normal move ->
-            let
-                rSource =
-                    sourceSquare moveE position
+        ( Black, Castle Long ) ->
+            board
+                |> Board.putPiece Board.c8 (Just (Piece Black King))
+                |> Board.putPiece Board.d8 (Just (Piece Black Rook))
+                |> Board.putPiece Board.e8 Nothing
+                |> Board.putPiece Board.a8 Nothing
 
-                movedPiece =
-                    Piece position.activeColour <|
-                        Maybe.withDefault move.kind move.promotion
-
-                upd sq =
-                    position.board
-                        |> Board.putPiece move.destination (Just movedPiece)
-                        |> Board.putPiece sq Nothing
-
-                castle source =
-                    updateCastlingAvailability
-                        source
-                        move.destination
-                        position.castlingAvailability
-
-                newEnPassant source =
-                    enPassant
-                        position.activeColour
-                        move.kind
-                        source
-                        move.destination
-            in
-            rSource
-                |> Result.map
-                    (\source ->
-                        { position
-                            | board = upd source
-                            , castlingAvailability = castle source
-                            , enPassant = newEnPassant source
-                        }
-                    )
+        ( _, Normal move ) ->
+            board
+                |> Board.putPiece move.destination (Just (movedPiece move))
+                |> Board.putPiece source Nothing
 
 
 sourceSquare : Move -> Position -> Result String Square
@@ -158,9 +149,19 @@ sourceSquare moveE position =
                         |> Result.fromMaybe "Pawn not found"
 
 
-updateCastlingAvailability : Square -> Square -> Int -> Int
-updateCastlingAvailability source destination castling =
+castles : Move -> Int -> Square -> Int
+castles moveE castling source =
     let
+        destination =
+            case moveE of
+                -- doesn't matter what, the source of the move will set no
+                -- castling to the side
+                Castle _ ->
+                    Board.e4
+
+                Normal move ->
+                    move.destination
+
         a1Mask =
             if source == Board.a1 || destination == Board.a1 then
                 2
@@ -169,7 +170,7 @@ updateCastlingAvailability source destination castling =
                 0
 
         e1Mask =
-            if source == Board.e1 || destination == Board.e1 then
+            if source == Board.e1 then
                 3
 
             else
@@ -190,7 +191,7 @@ updateCastlingAvailability source destination castling =
                 0
 
         e8Mask =
-            if source == Board.e8 || destination == Board.e8 then
+            if source == Board.e8 then
                 12
 
             else
@@ -218,16 +219,24 @@ updateActiveColour _ position =
     { position | activeColour = Board.flip position.activeColour }
 
 
-enPassant : Colour -> Kind -> Square -> Square -> Maybe Square
-enPassant colour kind source destination =
-    case
-        ( ( colour, kind ), Board.rank source, Board.rank destination )
-    of
-        ( ( White, Pawn ), Rank 2, Rank 4 ) ->
-            Board.offsetBy 8 destination
-
-        ( ( Black, Pawn ), Rank 7, Rank 5 ) ->
-            Board.offsetBy -8 destination
-
-        _ ->
+enPassant : Move -> Colour -> Square -> Maybe Square
+enPassant moveE colour source =
+    case moveE of
+        Castle _ ->
             Nothing
+
+        Normal move ->
+            case
+                ( ( colour, move.kind )
+                , Board.rank source
+                , Board.rank move.destination
+                )
+            of
+                ( ( White, Pawn ), Rank 2, Rank 4 ) ->
+                    Board.offsetBy 8 move.destination
+
+                ( ( Black, Pawn ), Rank 7, Rank 5 ) ->
+                    Board.offsetBy -8 move.destination
+
+                _ ->
+                    Nothing
