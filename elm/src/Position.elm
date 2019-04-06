@@ -144,8 +144,9 @@ sourceSquare moveE position =
                     scan Scanner.king
                         |> Result.fromMaybe "King not found"
 
-                _ ->
-                    Err "Unexpected piece kind"
+                Pawn ->
+                    scan (Scanner.pawn position.activeColour)
+                        |> Result.fromMaybe "Pawn not found"
 
 
 updateCastlingAvailability : Square -> Square -> Int -> Int

@@ -50,6 +50,61 @@ suite =
                         (Err "King not found")
             ]
         , let
+            wp =
+                Just (Piece White Pawn)
+
+            b =
+                emptyBoard
+                    |> putPiece a2 wp
+                    |> putPiece b3 wp
+                    |> putPiece c4 wp
+
+            pos =
+                { board = b
+                , castlingAvailability = 15
+                , activeColour = White
+                , enPassant = Nothing
+                }
+          in
+          describe "pawn advance"
+            [ test "removes the pawn from where it came from" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            (.board >> get a2)
+                            (make (move Pawn a3) pos)
+                        )
+                        (Ok Nothing)
+            , test "puts the pawn on the new square" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            (.board >> get b4)
+                            (make (move Pawn b4) pos)
+                        )
+                        (Ok wp)
+            , test "can make double pawn advances from the right squares" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            (.board >> get a4)
+                            (make (move Pawn a4) pos)
+                        )
+                        (Ok wp)
+            , test "can't make double pawn advances from the wrong squares" <|
+                \_ ->
+                    Expect.err
+                        (Result.map
+                            (.board >> get b5)
+                            (make (move Pawn b5) pos)
+                        )
+            , test "reports Pawn not found if pawn is not there" <|
+                \_ ->
+                    Expect.equal
+                        (make (move Pawn h4) pos)
+                        (Err "Pawn not found")
+            ]
+        , let
             wn =
                 Just (Piece White Knight)
 

@@ -3,15 +3,17 @@ module Board.Scanner exposing
     , bishop
     , king
     , knight
+    , pawn
     , queen
     , rook
     , run
     )
 
-import Board exposing (Board)
+import Board exposing (Board, Colour(..))
 import Board.Square as Square
     exposing
-        ( Square
+        ( Rank(..)
+        , Square
         , file
         , fileA
         , fileE
@@ -167,5 +169,32 @@ king board condition start =
             State.state <| Maybe.andThen checkSq <| offsetBy delta start
     in
     [ 9, 1, -7, -8, -9, -1, 7, 8 ]
+        |> List.map forDelta
+        |> List.foldl find (State.state Nothing)
+
+
+pawn : Colour -> Board -> (Board -> Square -> Bool) -> Square -> Scanner
+pawn colour board condition start =
+    let
+        deltas =
+            case ( colour, rank start ) of
+                ( White, Rank 4 ) ->
+                    [ 8, 16 ]
+
+                ( White, _ ) ->
+                    [ 8 ]
+
+                ( Black, Rank 5 ) ->
+                    [ -8, -16 ]
+
+                ( Black, _ ) ->
+                    [ -8 ]
+
+        forDelta delta =
+            State.state <|
+                Maybe.filter (condition board) <|
+                    offsetBy delta start
+    in
+    deltas
         |> List.map forDelta
         |> List.foldl find (State.state Nothing)
