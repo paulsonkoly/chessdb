@@ -7,9 +7,12 @@ module Board exposing
     , Move(..)
     , Piece(..)
     , boardParser
+    , capture
+    , disambiguate
     , emptyBoard
     , flip
     , get
+    , move
     , moveParser
     , putPiece
     )
@@ -65,7 +68,45 @@ type Disambiguity
 
 type Move
     = Castle Castle
-    | Normal Kind (Maybe Disambiguity) Bool Square (Maybe Kind)
+    | Normal
+        { kind : Kind
+        , disambiguity : Maybe Disambiguity
+        , capture : Bool
+        , destination : Square
+        , promotion : Maybe Kind
+        }
+
+
+move : Kind -> Square -> Move
+move kind destination =
+    Normal
+        { kind = kind
+        , disambiguity = Nothing
+        , capture = False
+        , destination = destination
+        , promotion = Nothing
+        }
+
+
+capture : Kind -> Square -> Move
+capture kind destination =
+    Normal
+        { kind = kind
+        , disambiguity = Nothing
+        , capture = False
+        , destination = destination
+        , promotion = Nothing
+        }
+
+
+disambiguate : Disambiguity -> Move -> Move
+disambiguate disambiguity moveE =
+    case moveE of
+        Normal nmove ->
+            Normal { nmove | disambiguity = Just disambiguity }
+
+        Castle _ ->
+            moveE
 
 
 
@@ -149,12 +190,27 @@ normalParser =
     Parser.oneOf
         [ Parser.succeed
             (\f r promotion ->
-                Normal Pawn Nothing False (square f r) promotion
+                Normal
+                    { kind = Pawn
+                    , disambiguity = Nothing
+                    , capture = False
+                    , destination = square f r
+                    , promotion = promotion
+                    }
             )
             |= Parser.backtrackable fileParser
             |= rankParser
             |= promotionParser
-        , Parser.succeed Normal
+        , Parser.succeed
+            (\kind disambiguity captrue destination promotion ->
+                Normal
+                    { kind = kind
+                    , disambiguity = disambiguity
+                    , capture = captrue
+                    , destination = destination
+                    , promotion = promotion
+                    }
+            )
             |= Parser.oneOf [ kindParser, Parser.succeed Pawn ]
             |= Parser.oneOf
                 [ disambiguityParser |> Parser.map Just

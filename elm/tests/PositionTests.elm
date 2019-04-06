@@ -25,24 +25,29 @@ suite =
                 , activeColour = White
                 , enPassant = Nothing
                 }
-
-            move kind to =
-                makeMove (Normal kind Nothing False to Nothing) pos
           in
           describe "king moves"
             [ test "removes the king from where it came from" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get e1) (move King e2))
+                        (Result.map
+                            (.board >> get e1)
+                            (make (move King e2) pos)
+                        )
                         (Ok Nothing)
             , test "puts the king on the new square" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get f2) (move King f2))
+                        (Result.map
+                            (.board >> get f2)
+                            (make (move King f2) pos)
+                        )
                         (Ok wk)
             , test "reports king not found if king is not there" <|
                 \_ ->
-                    Expect.equal (move King a1) (Err "King not found")
+                    Expect.equal
+                        (make (move King a1) pos)
+                        (Err "King not found")
             ]
         , let
             wn =
@@ -58,24 +63,29 @@ suite =
                 , activeColour = White
                 , enPassant = Nothing
                 }
-
-            move kind to =
-                makeMove (Normal kind Nothing False to Nothing) pos
           in
           describe "knight moves"
             [ test "removes the knight from where it came from" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get b1) (move Knight c3))
+                        (Result.map
+                            (.board >> get b1)
+                            (make (move Knight c3) pos)
+                        )
                         (Ok Nothing)
             , test "puts the Knights on the new square" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get c3) (move Knight c3))
+                        (Result.map
+                            (.board >> get c3)
+                            (make (move Knight c3) pos)
+                        )
                         (Ok wn)
             , test "reports knights not found if knight is not there" <|
                 \_ ->
-                    Expect.equal (move Knight d3) (Err "Knight not found")
+                    Expect.equal
+                        (make (move Knight d3) pos)
+                        (Err "Knight not found")
             , test "disambiguates correctly" <|
                 \_ ->
                     let
@@ -89,16 +99,15 @@ suite =
                                         |> putPiece a4 wn
                             }
 
-                        disambiguity =
-                            Just (RankDisambiguity (Rank 1))
-
-                        fromB1 =
-                            makeMove
-                                (Normal Knight disambiguity False c3 Nothing)
-                                knightsPos
+                        knightMove =
+                            move Knight c3
+                                |> disambiguate (RankDisambiguity (Rank 1))
                     in
                     Expect.equal
-                        (Result.map (.board >> get b1) fromB1)
+                        (Result.map
+                            (.board >> get b1)
+                            (make knightMove knightsPos)
+                        )
                         (Ok Nothing)
             ]
         , let
@@ -131,34 +140,49 @@ suite =
                 }
 
             castle kind colour =
-                makeMove (Castle kind) (pos colour)
+                make (Castle kind) (pos colour)
           in
           describe "castles"
             [ describe "white short"
                 [ test "removes the king from e1" <|
                     \_ ->
                         Expect.equal
-                            (Result.map (.board >> get e1) (castle Short White))
+                            (Result.map
+                                (.board >> get e1)
+                                (castle Short White)
+                            )
                             (Ok Nothing)
                 , test "puts the king to g1" <|
                     \_ ->
                         Expect.equal
-                            (Result.map (.board >> get g1) (castle Short White))
+                            (Result.map
+                                (.board >> get g1)
+                                (castle Short White)
+                            )
                             (Ok wk)
                 , test "removes the rook from h1" <|
                     \_ ->
                         Expect.equal
-                            (Result.map (.board >> get h1) (castle Short White))
+                            (Result.map
+                                (.board >> get h1)
+                                (castle Short White)
+                            )
                             (Ok Nothing)
                 , test "puts the rook to f1" <|
                     \_ ->
                         Expect.equal
-                            (Result.map (.board >> get f1) (castle Short White))
+                            (Result.map
+                                (.board >> get f1)
+                                (castle Short White)
+                            )
                             (Ok wr)
                 , test "changes the castling rights" <|
                     \_ ->
                         Expect.equal
-                            (Result.map .castlingAvailability (castle Short White))
+                            (Result.map
+                                .castlingAvailability
+                                (castle Short White)
+                            )
                             (Ok 12)
                 ]
             , describe "white long"
@@ -185,7 +209,10 @@ suite =
                 , test "changes the castling rights" <|
                     \_ ->
                         Expect.equal
-                            (Result.map .castlingAvailability (castle Long White))
+                            (Result.map
+                                .castlingAvailability
+                                (castle Long White)
+                            )
                             (Ok 12)
                 ]
             , describe "black short"
@@ -212,7 +239,10 @@ suite =
                 , test "changes the castling rights" <|
                     \_ ->
                         Expect.equal
-                            (Result.map .castlingAvailability (castle Short Black))
+                            (Result.map
+                                .castlingAvailability
+                                (castle Short Black)
+                            )
                             (Ok 3)
                 ]
             , describe "black long"
@@ -239,7 +269,10 @@ suite =
                 , test "changes the castling rights" <|
                     \_ ->
                         Expect.equal
-                            (Result.map .castlingAvailability (castle Long Black))
+                            (Result.map
+                                .castlingAvailability
+                                (castle Long Black)
+                            )
                             (Ok 3)
                 ]
             ]
@@ -257,24 +290,29 @@ suite =
                 , activeColour = White
                 , enPassant = Nothing
                 }
-
-            move kind to =
-                makeMove (Normal kind Nothing False to Nothing) pos
           in
           describe "bishop moves"
             [ test "removes the bishop from where it came from" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get d3) (move Bishop g6))
+                        (Result.map
+                            (.board >> get d3)
+                            (make (move Bishop g6) pos)
+                        )
                         (Ok Nothing)
             , test "puts the bishop on the new square" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get g6) (move Bishop g6))
+                        (Result.map
+                            (.board >> get g6)
+                            (make (move Bishop g6) pos)
+                        )
                         (Ok wb)
             , test "reports Bishop not found if bishop is not there" <|
                 \_ ->
-                    Expect.equal (move Bishop f6) (Err "Bishop not found")
+                    Expect.equal
+                        (make (move Bishop f6) pos)
+                        (Err "Bishop not found")
             , test "stops at pieces with ray casting" <|
                 \_ ->
                     let
@@ -284,7 +322,7 @@ suite =
                                 |> putPiece c3 (Just (Piece White King))
 
                         fromA1 =
-                            makeMove (Normal Bishop Nothing False e5 Nothing)
+                            make (move Bishop e5)
                                 { pos | board = rayBoard }
                     in
                     Expect.equal
@@ -298,15 +336,18 @@ suite =
                                 |> putPiece a1 wb
                                 |> putPiece h8 wb
 
-                        disambiguity =
-                            Just (FileDisambiguity fileA)
+                        bishopMove =
+                            move Bishop e5
+                                |> disambiguate (FileDisambiguity fileA)
 
-                        fromA1 =
-                            makeMove (Normal Bishop disambiguity False e5 Nothing)
-                                { pos | board = rayBoard }
+                        bishopPos =
+                            { pos | board = rayBoard }
                     in
                     Expect.equal
-                        (Result.map (.board >> get a1) fromA1)
+                        (Result.map
+                            (.board >> get a1)
+                            (make bishopMove bishopPos)
+                        )
                         (Ok Nothing)
             ]
         , let
@@ -323,24 +364,29 @@ suite =
                 , activeColour = White
                 , enPassant = Nothing
                 }
-
-            move kind to =
-                makeMove (Normal kind Nothing False to Nothing) pos
           in
           describe "rook moves"
             [ test "removes the rook from where it came from" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get d3) (move Rook f3))
+                        (Result.map
+                            (.board >> get d3)
+                            (make (move Rook f3) pos)
+                        )
                         (Ok Nothing)
             , test "puts the rook on the new square" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get f3) (move Rook f3))
+                        (Result.map
+                            (.board >> get f3)
+                            (make (move Rook f3) pos)
+                        )
                         (Ok wr)
             , test "reports Rook not found if rook is not there" <|
                 \_ ->
-                    Expect.equal (move Rook e4) (Err "Rook not found")
+                    Expect.equal
+                        (make (move Rook e4) pos)
+                        (Err "Rook not found")
             , test "stops at pieces with ray casting" <|
                 \_ ->
                     let
@@ -350,7 +396,7 @@ suite =
                                 |> putPiece e3 (Just (Piece White King))
 
                         fromD3 =
-                            makeMove (Normal Rook Nothing False f3 Nothing)
+                            make (move Rook f3)
                                 { pos | board = rayBoard }
                     in
                     Expect.equal
@@ -364,15 +410,15 @@ suite =
                                 |> putPiece a2 wr
                                 |> putPiece h2 wr
 
-                        disambiguity =
-                            Just (FileDisambiguity fileA)
+                        rookMove =
+                            move Rook e2
+                                |> disambiguate (FileDisambiguity fileA)
 
-                        fromA2 =
-                            makeMove (Normal Rook disambiguity False e2 Nothing)
-                                { pos | board = rayBoard }
+                        rookPos =
+                            { pos | board = rayBoard }
                     in
                     Expect.equal
-                        (Result.map (.board >> get a2) fromA2)
+                        (Result.map (.board >> get a2) (make rookMove rookPos))
                         (Ok Nothing)
             ]
         , let
@@ -388,20 +434,23 @@ suite =
                 , activeColour = White
                 , enPassant = Nothing
                 }
-
-            move kind to =
-                makeMove (Normal kind Nothing False to Nothing) pos
           in
           describe "queen moves"
             [ test "can do bishop moves" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get g6) (move Queen g6))
+                        (Result.map
+                            (.board >> get g6)
+                            (make (move Queen g6) pos)
+                        )
                         (Ok wq)
             , test "can do rook moves" <|
                 \_ ->
                     Expect.equal
-                        (Result.map (.board >> get f3) (move Queen f3))
+                        (Result.map
+                            (.board >> get f3)
+                            (make (move Queen f3) pos)
+                        )
                         (Ok wq)
             ]
         , let
@@ -443,69 +492,100 @@ suite =
                 , enPassant = Nothing
                 }
 
-            move colour kind to =
-                makeMove (Normal kind Nothing False to Nothing)
-                    { position | activeColour = colour }
+            moveBy colour kind to =
+                make (move kind to) { position | activeColour = colour }
 
-            capture colour kind to =
-                makeMove (Normal kind Nothing True to Nothing)
-                    { position | activeColour = colour }
+            captureWith colour kind to =
+                make (capture kind to) { position | activeColour = colour }
           in
           describe "castling right changes"
             [ test "a move from a1 removes whites long castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (move White Rook c1))
+                        (Result.map
+                            .castlingAvailability
+                            (moveBy White Rook c1)
+                        )
                         (Ok 13)
             , test "a move to a1 removes whites long castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (capture Black Knight a1))
+                        (Result.map
+                            .castlingAvailability
+                            (captureWith Black Knight a1)
+                        )
                         (Ok 13)
             , test "a move from e1 removes whites all castles" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (move White King e2))
+                        (Result.map
+                            .castlingAvailability
+                            (moveBy White King e2)
+                        )
                         (Ok 12)
             , test "a move from h1 removes whites short castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (move White Rook g1))
+                        (Result.map
+                            .castlingAvailability
+                            (moveBy White Rook g1)
+                        )
                         (Ok 14)
             , test "a move to h1 removes whites short castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (capture Black Knight h1))
+                        (Result.map
+                            .castlingAvailability
+                            (captureWith Black Knight h1)
+                        )
                         (Ok 14)
             , test "a move from a8 removes blacks long castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (move Black Rook c8))
+                        (Result.map
+                            .castlingAvailability
+                            (moveBy Black Rook c8)
+                        )
                         (Ok 7)
             , test "a move to a8 removes blacks long castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (capture White Knight a8))
+                        (Result.map
+                            .castlingAvailability
+                            (captureWith White Knight a8)
+                        )
                         (Ok 7)
             , test "a move from e8 removes blacks all castles" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (move Black King e7))
+                        (Result.map
+                            .castlingAvailability
+                            (moveBy Black King e7)
+                        )
                         (Ok 3)
             , test "a move from h8 removes blacks short castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (move Black Rook g8))
+                        (Result.map
+                            .castlingAvailability
+                            (moveBy Black Rook g8)
+                        )
                         (Ok 11)
             , test "a move to h8 removes blacks short castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (capture White Knight h8))
+                        (Result.map
+                            .castlingAvailability
+                            (captureWith White Knight h8)
+                        )
                         (Ok 11)
             , test "a move from h1 to h8 removes both sides short castle" <|
                 \_ ->
                     Expect.equal
-                        (Result.map .castlingAvailability (capture White Rook h8))
+                        (Result.map
+                            .castlingAvailability
+                            (captureWith White Rook h8)
+                        )
                         (Ok 10)
             ]
         ]

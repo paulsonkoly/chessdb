@@ -1,4 +1,4 @@
-module Position exposing (Position, makeMove)
+module Position exposing (Position, make)
 
 import Bitwise as Bit
 import Board
@@ -24,9 +24,9 @@ type alias Position =
     }
 
 
-makeMove : Move -> Position -> Result String Position
-makeMove move position =
-    case move of
+make : Move -> Position -> Result String Position
+make moveE position =
+    case moveE of
         Castle kind ->
             let
                 ( rank, castleMask ) =
@@ -63,53 +63,23 @@ makeMove move position =
             in
             Ok { position | board = newB, castlingAvailability = castle }
 
-        Normal King Nothing _ destination Nothing ->
-            let
-                src =
-                    sourceSquare move position
-
-                pc =
-                    Piece position.activeColour King
-
-                upd sq =
-                    position.board
-                        |> Board.putPiece destination (Just pc)
-                        |> Board.putPiece sq Nothing
-
-                castle =
-                    case position.activeColour of
-                        White ->
-                            Bit.and position.castlingAvailability 12
-
-                        Black ->
-                            Bit.and position.castlingAvailability 3
-            in
-            src
-                |> Result.map
-                    (\sq ->
-                        { position
-                            | board = upd sq
-                            , castlingAvailability = castle
-                        }
-                    )
-
-        Normal kind disambiguity _ destination Nothing ->
+        Normal move ->
             let
                 rSource =
-                    sourceSquare move position
+                    sourceSquare moveE position
 
                 pc =
-                    Piece position.activeColour kind
+                    Piece position.activeColour move.kind
 
                 upd sq =
                     position.board
-                        |> Board.putPiece destination (Just pc)
+                        |> Board.putPiece move.destination (Just pc)
                         |> Board.putPiece sq Nothing
 
                 castle source =
                     updateCastlingAvailability
                         source
-                        destination
+                        move.destination
                         position.castlingAvailability
             in
             rSource
@@ -121,13 +91,10 @@ makeMove move position =
                         }
                     )
 
-        _ ->
-            Err "Not implemented yet"
-
 
 sourceSquare : Move -> Position -> Result String Square
-sourceSquare move position =
-    case move of
+sourceSquare moveE position =
+    case moveE of
         Castle _ ->
             case position.activeColour of
                 White ->
@@ -136,29 +103,13 @@ sourceSquare move position =
                 Black ->
                     Ok Board.e8
 
-        Normal King Nothing _ destination Nothing ->
+        Normal move ->
             let
                 piece =
-                    Board.Piece position.activeColour King
-
-                msource =
-                    Scanner.run
-                        (Scanner.king position.board
-                            (\b ix ->
-                                Board.get ix b == Just piece
-                            )
-                            destination
-                        )
-            in
-            Result.fromMaybe "King not found" msource
-
-        Normal kind disambiguity _ destination Nothing ->
-            let
-                piece =
-                    Board.Piece position.activeColour kind
+                    Board.Piece position.activeColour move.kind
 
                 condition b ix =
-                    case disambiguity of
+                    case move.disambiguity of
                         Just (FileDisambiguity fd) ->
                             Board.get ix b == Just piece && Board.file ix == fd
 
@@ -169,9 +120,10 @@ sourceSquare move position =
                             Board.get ix b == Just piece
 
                 scan scanner =
-                    Scanner.run (scanner position.board condition destination)
+                    Scanner.run
+                        (scanner position.board condition move.destination)
             in
-            case kind of
+            case move.kind of
                 Knight ->
                     scan Scanner.knight
                         |> Result.fromMaybe "Knight not found"
@@ -188,11 +140,12 @@ sourceSquare move position =
                     scan Scanner.rook
                         |> Result.fromMaybe "Rook not found"
 
+                King ->
+                    scan Scanner.king
+                        |> Result.fromMaybe "King not found"
+
                 _ ->
                     Err "Unexpected piece kind"
-
-        _ ->
-            Err "Unexpected move case"
 
 
 updateCastlingAvailability : Square -> Square -> Int -> Int
