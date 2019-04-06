@@ -20,6 +20,12 @@ import Maybe.Extra as Maybe
 import Parser exposing ((|.), (|=), Parser, Step)
 
 
+
+------------------------------------------------------------------------
+--                               Types                                --
+------------------------------------------------------------------------
+
+
 type Kind
     = Pawn
     | Rook
@@ -27,6 +33,45 @@ type Kind
     | Bishop
     | Queen
     | King
+
+
+type Colour
+    = White
+    | Black
+
+
+type Piece
+    = Piece Colour Kind
+
+
+type Board
+    = Board (Array (Maybe Piece))
+
+
+emptyBoard : Board
+emptyBoard =
+    Board (Array.repeat 64 Nothing)
+
+
+type Castle
+    = Short
+    | Long
+
+
+type Disambiguity
+    = FileDisambiguity File
+    | RankDisambiguity Rank
+
+
+type Move
+    = Castle Castle
+    | Normal Kind (Maybe Disambiguity) Bool Square (Maybe Kind)
+
+
+
+------------------------------------------------------------------------
+--                              Parsers                               --
+------------------------------------------------------------------------
 
 
 kindParser : Parser Kind
@@ -39,25 +84,6 @@ kindParser =
         , Parser.succeed Queen |. Parser.token "Q"
         , Parser.succeed King |. Parser.token "K"
         ]
-
-
-type Colour
-    = White
-    | Black
-
-
-flip : Colour -> Colour
-flip colour =
-    case colour of
-        White ->
-            Black
-
-        Black ->
-            White
-
-
-type Piece
-    = Piece Colour Kind
 
 
 pieceParser : Parser Piece
@@ -78,30 +104,6 @@ pieceParser =
         ]
 
 
-type Board
-    = Board (Array (Maybe Piece))
-
-
-emptyBoard : Board
-emptyBoard =
-    Board (Array.repeat 64 Nothing)
-
-
-putPiece : Square -> Maybe Piece -> Board -> Board
-putPiece (Square ix) piece (Board data) =
-    Board (Array.set ix piece data)
-
-
-get : Square -> Board -> Maybe Piece
-get (Square ix) (Board board) =
-    Maybe.join (Array.get ix board)
-
-
-type Castle
-    = Short
-    | Long
-
-
 castleParser : Parser Castle
 castleParser =
     Parser.oneOf
@@ -110,22 +112,12 @@ castleParser =
         ]
 
 
-type Disambiguity
-    = FileDisambiguity File
-    | RankDisambiguity Rank
-
-
 disambiguityParser : Parser Disambiguity
 disambiguityParser =
     Parser.oneOf
         [ fileParser |> Parser.map FileDisambiguity
         , rankParser |> Parser.map RankDisambiguity
         ]
-
-
-type Move
-    = Castle Castle
-    | Normal Kind (Maybe Disambiguity) Bool Square (Maybe Kind)
 
 
 moveParser : Parser Move
@@ -235,3 +227,29 @@ boardParser =
                     |= fenLineParser count board
                     |. Parser.token "/"
         )
+
+
+
+------------------------------------------------------------------------
+--                         Data manipulations                         --
+------------------------------------------------------------------------
+
+
+flip : Colour -> Colour
+flip colour =
+    case colour of
+        White ->
+            Black
+
+        Black ->
+            White
+
+
+putPiece : Square -> Maybe Piece -> Board -> Board
+putPiece (Square ix) piece (Board data) =
+    Board (Array.set ix piece data)
+
+
+get : Square -> Board -> Maybe Piece
+get (Square ix) (Board board) =
+    Maybe.join (Array.get ix board)
