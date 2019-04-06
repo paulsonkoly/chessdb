@@ -734,19 +734,21 @@ rayScanner :
     -> Square
     -> Scanner
 rayScanner board condition delta limit start =
-    start
+    offsetBy delta start
         |> State.tailRecM
-            (\sq ->
-                State.state <|
-                    if condition board sq then
-                        State.Done (Just sq)
+            (State.state
+                << Maybe.unwrap
+                    (State.Done Nothing)
+                    (\sq ->
+                        if condition board sq then
+                            State.Done (Just sq)
 
-                    else if limit sq || get sq board /= Nothing then
-                        State.Done Nothing
+                        else if limit sq || get sq board /= Nothing then
+                            State.Done Nothing
 
-                    else
-                        offsetBy delta sq
-                            |> Maybe.unwrap (State.Done Nothing) State.Loop
+                        else
+                            State.Loop (offsetBy delta sq)
+                    )
             )
 
 
