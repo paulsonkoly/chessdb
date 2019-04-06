@@ -14,6 +14,7 @@ module Board exposing
     , get
     , move
     , moveParser
+    , promote
     , putPiece
     )
 
@@ -96,6 +97,17 @@ capture kind destination =
         , capture = False
         , destination = destination
         , promotion = Nothing
+        }
+
+
+promote : Kind -> Square -> Move
+promote kind destination =
+    Normal
+        { kind = Pawn
+        , disambiguity = Nothing
+        , capture = False
+        , destination = destination
+        , promotion = Just kind
         }
 
 

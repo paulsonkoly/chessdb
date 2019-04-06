@@ -53,11 +53,15 @@ suite =
             wp =
                 Just (Piece White Pawn)
 
+            wq =
+                Just (Piece White Queen)
+
             b =
                 emptyBoard
                     |> putPiece a2 wp
                     |> putPiece b3 wp
                     |> putPiece c4 wp
+                    |> putPiece d7 wp
 
             pos =
                 { board = b
@@ -83,6 +87,14 @@ suite =
                             (make (move Pawn b4) pos)
                         )
                         (Ok wp)
+            , test "puts the promotion piece when needed" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            (.board >> get d8)
+                            (make (promote Queen d8) pos)
+                        )
+                        (Ok wq)
             , test "can make double pawn advances from the right squares" <|
                 \_ ->
                     Expect.equal

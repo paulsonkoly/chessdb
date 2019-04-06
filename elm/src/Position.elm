@@ -68,12 +68,13 @@ make moveE position =
                 rSource =
                     sourceSquare moveE position
 
-                pc =
-                    Piece position.activeColour move.kind
+                movedPiece =
+                    Piece position.activeColour <|
+                        Maybe.withDefault move.kind move.promotion
 
                 upd sq =
                     position.board
-                        |> Board.putPiece move.destination (Just pc)
+                        |> Board.putPiece move.destination (Just movedPiece)
                         |> Board.putPiece sq Nothing
 
                 castle source =
