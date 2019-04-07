@@ -56,12 +56,19 @@ suite =
             wq =
                 Just (Piece White Queen)
 
+            bp =
+                Just (Piece Black Pawn)
+
             b =
                 emptyBoard
                     |> putPiece a2 wp
                     |> putPiece b3 wp
                     |> putPiece c4 wp
                     |> putPiece d7 wp
+                    |> putPiece d5 bp
+                    |> putPiece g5 bp
+                    |> putPiece e4 wp
+                    |> putPiece h4 wp
 
             pos =
                 { board = b
@@ -70,7 +77,7 @@ suite =
                 , enPassant = Nothing
                 }
           in
-          describe "pawn advance"
+          describe "pawn move"
             [ test "removes the pawn from where it came from" <|
                 \_ ->
                     Expect.equal
@@ -123,6 +130,31 @@ suite =
                     Expect.equal
                         (make (move Pawn h4) pos)
                         (Err "Pawn not found")
+            , test "captures sideways (c4xd5)" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            (.board >> get d5)
+                            (make (capture Pawn d5) pos)
+                        )
+                        (Ok wp)
+            , test "captures sideways disambiuguates (f4xg5)" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            (.board >> get d5)
+                            (make (capture Pawn d5) pos)
+                        )
+                        (Ok wp)
+            , test "captures sideways disambiuguates (h4xg5)" <|
+                \_ ->
+                    Expect.equal
+                        (Result.map
+                            (.board >> get g5)
+                            (make (capture Pawn g5) pos)
+                        )
+                        (Ok wp)
+            , todo "en passant capture removes the opponents pawn"
             ]
         , let
             wn =
