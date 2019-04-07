@@ -173,22 +173,28 @@ king board condition start =
         |> List.foldl find (State.state Nothing)
 
 
-pawn : Colour -> Board -> (Board -> Square -> Bool) -> Square -> Scanner
-pawn colour board condition start =
+pawn : Colour -> Bool -> Board -> (Board -> Square -> Bool) -> Square -> Scanner
+pawn colour capture board condition start =
     let
         deltas =
-            case ( colour, rank start ) of
-                ( White, Rank 4 ) ->
+            case ( colour, capture, rank start ) of
+                ( White, False, Rank 4 ) ->
                     [ 8, 16 ]
 
-                ( White, _ ) ->
+                ( White, False, _ ) ->
                     [ 8 ]
 
-                ( Black, Rank 5 ) ->
+                ( White, True, _ ) ->
+                    [ 7, 9 ]
+
+                ( Black, False, Rank 5 ) ->
                     [ -8, -16 ]
 
-                ( Black, _ ) ->
+                ( Black, False, _ ) ->
                     [ -8 ]
+
+                ( Black, True, _ ) ->
+                    [ -7, -9 ]
 
         forDelta delta =
             State.state <|

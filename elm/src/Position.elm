@@ -145,7 +145,7 @@ sourceSquare moveE position =
                         |> Result.fromMaybe "King not found"
 
                 Pawn ->
-                    scan (Scanner.pawn position.activeColour)
+                    scan (Scanner.pawn position.activeColour move.capture)
                         |> Result.fromMaybe "Pawn not found"
 
 

@@ -94,7 +94,7 @@ capture kind destination =
     Normal
         { kind = kind
         , disambiguity = Nothing
-        , capture = False
+        , capture = True
         , destination = destination
         , promotion = Nothing
         }

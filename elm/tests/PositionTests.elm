@@ -67,7 +67,7 @@ suite =
                     |> putPiece d7 wp
                     |> putPiece d5 bp
                     |> putPiece g5 bp
-                    |> putPiece e4 wp
+                    |> putPiece f4 wp
                     |> putPiece h4 wp
 
             pos =
@@ -142,8 +142,13 @@ suite =
                 \_ ->
                     Expect.equal
                         (Result.map
-                            (.board >> get d5)
-                            (make (capture Pawn d5) pos)
+                            (.board >> get g5)
+                            (make
+                                (capture Pawn g5
+                                    |> disambiguate (FileDisambiguity fileF)
+                                )
+                                pos
+                            )
                         )
                         (Ok wp)
             , test "captures sideways disambiuguates (h4xg5)" <|
@@ -151,7 +156,12 @@ suite =
                     Expect.equal
                         (Result.map
                             (.board >> get g5)
-                            (make (capture Pawn g5) pos)
+                            (make
+                                (capture Pawn g5
+                                    |> disambiguate (FileDisambiguity fileH)
+                                )
+                                pos
+                            )
                         )
                         (Ok wp)
             , todo "en passant capture removes the opponents pawn"
