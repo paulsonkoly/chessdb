@@ -52,4 +52,18 @@ suite =
                             }
                         )
                     )
+        , test "Bxf2+" <|
+            \_ ->
+                Expect.equal
+                    (Parser.run Board.moveParser "Bxf2+")
+                    (Ok
+                        (Normal
+                            { kind = Bishop
+                            , disambiguity = Nothing
+                            , capture = True
+                            , destination = Board.f2
+                            , promotion = Nothing
+                            }
+                        )
+                    )
         ]

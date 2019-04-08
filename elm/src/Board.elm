@@ -230,9 +230,7 @@ promotionParser =
         [ Parser.succeed Just
             |. Parser.token "="
             |= kindParser
-            |. Parser.end
         , Parser.succeed Nothing
-            |. Parser.end
         ]
 
 
@@ -309,6 +307,11 @@ normalParser =
         |= kindParser
         |= middleParser
         |= promotionParser
+        |. Parser.oneOf
+            [ Parser.end
+            , Parser.token "+" |. Parser.end
+            , Parser.token "#" |. Parser.end
+            ]
 
 
 type FenItem
