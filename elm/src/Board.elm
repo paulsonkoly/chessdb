@@ -176,6 +176,7 @@ kindParser =
         , Parser.succeed Bishop |. Parser.token "B"
         , Parser.succeed Queen |. Parser.token "Q"
         , Parser.succeed King |. Parser.token "K"
+        , Parser.succeed Pawn
         ]
 
 
@@ -235,46 +236,66 @@ promotionParser =
         ]
 
 
-normalParser : Parser Move
-normalParser =
-    -- two main branches, 1.) starts with file followed by rank
-    --                    2.) everything else (backtracked 1.)
+captureParser : Parser Bool
+captureParser =
+    Parser.oneOf
+        [ Parser.succeed True |. Parser.token "x"
+        , Parser.succeed False
+        ]
+
+
+middleParser =
+    -- parses disambiguity capture destination part of the san move
+    -- main branches, 1.) e(x?)e5 <= first e is backtracked to match 3.)
+    --                2.) 5(x?)e5
+    --                3.) e5
     Parser.oneOf
         [ Parser.succeed
-            (\f r promotion ->
-                Normal
-                    { kind = Pawn
-                    , disambiguity = Nothing
-                    , capture = False
-                    , destination = square f r
-                    , promotion = promotion
-                    }
+            (\destination ->
+                { disambiguity = Nothing
+                , capture = False
+                , destination = destination
+                }
             )
-            |= Parser.backtrackable fileParser
-            |= rankParser
-            |= promotionParser
+            |= Parser.backtrackable squareParser
         , Parser.succeed
-            (\kind disambiguity captrue destination promotion ->
-                Normal
-                    { kind = kind
-                    , disambiguity = disambiguity
-                    , capture = captrue
-                    , destination = destination
-                    , promotion = promotion
-                    }
+            (\file capture_ destination ->
+                { disambiguity = Just (FileDisambiguity file)
+                , capture = capture_
+                , destination = destination
+                }
             )
-            |= Parser.oneOf [ kindParser, Parser.succeed Pawn ]
-            |= Parser.oneOf
-                [ disambiguityParser |> Parser.map Just
-                , Parser.succeed Nothing
-                ]
-            |= Parser.oneOf
-                [ Parser.succeed True |. Parser.token "x"
-                , Parser.succeed False
-                ]
+            |= fileParser
+            |= captureParser
             |= squareParser
-            |= promotionParser
+        , Parser.succeed
+            (\rank capture_ destination ->
+                { disambiguity = Just (RankDisambiguity rank)
+                , capture = capture_
+                , destination = destination
+                }
+            )
+            |= rankParser
+            |= captureParser
+            |= squareParser
         ]
+
+
+normalParser : Parser Move
+normalParser =
+    Parser.succeed
+        (\kind mid promotion ->
+            Normal
+                { kind = kind
+                , disambiguity = mid.disambiguity
+                , capture = mid.capture
+                , destination = mid.destination
+                , promotion = promotion
+                }
+        )
+        |= kindParser
+        |= middleParser
+        |= promotionParser
 
 
 type FenItem
