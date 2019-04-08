@@ -38,4 +38,18 @@ suite =
                             }
                         )
                     )
+        , test "Nxf7" <|
+            \_ ->
+                Expect.equal
+                    (Parser.run Board.moveParser "Nxf7")
+                    (Ok
+                        (Normal
+                            { kind = Knight
+                            , disambiguity = Nothing
+                            , capture = True
+                            , destination = Board.f7
+                            , promotion = Nothing
+                            }
+                        )
+                    )
         ]

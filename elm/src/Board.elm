@@ -246,9 +246,13 @@ captureParser =
 
 middleParser =
     -- parses disambiguity capture destination part of the san move
-    -- main branches, 1.) e(x?)e5 <= first e is backtracked to match 3.)
-    --                2.) 5(x?)e5
-    --                3.) e5
+    -- main branches, 1.) e5 <= first e is backtracked to match 3.)
+    --                2.) xe5
+    --                    Note that this will accept moves like "xe5" which is
+    --                    incorrect. Here we would have to know if it was
+    --                    preceeded by a piece kind
+    --                2.) e(x?)e5
+    --                3.) 5(x?)e5
     Parser.oneOf
         [ Parser.succeed
             (\destination ->
@@ -258,6 +262,15 @@ middleParser =
                 }
             )
             |= Parser.backtrackable squareParser
+        , Parser.succeed
+            (\destination ->
+                { disambiguity = Nothing
+                , capture = True
+                , destination = destination
+                }
+            )
+            |. Parser.token "x"
+            |= squareParser
         , Parser.succeed
             (\file capture_ destination ->
                 { disambiguity = Just (FileDisambiguity file)
