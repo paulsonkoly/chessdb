@@ -13,6 +13,7 @@ import Board
         )
 import Board.Scanner as Scanner
 import Board.Square as Board exposing (File(..), Rank(..), Square(..))
+import Maybe.Extra as Maybe
 import State
 
 
@@ -31,7 +32,7 @@ make moveE position =
             sourceSquare moveE position
 
         newBoard =
-            pieces moveE position.activeColour position.board
+            pieces moveE position
 
         newCastle =
             castles moveE position.castlingAvailability
@@ -50,46 +51,68 @@ make moveE position =
             )
 
 
-pieces : Move -> Colour -> Board -> Square -> Board
-pieces moveE colour board source =
-    let
-        movedPiece move =
-            Piece colour <|
-                Maybe.withDefault move.kind move.promotion
-    in
-    case ( colour, moveE ) of
+pieces : Move -> Position -> Square -> Board
+pieces moveE position source =
+    case ( position.activeColour, moveE ) of
         ( White, Castle Short ) ->
-            board
+            position.board
                 |> Board.putPiece Board.g1 (Just (Piece White King))
                 |> Board.putPiece Board.f1 (Just (Piece White Rook))
                 |> Board.putPiece Board.e1 Nothing
                 |> Board.putPiece Board.h1 Nothing
 
         ( White, Castle Long ) ->
-            board
+            position.board
                 |> Board.putPiece Board.c1 (Just (Piece White King))
                 |> Board.putPiece Board.d1 (Just (Piece White Rook))
                 |> Board.putPiece Board.e1 Nothing
                 |> Board.putPiece Board.a1 Nothing
 
         ( Black, Castle Short ) ->
-            board
+            position.board
                 |> Board.putPiece Board.g8 (Just (Piece Black King))
                 |> Board.putPiece Board.f8 (Just (Piece Black Rook))
                 |> Board.putPiece Board.e8 Nothing
                 |> Board.putPiece Board.h8 Nothing
 
         ( Black, Castle Long ) ->
-            board
+            position.board
                 |> Board.putPiece Board.c8 (Just (Piece Black King))
                 |> Board.putPiece Board.d8 (Just (Piece Black Rook))
                 |> Board.putPiece Board.e8 Nothing
                 |> Board.putPiece Board.a8 Nothing
 
         ( _, Normal move ) ->
-            board
-                |> Board.putPiece move.destination (Just (movedPiece move))
+            normalMovePieces move position source
+
+
+normalMovePieces move position source =
+    let
+        movedPiece =
+            Piece position.activeColour <|
+                Maybe.withDefault move.kind move.promotion
+
+        normal =
+            position.board
+                |> Board.putPiece move.destination (Just movedPiece)
                 |> Board.putPiece source Nothing
+
+        remove =
+            Board.square
+                (Board.file move.destination)
+                (Board.rank source)
+    in
+    case ( move.kind, move.capture, position.enPassant ) of
+        ( Pawn, true, Just enPassantSquare ) ->
+            if enPassantSquare == move.destination then
+                normal
+                    |> Board.putPiece remove Nothing
+
+            else
+                normal
+
+        _ ->
+            normal
 
 
 sourceSquare : Move -> Position -> Result String Square

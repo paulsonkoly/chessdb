@@ -164,7 +164,27 @@ suite =
                             )
                         )
                         (Ok wp)
-            , todo "en passant capture removes the opponents pawn"
+            , test "en passant capture removes the opponents pawn" <|
+                \_ ->
+                    let
+                        enPassantBoard =
+                            emptyBoard
+                                |> putPiece b4 wp
+                                |> putPiece c4 bp
+
+                        enPassantPos =
+                            { board = enPassantBoard
+                            , castlingAvailability = 15
+                            , activeColour = Black
+                            , enPassant = Just b3
+                            }
+                    in
+                    Expect.equal
+                        (Result.map
+                            (.board >> get b4)
+                            (make (capture Pawn b3) enPassantPos)
+                        )
+                        (Ok Nothing)
             ]
         , let
             wn =
