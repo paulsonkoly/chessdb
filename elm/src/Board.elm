@@ -9,19 +9,22 @@ module Board exposing
     , boardParser
     , capture
     , disambiguate
-    , emptyBoard
+    , empty
     , flip
     , get
+    , initial
     , move
     , moveParser
     , promote
     , putPiece
+    , toFen
     )
 
 import Array exposing (Array)
 import Board.Square exposing (..)
 import Maybe.Extra as Maybe
 import Parser exposing ((|.), (|=), Parser, Step)
+import State
 
 
 
@@ -52,9 +55,46 @@ type Board
     = Board (Array (Maybe Piece))
 
 
-emptyBoard : Board
-emptyBoard =
+empty : Board
+empty =
     Board (Array.repeat 64 Nothing)
+
+
+initial : Board
+initial =
+    empty
+        |> putPiece a1 (Just (Piece White Rook))
+        |> putPiece b1 (Just (Piece White Knight))
+        |> putPiece c1 (Just (Piece White Bishop))
+        |> putPiece d1 (Just (Piece White Queen))
+        |> putPiece e1 (Just (Piece White King))
+        |> putPiece f1 (Just (Piece White Bishop))
+        |> putPiece g1 (Just (Piece White Knight))
+        |> putPiece h1 (Just (Piece White Rook))
+        |> putPiece a2 (Just (Piece White Pawn))
+        |> putPiece b2 (Just (Piece White Pawn))
+        |> putPiece c2 (Just (Piece White Pawn))
+        |> putPiece d2 (Just (Piece White Pawn))
+        |> putPiece e2 (Just (Piece White Pawn))
+        |> putPiece f2 (Just (Piece White Pawn))
+        |> putPiece g2 (Just (Piece White Pawn))
+        |> putPiece h2 (Just (Piece White Pawn))
+        |> putPiece a7 (Just (Piece Black Pawn))
+        |> putPiece b7 (Just (Piece Black Pawn))
+        |> putPiece c7 (Just (Piece Black Pawn))
+        |> putPiece d7 (Just (Piece Black Pawn))
+        |> putPiece e7 (Just (Piece Black Pawn))
+        |> putPiece f7 (Just (Piece Black Pawn))
+        |> putPiece g7 (Just (Piece Black Pawn))
+        |> putPiece h7 (Just (Piece Black Pawn))
+        |> putPiece a8 (Just (Piece Black Rook))
+        |> putPiece b8 (Just (Piece Black Knight))
+        |> putPiece c8 (Just (Piece Black Bishop))
+        |> putPiece d8 (Just (Piece Black Queen))
+        |> putPiece e8 (Just (Piece Black King))
+        |> putPiece f8 (Just (Piece Black Bishop))
+        |> putPiece g8 (Just (Piece Black Knight))
+        |> putPiece h8 (Just (Piece Black Rook))
 
 
 type Castle
@@ -283,7 +323,7 @@ fenLineParser startCount startBoard =
 boardParser : Parser Board
 boardParser =
     Parser.loop
-        ( 0, emptyBoard )
+        ( 0, empty )
         (\( count, board ) ->
             if count == 56 then
                 Parser.succeed (\lineUpdated -> Parser.Done lineUpdated)
@@ -298,6 +338,132 @@ boardParser =
 
 
 
+------------------------------------------------------------------------
+--                             transforms                             --
+------------------------------------------------------------------------
+
+
+pieceToFen piece =
+    case piece of
+        Piece White Pawn ->
+            "P"
+
+        Piece White Rook ->
+            "R"
+
+        Piece White Knight ->
+            "N"
+
+        Piece White Bishop ->
+            "B"
+
+        Piece White Queen ->
+            "Q"
+
+        Piece White King ->
+            "K"
+
+        Piece Black Pawn ->
+            "p"
+
+        Piece Black Rook ->
+            "r"
+
+        Piece Black Knight ->
+            "n"
+
+        Piece Black Bishop ->
+            "b"
+
+        Piece Black Queen ->
+            "q"
+
+        Piece Black King ->
+            "k"
+
+
+type alias ToFenState =
+    { ix : Int, gapCount : Int, string : String }
+
+
+toFenStep : Maybe Piece -> ToFenState -> ToFenState
+toFenStep mPiece state =
+    let
+        separator =
+            if modBy 8 state.ix == 7 && state.ix /= 63 then
+                "/"
+
+            else
+                ""
+
+        newIx =
+            state.ix + 1
+
+        newGapCount =
+            case mPiece of
+                Just piece ->
+                    0
+
+                Nothing ->
+                    if modBy 8 state.ix == 7 then
+                        0
+
+                    else
+                        state.gapCount + 1
+
+        string =
+            case mPiece of
+                Just piece ->
+                    pieceToFen piece
+
+                Nothing ->
+                    ""
+
+        gapOut =
+            if state.gapCount /= 0 then
+                String.fromInt <| state.gapCount
+
+            else
+                ""
+
+        gapString =
+            case mPiece of
+                Just piece ->
+                    gapOut
+
+                Nothing ->
+                    if modBy 8 state.ix == 7 then
+                        String.fromInt <| state.gapCount + 1
+
+                    else
+                        ""
+    in
+    { ix = newIx, gapCount = newGapCount, string = state.string ++ gapString ++ string ++ separator }
+
+
+toFen : Board -> String
+toFen (Board data) =
+    List.foldl toFenStep { ix = 0, gapCount = 0, string = "" } (Array.toList data)
+        |> .string
+
+
+
+--     State.finalValue { ix = 0, gapCount = 0  }
+--         |< State.foldlM
+--             (\mPiece str ->
+--                 State.get |> State.andThen (\{ ix , count } ->
+--                     State.modify (\{ix, gapCount} -> { ix + 1, gapCount }) <|
+--                         case (ix modBy 8, mPiece) of ->
+--                             (_, Nothing) ->
+--                             (_, Just piece) ->
+--                                 State.modify (\{ix, gapCount} -> { ix, 0 })
+--                                     |> State.state State.state (str ++ (pieceToFen piece))
+--                             (7, Nothing) ->
+--                             (7, Just piece) ->
+--                  )
+--             )
+--             ""
+--             (Array.toList data)
 ------------------------------------------------------------------------
 --                         Data manipulations                         --
 ------------------------------------------------------------------------

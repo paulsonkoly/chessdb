@@ -1,4 +1,4 @@
-module Position exposing (Position, make)
+module Position exposing (Position, init, make, urlEncode)
 
 import Bitwise as Bit
 import Board
@@ -15,6 +15,7 @@ import Board.Scanner as Scanner
 import Board.Square as Board exposing (File(..), Rank(..), Square(..))
 import Maybe.Extra as Maybe
 import State
+import Url.Builder as Url
 
 
 type alias Position =
@@ -22,6 +23,15 @@ type alias Position =
     , castlingAvailability : Int
     , activeColour : Colour
     , enPassant : Maybe Square
+    }
+
+
+init : Position
+init =
+    { board = Board.initial
+    , castlingAvailability = 15
+    , activeColour = White
+    , enPassant = Nothing
     }
 
 
@@ -38,7 +48,7 @@ make moveE position =
             castles moveE position.castlingAvailability
 
         newEnPassant =
-            enPassant moveE position.activeColour
+            updateEnPassant moveE position.activeColour
     in
     rSource
         |> Result.map
@@ -47,6 +57,7 @@ make moveE position =
                     | board = newBoard source
                     , castlingAvailability = newCastle source
                     , enPassant = newEnPassant source
+                    , activeColour = Board.flip position.activeColour
                 }
             )
 
@@ -237,13 +248,8 @@ castles moveE castling source =
     Bit.and (Bit.complement mask) castling
 
 
-updateActiveColour : Move -> Position -> Position
-updateActiveColour _ position =
-    { position | activeColour = Board.flip position.activeColour }
-
-
-enPassant : Move -> Colour -> Square -> Maybe Square
-enPassant moveE colour source =
+updateEnPassant : Move -> Colour -> Square -> Maybe Square
+updateEnPassant moveE colour source =
     case moveE of
         Castle _ ->
             Nothing
@@ -263,3 +269,25 @@ enPassant moveE colour source =
 
                 _ ->
                     Nothing
+
+
+toUrlQueryParameterColour : String -> Colour -> Url.QueryParameter
+toUrlQueryParameterColour str colour =
+    case colour of
+        White ->
+            Url.int str 0
+
+        Black ->
+            Url.int str 1
+
+
+urlEncode : Position -> List Url.QueryParameter
+urlEncode { board, castlingAvailability, activeColour, enPassant } =
+    Maybe.values
+        [ Just (Url.string "fen" (Board.toFen board))
+        , Just (Url.int "castle" castlingAvailability)
+        , Just (toUrlQueryParameterColour "active_colour" activeColour)
+
+        -- TODO this should belong to square not board
+        , enPassant |> Maybe.map (Board.toUrlQueryParameter "en_passant")
+        ]

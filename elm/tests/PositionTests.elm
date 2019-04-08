@@ -15,7 +15,7 @@ suite =
                 Just (Piece White King)
 
             b =
-                emptyBoard
+                Board.empty
                     |> putPiece e1 wk
                     |> putPiece e8 wk
 
@@ -60,7 +60,7 @@ suite =
                 Just (Piece Black Pawn)
 
             b =
-                emptyBoard
+                Board.empty
                     |> putPiece a2 wp
                     |> putPiece b3 wp
                     |> putPiece c4 wp
@@ -168,7 +168,7 @@ suite =
                 \_ ->
                     let
                         enPassantBoard =
-                            emptyBoard
+                            Board.empty
                                 |> putPiece b4 wp
                                 |> putPiece c4 bp
 
@@ -191,7 +191,7 @@ suite =
                 Just (Piece White Knight)
 
             b =
-                emptyBoard
+                Board.empty
                     |> putPiece b1 wn
 
             pos =
@@ -261,7 +261,7 @@ suite =
                 Just (Piece Black Rook)
 
             b =
-                emptyBoard
+                Board.empty
                     |> putPiece e1 wk
                     |> putPiece e8 bk
                     |> putPiece a1 wr
@@ -418,7 +418,7 @@ suite =
                 Just (Piece White Bishop)
 
             b =
-                emptyBoard
+                Board.empty
                     |> putPiece d3 wb
 
             pos =
@@ -454,7 +454,7 @@ suite =
                 \_ ->
                     let
                         rayBoard =
-                            emptyBoard
+                            Board.empty
                                 |> putPiece a1 wb
                                 |> putPiece c3 (Just (Piece White King))
 
@@ -469,7 +469,7 @@ suite =
                 \_ ->
                     let
                         rayBoard =
-                            emptyBoard
+                            Board.empty
                                 |> putPiece a1 wb
                                 |> putPiece h8 wb
 
@@ -492,7 +492,7 @@ suite =
                 Just (Piece White Rook)
 
             b =
-                emptyBoard
+                Board.empty
                     |> putPiece d3 wr
 
             pos =
@@ -528,7 +528,7 @@ suite =
                 \_ ->
                     let
                         rayBoard =
-                            emptyBoard
+                            Board.empty
                                 |> putPiece d3 wr
                                 |> putPiece e3 (Just (Piece White King))
 
@@ -543,7 +543,7 @@ suite =
                 \_ ->
                     let
                         rayBoard =
-                            emptyBoard
+                            Board.empty
                                 |> putPiece a2 wr
                                 |> putPiece h2 wr
 
@@ -563,7 +563,7 @@ suite =
                 Just (Piece White Queen)
 
             b =
-                emptyBoard |> putPiece d3 wq
+                Board.empty |> putPiece d3 wq
 
             pos =
                 { board = b
@@ -610,7 +610,7 @@ suite =
                 Just (Piece Black Knight)
 
             b =
-                emptyBoard
+                Board.empty
                     |> putPiece a1 wr
                     |> putPiece e1 wk
                     |> putPiece h1 wr

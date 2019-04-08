@@ -3,15 +3,15 @@
   var app = Elm.MoveExplorer.init({
     node: document.getElementById("move_explorer")
   });
-  var chessboard;
+  <%# var chessboard; %>
 
-  app.ports.signalDomRendered.subscribe(function (msg) {
-    requestAnimationFrame(function() {
-      chessboard = ChessBoard('chessboard', 'start');
-    });
-  });
+  <%# app.ports.signalDomRendered2.subscribe(function (msg) { %>
+  <%#   requestAnimationFrame(function() { %>
+  <%#     chessboard = ChessBoard('chessboard', 'start'); %>
+  <%#   }); %>
+  <%# }); %>
 
-  app.ports.signalFenChanged.subscribe(function (fen) {
-    chessboard.position(fen);
-  });
+  <%# app.ports.signalFenChanged2.subscribe(function (fen) { %>
+  <%#   chessboard.position(fen); %>
+  <%# }); %>
 </script>

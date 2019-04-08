@@ -35,7 +35,7 @@ suite =
                 \_ ->
                     let
                         b =
-                            emptyBoard |> putPiece c2 (Just (Piece White King))
+                            Board.empty |> putPiece c2 (Just (Piece White King))
 
                         p _ sq =
                             get sq b == Just (Piece White King)
@@ -48,7 +48,7 @@ suite =
                 \_ ->
                     let
                         b =
-                            emptyBoard |> putPiece c2 (Just (Piece White King))
+                            Board.empty |> putPiece c2 (Just (Piece White King))
 
                         p _ sq =
                             get sq b == Just (Piece White King)
@@ -61,7 +61,7 @@ suite =
                 \( k, o ) ->
                     let
                         b =
-                            emptyBoard |> putPiece k (Just (Piece White King))
+                            Board.empty |> putPiece k (Just (Piece White King))
 
                         p _ sq =
                             get sq b == Just (Piece White King)

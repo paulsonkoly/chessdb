@@ -82,10 +82,12 @@ module Board.Square exposing
     , rankParser
     , square
     , squareParser
+    , toUrlQueryParameter
     , vDist
     )
 
 import Parser exposing ((|.), (|=), Parser)
+import Url.Builder as Url
 
 
 
@@ -442,6 +444,17 @@ squareParser =
     Parser.succeed square
         |= fileParser
         |= rankParser
+
+
+
+------------------------------------------------------------------------
+--                            Transformers                            --
+------------------------------------------------------------------------
+
+
+toUrlQueryParameter : String -> Square -> Url.QueryParameter
+toUrlQueryParameter str (Square ix) =
+    Url.int str ((7 - (ix // 8)) * 8 + modBy 8 ix)
 
 
 

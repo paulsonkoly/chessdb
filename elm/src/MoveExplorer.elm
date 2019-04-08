@@ -6,8 +6,9 @@ import Html exposing (Html, div)
 import Http
 import Loadable exposing (Loadable(..))
 import Maybe.Extra as Maybe
+import Parser
 import Popularities exposing (Popularities)
-import Position
+import Position exposing (Position)
 import Url.Builder as Url
 
 
@@ -18,17 +19,16 @@ port signalFenChanged2 : String -> Cmd msg
 
 
 type alias Model =
-    { fenPosition : String
-    , castlingAvailability : Int
-    , activeColour : Int
-    , enPassant : Maybe Int
+    { position : Position
     , popularities : Loadable Popularities
     }
 
 
-type Msg
-    = SetPosition String Int Int (Maybe Int)
-    | PopularitiesReceived (Result Http.Error Popularities)
+type
+    Msg
+    --    = SetPosition String Int Int (Maybe Int)
+    --    | PopularitiesReceived (Result Http.Error Popularities)
+    = PopularitiesReceived (Result Http.Error Popularities)
     | PopularitiesEvent Popularities.Msg
 
 
@@ -41,18 +41,12 @@ main =
         }
 
 
-cmdFetchPopularitiesFor : Model -> Cmd Msg
-cmdFetchPopularitiesFor model =
+cmdFetchPopularitiesFor : Position -> Cmd Msg
+cmdFetchPopularitiesFor position =
     let
         url =
             Url.absolute [ "moves", "popularities.json" ]
-                (Maybe.values
-                    [ Just (Url.string "fen" model.fenPosition)
-                    , Just (Url.int "castle" model.castlingAvailability)
-                    , Just (Url.int "active_colour" model.activeColour)
-                    , model.enPassant |> Maybe.map (Url.int "en_passant")
-                    ]
-                )
+                (Position.urlEncode position)
     in
     Http.get
         { url = url
@@ -65,14 +59,11 @@ init : () -> ( Model, Cmd Msg )
 init () =
     let
         model =
-            { fenPosition = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-            , castlingAvailability = 15
-            , activeColour = 0
-            , enPassant = Nothing
+            { position = Position.init
             , popularities = Loading
             }
     in
-    ( model, cmdFetchPopularitiesFor model )
+    ( model, cmdFetchPopularitiesFor Position.init )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -83,26 +74,49 @@ update msg model =
             ( { model | popularities = Loaded receivedData }, Cmd.none )
 
         ------------------------------------------------------------------------
-        SetPosition fenPosition castlingAvailability activeColour enPassant ->
+        -- SetPosition fenPosition castlingAvailability activeColour enPassant ->
+        --     let
+        --         newModel =
+        --             { model
+        --                 | fenPosition = fenPosition
+        --                 , castlingAvailability = castlingAvailability
+        --                 , activeColour = activeColour
+        --                 , enPassant = enPassant
+        --                 , popularities = Loading
+        --             }
+        --     in
+        --     ( newModel
+        --     , Cmd.batch
+        --         [ signalFenChanged2 fenPosition
+        --         , cmdFetchPopularitiesFor newModel
+        --         ]
+        --     )
+        PopularitiesEvent (Popularities.MoveClicked san) ->
             let
-                newModel =
-                    { model
-                        | fenPosition = fenPosition
-                        , castlingAvailability = castlingAvailability
-                        , activeColour = activeColour
-                        , enPassant = enPassant
-                        , popularities = Loading
-                    }
+                eMove =
+                    Parser.run Board.moveParser san
             in
-            ( newModel
-            , Cmd.batch
-                [ signalFenChanged2 fenPosition
-                , cmdFetchPopularitiesFor newModel
-                ]
-            )
+            case eMove of
+                Ok move ->
+                    let
+                        ePosition =
+                            Position.make move model.position
+                    in
+                    case ePosition of
+                        Ok newPosition ->
+                            ( { position = newPosition, popularities = Loading }
+                            , Cmd.batch
+                                [ -- signalFenChanged2 fenPosition
+                                  cmdFetchPopularitiesFor newPosition
+                                ]
+                            )
 
-        PopularitiesEvent (Popularities.MoveClicked move) ->
-            ( model, Cmd.none )
+                        Err _ ->
+                            ( model, Cmd.none )
+
+                Err oops ->
+                    -- TODO
+                    ( model, Cmd.none )
 
 
 view : Model -> Html Msg
