@@ -9,7 +9,8 @@ module Board.Scanner exposing
     , run
     )
 
-import Board exposing (Board, Colour(..))
+import Board exposing (Board)
+import Board.Colour exposing (Colour(..))
 import Board.Square as Square
     exposing
         ( Rank(..)

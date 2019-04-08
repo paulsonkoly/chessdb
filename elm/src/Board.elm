@@ -1,7 +1,6 @@
 module Board exposing
     ( Board
     , Castle(..)
-    , Colour(..)
     , Disambiguity(..)
     , Kind(..)
     , Move(..)
@@ -10,7 +9,6 @@ module Board exposing
     , capture
     , disambiguate
     , empty
-    , flip
     , get
     , initial
     , move
@@ -21,6 +19,7 @@ module Board exposing
     )
 
 import Array exposing (Array)
+import Board.Colour exposing (Colour(..))
 import Board.Square exposing (..)
 import Maybe.Extra as Maybe
 import Parser exposing ((|.), (|=), Parser, Step)
@@ -40,11 +39,6 @@ type Kind
     | Bishop
     | Queen
     | King
-
-
-type Colour
-    = White
-    | Black
 
 
 type Piece
@@ -485,35 +479,9 @@ toFen (Board data) =
 
 
 
---     State.finalValue { ix = 0, gapCount = 0  }
---         |< State.foldlM
---             (\mPiece str ->
---                 State.get |> State.andThen (\{ ix , count } ->
---                     State.modify (\{ix, gapCount} -> { ix + 1, gapCount }) <|
---                         case (ix modBy 8, mPiece) of ->
---                             (_, Nothing) ->
---                             (_, Just piece) ->
---                                 State.modify (\{ix, gapCount} -> { ix, 0 })
---                                     |> State.state State.state (str ++ (pieceToFen piece))
---                             (7, Nothing) ->
---                             (7, Just piece) ->
---                  )
---             )
---             ""
---             (Array.toList data)
 ------------------------------------------------------------------------
 --                         Data manipulations                         --
 ------------------------------------------------------------------------
-
-
-flip : Colour -> Colour
-flip colour =
-    case colour of
-        White ->
-            Black
-
-        Black ->
-            White
 
 
 putPiece : Square -> Maybe Piece -> Board -> Board

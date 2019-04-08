@@ -5,12 +5,12 @@ import Board
     exposing
         ( Board
         , Castle(..)
-        , Colour(..)
         , Disambiguity(..)
         , Kind(..)
         , Move(..)
         , Piece(..)
         )
+import Board.Colour as Colour exposing (Colour(..))
 import Board.Scanner as Scanner
 import Board.Square as Board exposing (File(..), Rank(..), Square(..))
 import Maybe.Extra as Maybe
@@ -57,7 +57,7 @@ make moveE position =
                     | board = newBoard source
                     , castlingAvailability = newCastle source
                     , enPassant = newEnPassant source
-                    , activeColour = Board.flip position.activeColour
+                    , activeColour = Colour.flip position.activeColour
                 }
             )
 
@@ -271,22 +271,12 @@ updateEnPassant moveE colour source =
                     Nothing
 
 
-toUrlQueryParameterColour : String -> Colour -> Url.QueryParameter
-toUrlQueryParameterColour str colour =
-    case colour of
-        White ->
-            Url.int str 0
-
-        Black ->
-            Url.int str 1
-
-
 urlEncode : Position -> List Url.QueryParameter
 urlEncode { board, castlingAvailability, activeColour, enPassant } =
     Maybe.values
         [ Just (Url.string "fen" (Board.toFen board))
         , Just (Url.int "castle" castlingAvailability)
-        , Just (toUrlQueryParameterColour "active_colour" activeColour)
+        , Just (Colour.toUrlQueryParameter "active_colour" activeColour)
 
         -- TODO this should belong to square not board
         , enPassant |> Maybe.map (Board.toUrlQueryParameter "en_passant")

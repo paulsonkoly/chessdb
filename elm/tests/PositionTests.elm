@@ -1,6 +1,7 @@
 module PositionTests exposing (suite)
 
 import Board exposing (..)
+import Board.Colour exposing (Colour(..))
 import Board.Square exposing (..)
 import Expect exposing (Expectation)
 import Position exposing (..)

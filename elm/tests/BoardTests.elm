@@ -1,6 +1,7 @@
 module BoardTests exposing (suite)
 
 import Board exposing (..)
+import Board.Colour exposing (Colour(..))
 import Board.Scanner as Scanner exposing (Scanner)
 import Board.Square as Board exposing (..)
 import Expect exposing (Expectation)
