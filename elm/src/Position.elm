@@ -1,4 +1,4 @@
-module Position exposing (Position, init, make, urlEncode)
+module Position exposing (Position, fen, init, make, urlEncode)
 
 import Bitwise as Bit
 import Board
@@ -291,3 +291,8 @@ urlEncode { board, castlingAvailability, activeColour, enPassant } =
         -- TODO this should belong to square not board
         , enPassant |> Maybe.map (Board.toUrlQueryParameter "en_passant")
         ]
+
+
+fen : Position -> String
+fen position =
+    Board.toFen position.board

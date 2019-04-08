@@ -12,9 +12,6 @@ import Position exposing (Position)
 import Url.Builder as Url
 
 
-port signalDomRendered2 : () -> Cmd msg
-
-
 port signalFenChanged2 : String -> Cmd msg
 
 
@@ -106,8 +103,8 @@ update msg model =
                         Ok newPosition ->
                             ( { position = newPosition, popularities = Loading }
                             , Cmd.batch
-                                [ -- signalFenChanged2 fenPosition
-                                  cmdFetchPopularitiesFor newPosition
+                                [ signalFenChanged2 (Position.fen newPosition)
+                                , cmdFetchPopularitiesFor newPosition
                                 ]
                             )
 
