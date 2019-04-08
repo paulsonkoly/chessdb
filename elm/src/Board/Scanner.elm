@@ -179,7 +179,7 @@ pawn colour capture board condition start =
         deltas =
             case ( colour, capture, rank start ) of
                 ( White, False, Rank 4 ) ->
-                    [ 8, 16 ]
+                    [ 16, 8 ]
 
                 ( White, False, _ ) ->
                     [ 8 ]
@@ -188,7 +188,7 @@ pawn colour capture board condition start =
                     [ 7, 9 ]
 
                 ( Black, False, Rank 5 ) ->
-                    [ -8, -16 ]
+                    [ -16, -8 ]
 
                 ( Black, False, _ ) ->
                     [ -8 ]
@@ -203,4 +203,5 @@ pawn colour capture board condition start =
     in
     deltas
         |> List.map forDelta
+        -- important that foldl prioritizes right rhs ovel lhs
         |> List.foldl find (State.state Nothing)

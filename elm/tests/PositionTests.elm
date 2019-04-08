@@ -185,6 +185,27 @@ suite =
                             (make (capture Pawn b3) enPassantPos)
                         )
                         (Ok Nothing)
+            , test "can't jump over pieces" <|
+                \_ ->
+                    let
+                        jumpBoard =
+                            Board.empty
+                                |> putPiece c7 bp
+                                |> putPiece c6 bp
+
+                        jumpPos =
+                            { board = jumpBoard
+                            , castlingAvailability = 15
+                            , activeColour = Black
+                            , enPassant = Nothing
+                            }
+                    in
+                    Expect.equal
+                        (Result.map
+                            (.board >> get c7)
+                            (make (move Pawn c5) jumpPos)
+                        )
+                        (Ok bp)
             ]
         , let
             wn =
