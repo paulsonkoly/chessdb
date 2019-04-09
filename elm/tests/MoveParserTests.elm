@@ -1,6 +1,6 @@
 module MoveParserTests exposing (suite)
 
-import Board exposing (Disambiguity(..), Kind(..), Move(..))
+import Board exposing (Castle(..), Disambiguity(..), Kind(..), Move(..))
 import Board.Square as Board
 import Expect exposing (Expectation)
 import Parser
@@ -80,4 +80,14 @@ suite =
                             }
                         )
                     )
+        , test "O-O" <|
+            \_ ->
+                Expect.equal
+                    (Parser.run Board.moveParser "O-O")
+                    (Ok (Castle Short))
+        , test "O-O-O" <|
+            \_ ->
+                Expect.equal
+                    (Parser.run Board.moveParser "O-O-O")
+                    (Ok (Castle Long))
         ]
