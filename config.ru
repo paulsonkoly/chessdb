@@ -90,6 +90,13 @@ class App < Roda
         { token: token, moves: data }
       end
     end
+
+    r.on 'positions' do
+      r.get 'search' do
+        @active_menu = :position_search
+        app.erb_store.resolve_html(:position_search, binding)
+      end
+    end
   end
 end
 

@@ -1,0 +1,22 @@
+<div id="position_search"></div>
+<script>
+  var app = Elm.PositionSearch.init({
+    node: document.getElementById("position_search")
+  });
+
+  var chessboard;
+  var onChange = function(oldPos, newPos) {
+    app.ports.signalFenChanged3.send(ChessBoard.objToFen(newPos));
+  };
+
+  app.ports.signalDomRendered3.subscribe(function(msg) {
+    requestAnimationFrame(function() {
+      chessboard = ChessBoard('chessboard',
+        { draggable: true,
+          dropOffBoard: 'trash',
+          sparePieces: true,
+          onChange: onChange
+        })
+    })
+  });
+</script>

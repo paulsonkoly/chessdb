@@ -14,8 +14,11 @@ class Application
     @erb_store <<
       { token: :game_viewer, filename: 'templates/game_viewer.html.erb' } <<
       { token: :game_search, filename: 'templates/game_search.html.erb' } <<
-      { token: :move_explorer, filename: 'templates/move_explorer.html.erb' }
-        .freeze
+      { token: :move_explorer, filename: 'templates/move_explorer.html.erb' } <<
+      {
+        token: :position_search,
+        filename: 'templates/position_search.html.erb'
+      }.freeze
     @configuration = Configuration.new
     @repository = Repository.new(@configuration)
     @dependency_map =
