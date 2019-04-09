@@ -2,7 +2,7 @@ port module MoveExplorer exposing (main)
 
 import Board
 import Browser
-import Html exposing (Html, div)
+import Html exposing (Html, text)
 import Http
 import Loadable exposing (Loadable(..))
 import Maybe.Extra as Maybe
@@ -16,15 +16,12 @@ port signalFenChanged2 : String -> Cmd msg
 
 
 type alias Model =
-    { position : Position
+    { position : Result String Position
     , popularities : Loadable Popularities
     }
 
 
-type
-    Msg
-    --    = SetPosition String Int Int (Maybe Int)
-    --    | PopularitiesReceived (Result Http.Error Popularities)
+type Msg
     = PopularitiesReceived (Result Http.Error Popularities)
     | PopularitiesEvent Popularities.Msg
 
@@ -52,70 +49,78 @@ cmdFetchPopularitiesFor position =
         }
 
 
-init : () -> ( Model, Cmd Msg )
-init () =
+type alias Flags =
+    { fen : String
+    , castlingAvailability : Int
+    , activeColour : Int
+    , enPassant : Maybe Int
+    }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     let
+        position =
+            Position.specific
+                flags.fen
+                flags.castlingAvailability
+                flags.activeColour
+                flags.enPassant
+
         model =
-            { position = Position.init
+            { position = position
             , popularities = Loading
             }
     in
-    ( model, cmdFetchPopularitiesFor Position.init )
+    case position of
+        Ok p ->
+            ( model
+            , Cmd.batch
+                [ signalFenChanged2 flags.fen
+                , cmdFetchPopularitiesFor p
+                ]
+            )
+
+        Err _ ->
+            ( model, Cmd.none )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ------------------------------------------------------------------------
         PopularitiesReceived receivedData ->
             ( { model | popularities = Loaded receivedData }, Cmd.none )
 
-        ------------------------------------------------------------------------
-        -- SetPosition fenPosition castlingAvailability activeColour enPassant ->
-        --     let
-        --         newModel =
-        --             { model
-        --                 | fenPosition = fenPosition
-        --                 , castlingAvailability = castlingAvailability
-        --                 , activeColour = activeColour
-        --                 , enPassant = enPassant
-        --                 , popularities = Loading
-        --             }
-        --     in
-        --     ( newModel
-        --     , Cmd.batch
-        --         [ signalFenChanged2 fenPosition
-        --         , cmdFetchPopularitiesFor newModel
-        --         ]
-        --     )
         PopularitiesEvent (Popularities.MoveClicked san) ->
             let
-                eMove =
-                    Parser.run Board.moveParser san
-            in
-            case eMove of
-                Ok move ->
-                    let
-                        ePosition =
-                            Position.make move model.position
-                    in
-                    case ePosition of
-                        Ok newPosition ->
-                            ( { position = newPosition, popularities = Loading }
-                            , Cmd.batch
-                                [ signalFenChanged2 (Position.fen newPosition)
-                                , cmdFetchPopularitiesFor newPosition
+                move =
+                    Result.mapError Parser.deadEndsToString <|
+                        Parser.run Board.moveParser san
+
+                newPosition =
+                    Result.map2 Tuple.pair move model.position
+                        |> Result.andThen
+                            (\( m, p ) -> Position.make m p)
+
+                cmds =
+                    case newPosition of
+                        Ok position ->
+                            Cmd.batch
+                                [ signalFenChanged2 (Position.fen position)
+                                , cmdFetchPopularitiesFor position
                                 ]
-                            )
 
                         Err _ ->
-                            ( model, Cmd.none )
-
-                Err oops ->
-                    -- TODO
-                    ( model, Cmd.none )
+                            Cmd.none
+            in
+            ( { position = newPosition, popularities = Loading }, cmds )
 
 
 view : Model -> Html Msg
 view model =
-    Html.map PopularitiesEvent (Popularities.view model.popularities)
+    case model.position of
+        Ok _ ->
+            Html.map PopularitiesEvent (Popularities.view model.popularities)
+
+        Err oops ->
+            text oops

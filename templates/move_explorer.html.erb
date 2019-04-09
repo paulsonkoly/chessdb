@@ -8,7 +8,13 @@
 </div>
 <script>
   var app = Elm.MoveExplorer.init({
-    node: document.getElementById("move_explorer")
+    node: document.getElementById("move_explorer"),
+    flags: { 
+      fen: "<%= @fen %>",
+      castlingAvailability: <%= @castling_availability %>,
+      activeColour: <%= @active_colour %>,
+      enPassant: <%= @en_passant || 'null' %>
+    }
   });
   var chessboard;
 

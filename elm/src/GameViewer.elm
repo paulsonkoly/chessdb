@@ -1,9 +1,11 @@
 port module GameViewer exposing (main)
 
 import Array
+import Board
 import Browser
 import Browser.Dom as Dom
 import Browser.Events as Events
+import Browser.Navigation as Browser
 import Game exposing (..)
 import Game.Decoder exposing (..)
 import GameViewer.Model exposing (..)
@@ -12,9 +14,11 @@ import GameViewer.View exposing (..)
 import Http
 import Json.Decode as Decode
 import Loadable exposing (..)
+import Parser
 import Platform.Cmd
 import Platform.Sub
 import Popularities exposing (Popularities)
+import Position
 import Task
 import Url.Builder as Url
 
@@ -163,8 +167,72 @@ update msg model =
             , Cmd.none
             )
 
-        PopularitiesEvent _ ->
-            ( model, Cmd.none )
+        PopularitiesEvent (Popularities.MoveClicked san) ->
+            let
+                move =
+                    Result.mapError Parser.deadEndsToString <|
+                        Parser.run Board.moveParser san
+
+                -- TODO this code is horrendous
+                mFen =
+                    getMoveProperty
+                        model.move
+                        model
+                        .fenPosition
+                        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+
+                mCastlingAvailability =
+                    getMoveProperty
+                        model.move
+                        model
+                        .castlingAvailability
+                        15
+
+                mActiveColour =
+                    getMoveProperty
+                        model.move
+                        model
+                        .activeColour
+                        0
+
+                mEnPassant =
+                    getMoveProperty
+                        model.move
+                        model
+                        .enPassant
+                        Nothing
+
+                position =
+                    Maybe.map4 (\a b c d -> ( a, b, ( c, d ) ))
+                        mFen
+                        mCastlingAvailability
+                        mActiveColour
+                        mEnPassant
+                        |> Result.fromMaybe "move property Nothing"
+                        |> Result.andThen
+                            (\( a, b, ( c, d ) ) -> Position.specific a b c d)
+
+                newPosition =
+                    Result.map2 Tuple.pair move position
+                        |> Result.andThen
+                            (\( m, p ) -> Position.make m p)
+
+                eUrl =
+                    Result.map Position.urlEncode newPosition
+
+                cmd =
+                    case eUrl of
+                        Ok url ->
+                            Browser.load
+                                (Url.absolute
+                                    [ "moves", "explorer" ]
+                                    url
+                                )
+
+                        Err _ ->
+                            Cmd.none
+            in
+            ( model, cmd )
 
         ------------------------------------------------------------------------
         SetMoveNumberTo newMoveNumber scroll ->

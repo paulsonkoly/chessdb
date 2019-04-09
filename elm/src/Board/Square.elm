@@ -60,6 +60,7 @@ module Board.Square exposing
     , fileG
     , fileH
     , fileParser
+    , fromEncoded
     , g1
     , g2
     , g3
@@ -452,9 +453,23 @@ squareParser =
 ------------------------------------------------------------------------
 
 
+transform : Int -> Int
+transform ix =
+    (7 - (ix // 8)) * 8 + modBy 8 ix
+
+
 toUrlQueryParameter : String -> Square -> Url.QueryParameter
 toUrlQueryParameter str (Square ix) =
-    Url.int str ((7 - (ix // 8)) * 8 + modBy 8 ix)
+    Url.int str (transform ix)
+
+
+fromEncoded : Int -> Result String Square
+fromEncoded ix =
+    if ix >= 0 && ix < 64 then
+        Ok (Square (transform ix))
+
+    else
+        Err ("Square encoding is out of range " ++ String.fromInt ix)
 
 
 

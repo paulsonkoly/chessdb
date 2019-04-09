@@ -1,4 +1,4 @@
-module Position exposing (Position, fen, init, make, urlEncode)
+module Position exposing (Position, fen, init, make, specific, urlEncode)
 
 import Bitwise as Bit
 import Board
@@ -12,8 +12,9 @@ import Board
         )
 import Board.Colour as Colour exposing (Colour(..))
 import Board.Scanner as Scanner
-import Board.Square as Board exposing (File(..), Rank(..), Square(..))
+import Board.Square as Square exposing (File(..), Rank(..), Square(..))
 import Maybe.Extra as Maybe
+import Parser
 import State
 import Url.Builder as Url
 
@@ -33,6 +34,40 @@ init =
     , activeColour = White
     , enPassant = Nothing
     }
+
+
+specific : String -> Int -> Int -> Maybe Int -> Result String Position
+specific fenPosition castlingAvailability activeColour mEnPassant =
+    let
+        board =
+            Parser.run Board.boardParser fenPosition
+                |> Result.mapError Parser.deadEndsToString
+
+        colour =
+            Colour.fromEncoded activeColour
+
+        enPassant =
+            case Maybe.map Square.fromEncoded mEnPassant of
+                Just (Ok sq) ->
+                    Ok (Just sq)
+
+                Just (Err oops) ->
+                    Err oops
+
+                Nothing ->
+                    Ok Nothing
+    in
+    Result.map3
+        (\b c ep ->
+            { board = b
+            , castlingAvailability = castlingAvailability
+            , activeColour = c
+            , enPassant = ep
+            }
+        )
+        board
+        colour
+        enPassant
 
 
 make : Move -> Position -> Result String Position
@@ -67,31 +102,31 @@ pieces moveE position source =
     case ( position.activeColour, moveE ) of
         ( White, Castle Short ) ->
             position.board
-                |> Board.putPiece Board.g1 (Just (Piece White King))
-                |> Board.putPiece Board.f1 (Just (Piece White Rook))
-                |> Board.putPiece Board.e1 Nothing
-                |> Board.putPiece Board.h1 Nothing
+                |> Board.putPiece Square.g1 (Just (Piece White King))
+                |> Board.putPiece Square.f1 (Just (Piece White Rook))
+                |> Board.putPiece Square.e1 Nothing
+                |> Board.putPiece Square.h1 Nothing
 
         ( White, Castle Long ) ->
             position.board
-                |> Board.putPiece Board.c1 (Just (Piece White King))
-                |> Board.putPiece Board.d1 (Just (Piece White Rook))
-                |> Board.putPiece Board.e1 Nothing
-                |> Board.putPiece Board.a1 Nothing
+                |> Board.putPiece Square.c1 (Just (Piece White King))
+                |> Board.putPiece Square.d1 (Just (Piece White Rook))
+                |> Board.putPiece Square.e1 Nothing
+                |> Board.putPiece Square.a1 Nothing
 
         ( Black, Castle Short ) ->
             position.board
-                |> Board.putPiece Board.g8 (Just (Piece Black King))
-                |> Board.putPiece Board.f8 (Just (Piece Black Rook))
-                |> Board.putPiece Board.e8 Nothing
-                |> Board.putPiece Board.h8 Nothing
+                |> Board.putPiece Square.g8 (Just (Piece Black King))
+                |> Board.putPiece Square.f8 (Just (Piece Black Rook))
+                |> Board.putPiece Square.e8 Nothing
+                |> Board.putPiece Square.h8 Nothing
 
         ( Black, Castle Long ) ->
             position.board
-                |> Board.putPiece Board.c8 (Just (Piece Black King))
-                |> Board.putPiece Board.d8 (Just (Piece Black Rook))
-                |> Board.putPiece Board.e8 Nothing
-                |> Board.putPiece Board.a8 Nothing
+                |> Board.putPiece Square.c8 (Just (Piece Black King))
+                |> Board.putPiece Square.d8 (Just (Piece Black Rook))
+                |> Board.putPiece Square.e8 Nothing
+                |> Board.putPiece Square.a8 Nothing
 
         ( _, Normal move ) ->
             normalMovePieces move position source
@@ -109,9 +144,9 @@ normalMovePieces move position source =
                 |> Board.putPiece source Nothing
 
         remove =
-            Board.square
-                (Board.file move.destination)
-                (Board.rank source)
+            Square.square
+                (Square.file move.destination)
+                (Square.rank source)
     in
     case ( move.kind, move.capture, position.enPassant ) of
         ( Pawn, true, Just enPassantSquare ) ->
@@ -132,10 +167,10 @@ sourceSquare moveE position =
         Castle _ ->
             case position.activeColour of
                 White ->
-                    Ok Board.e1
+                    Ok Square.e1
 
                 Black ->
-                    Ok Board.e8
+                    Ok Square.e8
 
         Normal move ->
             let
@@ -145,10 +180,10 @@ sourceSquare moveE position =
                 condition b ix =
                     case move.disambiguity of
                         Just (FileDisambiguity fd) ->
-                            Board.get ix b == Just piece && Board.file ix == fd
+                            Board.get ix b == Just piece && Square.file ix == fd
 
                         Just (RankDisambiguity rd) ->
-                            Board.get ix b == Just piece && Board.rank ix == rd
+                            Board.get ix b == Just piece && Square.rank ix == rd
 
                         Nothing ->
                             Board.get ix b == Just piece
@@ -191,48 +226,48 @@ castles moveE castling source =
                 -- doesn't matter what, the source of the move will set no
                 -- castling to the side
                 Castle _ ->
-                    Board.e4
+                    Square.e4
 
                 Normal move ->
                     move.destination
 
         a1Mask =
-            if source == Board.a1 || destination == Board.a1 then
+            if source == Square.a1 || destination == Square.a1 then
                 2
 
             else
                 0
 
         e1Mask =
-            if source == Board.e1 then
+            if source == Square.e1 then
                 3
 
             else
                 0
 
         h1Mask =
-            if source == Board.h1 || destination == Board.h1 then
+            if source == Square.h1 || destination == Square.h1 then
                 1
 
             else
                 0
 
         a8Mask =
-            if source == Board.a8 || destination == Board.a8 then
+            if source == Square.a8 || destination == Square.a8 then
                 8
 
             else
                 0
 
         e8Mask =
-            if source == Board.e8 then
+            if source == Square.e8 then
                 12
 
             else
                 0
 
         h8Mask =
-            if source == Board.h8 || destination == Board.h8 then
+            if source == Square.h8 || destination == Square.h8 then
                 4
 
             else
@@ -257,15 +292,15 @@ updateEnPassant moveE colour source =
         Normal move ->
             case
                 ( ( colour, move.kind )
-                , Board.rank source
-                , Board.rank move.destination
+                , Square.rank source
+                , Square.rank move.destination
                 )
             of
                 ( ( White, Pawn ), Rank 2, Rank 4 ) ->
-                    Board.offsetBy 8 move.destination
+                    Square.offsetBy 8 move.destination
 
                 ( ( Black, Pawn ), Rank 7, Rank 5 ) ->
-                    Board.offsetBy -8 move.destination
+                    Square.offsetBy -8 move.destination
 
                 _ ->
                     Nothing
@@ -277,9 +312,7 @@ urlEncode { board, castlingAvailability, activeColour, enPassant } =
         [ Just (Url.string "fen" (Board.toFen board))
         , Just (Url.int "castle" castlingAvailability)
         , Just (Colour.toUrlQueryParameter "active_colour" activeColour)
-
-        -- TODO this should belong to square not board
-        , enPassant |> Maybe.map (Board.toUrlQueryParameter "en_passant")
+        , enPassant |> Maybe.map (Square.toUrlQueryParameter "en_passant")
         ]
 
 

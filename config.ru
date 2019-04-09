@@ -49,6 +49,18 @@ class App < Roda
 
     r.on 'moves' do
       r.get 'explorer' do
+        begin
+          @fen = r.params.fetch('fen',
+                               'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
+          @castling_availability = Integer(r.params.fetch('castle', 15))
+          @active_colour = Integer(r.params.fetch('active_colour', 0))
+          @en_passant = r.params['en_passant']&.yield_self do |i|
+            Integer(i)
+          end
+        rescue ArgumentError
+          halt 400
+        end
+
         @active_menu = :explorer
         app.erb_store.resolve_html(:move_explorer, binding)
       end
