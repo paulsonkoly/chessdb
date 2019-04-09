@@ -1,6 +1,6 @@
 module MoveParserTests exposing (suite)
 
-import Board exposing (Kind(..), Move(..))
+import Board exposing (Disambiguity(..), Kind(..), Move(..))
 import Board.Square as Board
 import Expect exposing (Expectation)
 import Parser
@@ -63,6 +63,20 @@ suite =
                             , capture = True
                             , destination = Board.f2
                             , promotion = Nothing
+                            }
+                        )
+                    )
+        , test "dxe8=N" <|
+            \_ ->
+                Expect.equal
+                    (Parser.run Board.moveParser "dxe8=N")
+                    (Ok
+                        (Normal
+                            { kind = Pawn
+                            , disambiguity = Just (FileDisambiguity Board.fileD)
+                            , capture = True
+                            , destination = Board.e8
+                            , promotion = Just Knight
                             }
                         )
                     )
