@@ -6,7 +6,7 @@ module Popularities exposing
     , view
     )
 
-import Html exposing (Html, div, text)
+import Html exposing (Html, div, table, tbody, td, text, th, thead, tr)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode exposing (Decoder)
@@ -58,17 +58,25 @@ popularityItemDecoder =
 
 view : Loadable Popularities -> Html Msg
 view popularities =
-    div [ class "card", id "popularity-card" ]
-        (div [ class "card-divider" ]
-            [ text "Moves in this position"
-            , div [ class "popularity-bar", style "float" "right" ]
-                [ div [ class "white-won" ] [ text "1-0" ]
-                , div [ class "draw" ] [ text "1/2-1/2" ]
-                , div [ class "black-won" ] [ text "0-1" ]
+    let
+        header =
+            thead []
+                [ th [] [ text "Move" ]
+                , th [] [ text "# in DB" ]
+                , th []
+                    [ div [ class "popularity-bar" ]
+                        [ div [ class "white-won" ] [ text "1-0" ]
+                        , div [ class "draw" ] [ text "1/2-1/2" ]
+                        , div [ class "black-won" ] [ text "0-1" ]
+                        ]
+                    ]
                 ]
-            ]
-            :: Loadable.viewLoadableList popularities viewNormalPopularities
-        )
+
+        body =
+            tbody [] <|
+                Loadable.viewLoadableList popularities viewNormalPopularities
+    in
+    table [ class "hover", class "popularities-list" ] [ header, body ]
 
 
 viewNormalPopularities : Popularities -> List (Html Msg)
@@ -79,12 +87,10 @@ viewNormalPopularities (Popularities { items }) =
 
 viewPopularityItem : PopularityItem -> Html Msg
 viewPopularityItem item =
-    div [ class "grid-x", onClick (MoveClicked item.nextSan) ]
-        [ div [ class "cell", class "medium-2" ] [ text item.nextSan ]
-        , div [ class "cell", class "medium-3" ]
-            [ text <| String.fromInt <| item.totalCount ]
-        , div [ class "cell", class "medium-7" ]
-            [ div [ class "popularity-bar" ] (viewPopularityItemBar item) ]
+    tr [ onClick (MoveClicked item.nextSan) ]
+        [ td [] [ text item.nextSan ]
+        , td [] [ text <| String.fromInt <| item.totalCount ]
+        , td [] [ div [ class "popularity-bar" ] (viewPopularityItemBar item) ]
         ]
 
 
