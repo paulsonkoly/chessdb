@@ -430,17 +430,17 @@ toFenStep mPiece state =
         newIx =
             state.ix + 1
 
-        newGapCount =
+        ( newGapCount, gapString ) =
             case mPiece of
                 Just piece ->
-                    0
+                    ( 0, gapOut )
 
                 Nothing ->
                     if modBy 8 state.ix == 7 then
-                        0
+                        ( 0, String.fromInt <| state.gapCount + 1 )
 
                     else
-                        state.gapCount + 1
+                        ( state.gapCount + 1, "" )
 
         string =
             case mPiece of
@@ -456,20 +456,11 @@ toFenStep mPiece state =
 
             else
                 ""
-
-        gapString =
-            case mPiece of
-                Just piece ->
-                    gapOut
-
-                Nothing ->
-                    if modBy 8 state.ix == 7 then
-                        String.fromInt <| state.gapCount + 1
-
-                    else
-                        ""
     in
-    { ix = newIx, gapCount = newGapCount, string = state.string ++ gapString ++ string ++ separator }
+    { ix = newIx
+    , gapCount = newGapCount
+    , string = state.string ++ gapString ++ string ++ separator
+    }
 
 
 toFen : Board -> String
