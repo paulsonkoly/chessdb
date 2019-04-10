@@ -79,6 +79,7 @@ viewBoardForm model =
                         , name "active_colour"
                         , type_ "checkbox"
                         , Colour.toHtmlAttribute model.position.activeColour
+                        , onCheck (Colour.fromHtmlToggle >> ActiveColourChecked)
                         ]
                         []
                     , label [ class "switch-paddle", for "active_colour" ]

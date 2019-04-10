@@ -77,6 +77,16 @@ update msg model =
             , Cmd.none
             )
 
+        ActiveColourChecked colour ->
+            let
+                position =
+                    model.position
+
+                newPosition =
+                    { position | activeColour = colour }
+            in
+            ( { model | position = newPosition }, Cmd.none )
+
         EnPassantInputted string ->
             let
                 eSquare =

@@ -2,6 +2,7 @@ module Board.Colour exposing
     ( Colour(..)
     , flip
     , fromEncoded
+    , fromHtmlToggle
     , toHtmlAttribute
     , toUrlQueryParameter
     )
@@ -32,16 +33,6 @@ toUrlQueryParameter str colour =
             Url.int str 1
 
 
-toHtmlAttribute : Colour -> Html.Attribute msg
-toHtmlAttribute colour =
-    case colour of
-        White ->
-            Attributes.checked True
-
-        Black ->
-            Attributes.checked False
-
-
 fromEncoded : Int -> Result String Colour
 fromEncoded i =
     case i of
@@ -53,6 +44,25 @@ fromEncoded i =
 
         _ ->
             Err ("colour encoding is out of range " ++ String.fromInt i)
+
+
+toHtmlAttribute : Colour -> Html.Attribute msg
+toHtmlAttribute colour =
+    case colour of
+        White ->
+            Attributes.checked True
+
+        Black ->
+            Attributes.checked False
+
+
+fromHtmlToggle : Bool -> Colour
+fromHtmlToggle bool =
+    if bool then
+        White
+
+    else
+        Black
 
 
 

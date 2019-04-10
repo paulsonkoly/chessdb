@@ -6,5 +6,6 @@ import Board.Colour exposing (Colour(..))
 
 type Msg
     = BoardFenChanged String
+    | ActiveColourChecked Colour
     | CastleChecked Colour Castle Bool
     | EnPassantInputted String
