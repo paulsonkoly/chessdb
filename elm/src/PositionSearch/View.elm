@@ -1,0 +1,101 @@
+module PositionSearch.View exposing (view)
+
+import Html exposing (Html, div, input, label, span, text)
+import Html.Attributes exposing (attribute, class, for, id, name, placeholder, style, type_)
+import PositionSearch.Model as Model exposing (Model)
+
+
+view : Model -> Html msg
+view model =
+    div [ class "grid-x", class "grid-padding-x" ]
+        [ div [ class "cell", class "medium-4" ]
+            [ div [ id "chessboard", style "width" "400px" ] [] ]
+        , div [ class "cell", class "medium-2" ]
+            [ viewBoardForm model ]
+        , div [ class "cell", class "medium-6" ]
+            [ text <| Debug.toString model.fenPosition ]
+        ]
+
+
+viewBoardForm : Model -> Html msg
+viewBoardForm model =
+    div [ class "grid-x" ]
+        [ div [ class "cell medium-6" ]
+            [ label []
+                [ text "Side to move"
+                , div [ class "switch" ]
+                    [ input [ class "switch-input", id "active_colour", name "active_colour", type_ "checkbox" ]
+                        []
+                    , label [ class "switch-paddle", for "active_colour" ]
+                        [ span [ attribute "aria-hidden" "true", class "switch-active" ]
+                            [ text "W" ]
+                        , span [ attribute "aria-hidden" "true", class "switch-inactive" ]
+                            [ text "B" ]
+                        ]
+                    ]
+                ]
+            ]
+        , div [ class "cell medium-6" ]
+            [ label []
+                [ text "En passant"
+                , input [ placeholder "square", type_ "text" ]
+                    []
+                ]
+            ]
+        , div [ class "cell medium-6" ]
+            [ label []
+                [ text "White short castle"
+                , div [ class "switch" ]
+                    [ input [ class "switch-input", id "white_short_castle", name "white_short_castle", type_ "checkbox" ]
+                        []
+                    , label [ class "switch-paddle", for "white_short_castle" ]
+                        [ span [ attribute "aria-hidden" "true", class "switch-active" ]
+                            [ text "On" ]
+                        , span [ attribute "aria-hidden" "true", class "switch-inactive" ]
+                            [ text "Off" ]
+                        ]
+                    ]
+                ]
+            , label []
+                [ text "White long castle"
+                , div [ class "switch" ]
+                    [ input [ class "switch-input", id "white_long_castle", name "white_long_castle", type_ "checkbox" ]
+                        []
+                    , label [ class "switch-paddle", for "white_long_castle" ]
+                        [ span [ attribute "aria-hidden" "true", class "switch-active" ]
+                            [ text "On" ]
+                        , span [ attribute "aria-hidden" "true", class "switch-inactive" ]
+                            [ text "Off" ]
+                        ]
+                    ]
+                ]
+            ]
+        , div [ class "cell medium-6" ]
+            [ label []
+                [ text "Black short castle"
+                , div [ class "switch" ]
+                    [ input [ class "switch-input", id "black_short_castle", name "black_short_castle", type_ "checkbox" ]
+                        []
+                    , label [ class "switch-paddle", for "black_short_castle" ]
+                        [ span [ attribute "aria-hidden" "true", class "switch-active" ]
+                            [ text "On" ]
+                        , span [ attribute "aria-hidden" "true", class "switch-inactive" ]
+                            [ text "Off" ]
+                        ]
+                    ]
+                ]
+            , label []
+                [ text "Black long castle"
+                , div [ class "switch" ]
+                    [ input [ class "switch-input", id "black_long_castle", name "black_long_castle", type_ "checkbox" ]
+                        []
+                    , label [ class "switch-paddle", for "black_long_castle" ]
+                        [ span [ attribute "aria-hidden" "true", class "switch-active" ]
+                            [ text "On" ]
+                        , span [ attribute "aria-hidden" "true", class "switch-inactive" ]
+                            [ text "Off" ]
+                        ]
+                    ]
+                ]
+            ]
+        ]

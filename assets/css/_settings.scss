@@ -475,7 +475,7 @@ $form-button-radius: $global-radius;
 // ---------
 
 $label-background: $primary-color;
-$label-color: $white;
+$label-color: $body-font-color;
 $label-color-alt: $black;
 $label-palette: $foundation-palette;
 $label-font-size: 0.8rem;
@@ -777,15 +777,15 @@ $slider-radius: $global-radius;
 // 49. Switch
 // ----------
 
-$switch-background: $medium-gray;
-$switch-background-active: $primary-color;
+$switch-background: $chessdb-greyscale2;
+$switch-background-active: $chessdb-greyscale2;
 $switch-height: 2rem;
 $switch-height-tiny: 1.5rem;
 $switch-height-small: 1.75rem;
 $switch-height-large: 2.5rem;
 $switch-radius: $global-radius;
 $switch-margin: $global-margin;
-$switch-paddle-background: $white;
+$switch-paddle-background: $chessdb-greyscale1;
 $switch-paddle-offset: 0.25rem;
 $switch-paddle-radius: $global-radius;
 $switch-paddle-transition: all 0.25s ease-out;
