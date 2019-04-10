@@ -1482,7 +1482,9 @@ widget.resize = function() {
   // spare pieces
   if (cfg.sparePieces === true) {
     containerEl.find('.' + CSS.sparePieces)
-      .css('paddingLeft', (SQUARE_SIZE + BOARD_BORDER_SIZE) + 'px');
+    //      .css('paddingLeft', (SQUARE_SIZE + BOARD_BORDER_SIZE) + 'px');
+      .css('marginLeft', (SQUARE_SIZE + BOARD_BORDER_SIZE - 3) + 'px')
+      .css('width', (SQUARE_SIZE * 6 + 6) + 'px');
   }
 
   // redraw the board
