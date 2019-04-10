@@ -16,7 +16,7 @@ import Html.Attributes
         , type_
         , value
         )
-import Html.Events exposing (onCheck)
+import Html.Events exposing (onCheck, onInput)
 import Position
 import PositionSearch.Model as Model exposing (Model)
 import PositionSearch.Msg exposing (Msg(..))
@@ -30,7 +30,7 @@ view model =
         , div [ class "cell", class "medium-2" ]
             [ viewBoardForm model ]
         , div [ class "cell", class "medium-6" ]
-            [ text <| Debug.toString model.position ]
+            [ text <| Debug.toString model ]
         ]
 
 
@@ -98,7 +98,11 @@ viewBoardForm model =
         , div [ class "cell medium-6" ]
             [ label []
                 [ text "En passant"
-                , input [ placeholder "square", type_ "text" ]
+                , input
+                    [ placeholder "square"
+                    , type_ "text"
+                    , onInput EnPassantInputted
+                    ]
                     []
                 ]
             ]

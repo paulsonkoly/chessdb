@@ -2,6 +2,7 @@ port module PositionSearch exposing (main)
 
 import Board exposing (Castle(..))
 import Board.Colour exposing (Colour(..))
+import Board.Square as Square
 import Browser
 import Http
 import Parser
@@ -30,7 +31,9 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     let
         model =
-            { position = Position.empty }
+            { position = Position.empty
+            , enPassantStringError = Nothing
+            }
     in
     ( model, signalDomRendered3 () )
 
@@ -72,3 +75,40 @@ update msg model =
               }
             , Cmd.none
             )
+
+        EnPassantInputted string ->
+            let
+                eSquare =
+                    Parser.run Square.parser string
+
+                position =
+                    model.position
+
+                newPosition mSquare =
+                    { position | enPassant = mSquare }
+            in
+            case ( string, eSquare ) of
+                ( "", _ ) ->
+                    ( { model
+                        | position = newPosition Nothing
+                        , enPassantStringError = Nothing
+                      }
+                    , Cmd.none
+                    )
+
+                ( _, Ok square ) ->
+                    ( { model
+                        | position = newPosition (Just square)
+                        , enPassantStringError = Nothing
+                      }
+                    , Cmd.none
+                    )
+
+                ( _, Err _ ) ->
+                    ( { model
+                        | position = newPosition Nothing
+                        , enPassantStringError =
+                            Just "square like \"e3\" expected"
+                      }
+                    , Cmd.none
+                    )

@@ -4,4 +4,6 @@ import Position exposing (Position)
 
 
 type alias Model =
-    { position : Position }
+    { position : Position
+    , enPassantStringError : Maybe String
+    }

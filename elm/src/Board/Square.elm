@@ -79,10 +79,10 @@ module Board.Square exposing
     , h8
     , hDist
     , offsetBy
+    , parser
     , rank
     , rankParser
     , square
-    , squareParser
     , toUrlQueryParameter
     , vDist
     )
@@ -440,8 +440,8 @@ rankParser =
             )
 
 
-squareParser : Parser Square
-squareParser =
+parser : Parser Square
+parser =
     Parser.succeed square
         |= fileParser
         |= rankParser

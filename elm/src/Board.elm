@@ -20,7 +20,7 @@ module Board exposing
 
 import Array exposing (Array)
 import Board.Colour exposing (Colour(..))
-import Board.Square exposing (..)
+import Board.Square as Square exposing (File(..), Rank(..), Square(..))
 import Maybe.Extra as Maybe
 import Parser exposing ((|.), (|=), Parser, Step)
 import State
@@ -57,38 +57,38 @@ empty =
 initial : Board
 initial =
     empty
-        |> putPiece a1 (Just (Piece White Rook))
-        |> putPiece b1 (Just (Piece White Knight))
-        |> putPiece c1 (Just (Piece White Bishop))
-        |> putPiece d1 (Just (Piece White Queen))
-        |> putPiece e1 (Just (Piece White King))
-        |> putPiece f1 (Just (Piece White Bishop))
-        |> putPiece g1 (Just (Piece White Knight))
-        |> putPiece h1 (Just (Piece White Rook))
-        |> putPiece a2 (Just (Piece White Pawn))
-        |> putPiece b2 (Just (Piece White Pawn))
-        |> putPiece c2 (Just (Piece White Pawn))
-        |> putPiece d2 (Just (Piece White Pawn))
-        |> putPiece e2 (Just (Piece White Pawn))
-        |> putPiece f2 (Just (Piece White Pawn))
-        |> putPiece g2 (Just (Piece White Pawn))
-        |> putPiece h2 (Just (Piece White Pawn))
-        |> putPiece a7 (Just (Piece Black Pawn))
-        |> putPiece b7 (Just (Piece Black Pawn))
-        |> putPiece c7 (Just (Piece Black Pawn))
-        |> putPiece d7 (Just (Piece Black Pawn))
-        |> putPiece e7 (Just (Piece Black Pawn))
-        |> putPiece f7 (Just (Piece Black Pawn))
-        |> putPiece g7 (Just (Piece Black Pawn))
-        |> putPiece h7 (Just (Piece Black Pawn))
-        |> putPiece a8 (Just (Piece Black Rook))
-        |> putPiece b8 (Just (Piece Black Knight))
-        |> putPiece c8 (Just (Piece Black Bishop))
-        |> putPiece d8 (Just (Piece Black Queen))
-        |> putPiece e8 (Just (Piece Black King))
-        |> putPiece f8 (Just (Piece Black Bishop))
-        |> putPiece g8 (Just (Piece Black Knight))
-        |> putPiece h8 (Just (Piece Black Rook))
+        |> putPiece Square.a1 (Just (Piece White Rook))
+        |> putPiece Square.b1 (Just (Piece White Knight))
+        |> putPiece Square.c1 (Just (Piece White Bishop))
+        |> putPiece Square.d1 (Just (Piece White Queen))
+        |> putPiece Square.e1 (Just (Piece White King))
+        |> putPiece Square.f1 (Just (Piece White Bishop))
+        |> putPiece Square.g1 (Just (Piece White Knight))
+        |> putPiece Square.h1 (Just (Piece White Rook))
+        |> putPiece Square.a2 (Just (Piece White Pawn))
+        |> putPiece Square.b2 (Just (Piece White Pawn))
+        |> putPiece Square.c2 (Just (Piece White Pawn))
+        |> putPiece Square.d2 (Just (Piece White Pawn))
+        |> putPiece Square.e2 (Just (Piece White Pawn))
+        |> putPiece Square.f2 (Just (Piece White Pawn))
+        |> putPiece Square.g2 (Just (Piece White Pawn))
+        |> putPiece Square.h2 (Just (Piece White Pawn))
+        |> putPiece Square.a7 (Just (Piece Black Pawn))
+        |> putPiece Square.b7 (Just (Piece Black Pawn))
+        |> putPiece Square.c7 (Just (Piece Black Pawn))
+        |> putPiece Square.d7 (Just (Piece Black Pawn))
+        |> putPiece Square.e7 (Just (Piece Black Pawn))
+        |> putPiece Square.f7 (Just (Piece Black Pawn))
+        |> putPiece Square.g7 (Just (Piece Black Pawn))
+        |> putPiece Square.h7 (Just (Piece Black Pawn))
+        |> putPiece Square.a8 (Just (Piece Black Rook))
+        |> putPiece Square.b8 (Just (Piece Black Knight))
+        |> putPiece Square.c8 (Just (Piece Black Bishop))
+        |> putPiece Square.d8 (Just (Piece Black Queen))
+        |> putPiece Square.e8 (Just (Piece Black King))
+        |> putPiece Square.f8 (Just (Piece Black Bishop))
+        |> putPiece Square.g8 (Just (Piece Black Knight))
+        |> putPiece Square.h8 (Just (Piece Black Rook))
 
 
 type Castle
@@ -203,8 +203,8 @@ castleParser =
 disambiguityParser : Parser Disambiguity
 disambiguityParser =
     Parser.oneOf
-        [ fileParser |> Parser.map FileDisambiguity
-        , rankParser |> Parser.map RankDisambiguity
+        [ Square.fileParser |> Parser.map FileDisambiguity
+        , Square.rankParser |> Parser.map RankDisambiguity
         ]
 
 
@@ -253,7 +253,7 @@ middleParser =
                 , destination = destination
                 }
             )
-            |= Parser.backtrackable squareParser
+            |= Parser.backtrackable Square.parser
         , Parser.succeed
             (\destination ->
                 { disambiguity = Nothing
@@ -262,7 +262,7 @@ middleParser =
                 }
             )
             |. Parser.token "x"
-            |= squareParser
+            |= Square.parser
         , Parser.succeed
             (\file capture_ destination ->
                 { disambiguity = Just (FileDisambiguity file)
@@ -270,9 +270,9 @@ middleParser =
                 , destination = destination
                 }
             )
-            |= fileParser
+            |= Square.fileParser
             |= captureParser
-            |= squareParser
+            |= Square.parser
         , Parser.succeed
             (\rank capture_ destination ->
                 { disambiguity = Just (RankDisambiguity rank)
@@ -280,9 +280,9 @@ middleParser =
                 , destination = destination
                 }
             )
-            |= rankParser
+            |= Square.rankParser
             |= captureParser
-            |= squareParser
+            |= Square.parser
         ]
 
 
@@ -317,7 +317,7 @@ fenItemParser : Parser FenItem
 fenItemParser =
     Parser.oneOf
         [ pieceParser |> Parser.map FenPiece
-        , rankParser |> Parser.map FenGap
+        , Square.rankParser |> Parser.map FenGap
         ]
 
 
