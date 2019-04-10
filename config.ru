@@ -21,6 +21,10 @@ class App < Roda
     r.assets
     r.public
 
+    r.root do
+      r.redirect 'games/search'
+    end
+
     r.on 'games' do
       r.get Integer do |id|
         @active_menu = :none
