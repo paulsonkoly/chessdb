@@ -1,6 +1,5 @@
 module GameSearch.Model exposing
-    ( Error
-    , FormFields
+    ( FormFields
     , Model
     , areFieldsValid
     , datePickerSettings
@@ -15,6 +14,7 @@ module GameSearch.Model exposing
 
 import Date exposing (Date)
 import DatePicker exposing (DatePicker)
+import FormError exposing (Error(..))
 import Game exposing (GameProperties, Outcome(..))
 import GameSearch.Msg as Msg exposing (FieldChange(..), Msg(..))
 import Http
@@ -22,10 +22,6 @@ import Json.Encode as Encode exposing (Value)
 import Loadable exposing (Loadable(..))
 import Pagination exposing (Pagination)
 import Url.Builder as Url
-
-
-type alias Error =
-    Maybe String
 
 
 type alias FormFields =
@@ -78,7 +74,7 @@ init _ =
             , black = ""
             , eitherColour = ""
             , opponent = ""
-            , elosDontMatch = Nothing
+            , elosDontMatch = NoError
             , minimumElo = Nothing
             , maximumElo = Nothing
             , event = ""
@@ -87,10 +83,10 @@ init _ =
             , fromDatePicker = datePicker
             , toDate = Nothing
             , toDatePicker = datePicker
-            , datesDontMatch = Nothing
+            , datesDontMatch = NoError
             , round = ""
             , result = ""
-            , ecoInvalid = Nothing
+            , ecoInvalid = NoError
             , eco = ""
             }
 
@@ -128,33 +124,33 @@ validateFields fields =
         elosDontMatch =
             case compareElos of
                 Just False ->
-                    Just "Minimum ELO can't be larger than maximum elo"
+                    Error "Minimum ELO can't be larger than maximum elo"
 
                 _ ->
-                    Nothing
+                    NoError
 
         ecoInvalid =
             case String.toList fields.eco of
                 [ a, b, c ] ->
                     if 'A' <= a && a <= 'E' && '0' <= b && b <= '9' && '0' <= c && c <= '9' then
-                        Nothing
+                        NoError
 
                     else
-                        Just "Invalid ECO code."
+                        Error "Invalid ECO code."
 
                 [] ->
-                    Nothing
+                    NoError
 
                 _ ->
-                    Just "Invalid ECO code."
+                    Error "Invalid ECO code."
 
         datesDontMatch =
             case Maybe.map2 Date.compare fields.fromDate fields.toDate of
                 Just GT ->
-                    Just "From date can't be after To date"
+                    Error "From date can't be after To date"
 
                 _ ->
-                    Nothing
+                    NoError
     in
     { fields
         | elosDontMatch = elosDontMatch
@@ -165,12 +161,9 @@ validateFields fields =
 
 areFieldsValid : FormFields -> Bool
 areFieldsValid fields =
-    fields.elosDontMatch
-        == Nothing
-        && fields.ecoInvalid
-        == Nothing
-        && fields.datesDontMatch
-        == Nothing
+    not <|
+        FormError.anyError
+            [ fields.elosDontMatch, fields.ecoInvalid, fields.datesDontMatch ]
 
 
 hasWhiteOrBlack : FormFields -> Bool

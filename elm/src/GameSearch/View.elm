@@ -2,6 +2,7 @@ module GameSearch.View exposing (view)
 
 import Date
 import DatePicker
+import FormError exposing (Error)
 import Game exposing (GameProperties)
 import GameSearch.Model as Model exposing (Model)
 import GameSearch.Msg as Msg exposing (FieldChange(..), Msg(..))
@@ -42,27 +43,7 @@ import Pagination exposing (Pagination)
 import Url.Builder as Url
 
 
-errorAttribute : Model.Error -> List (Attribute msg)
-errorAttribute err =
-    case err of
-        Just _ ->
-            [ class "is-invalid-input" ]
-
-        Nothing ->
-            []
-
-
-viewError : Model.Error -> Html Msg
-viewError err =
-    case err of
-        Just oops ->
-            span [ class "form-error", class "is-visible" ] [ text oops ]
-
-        Nothing ->
-            span [ class "form-error" ] []
-
-
-viewEloFields : Model.Error -> Html Msg
+viewEloFields : Error -> Html Msg
 viewEloFields err =
     div [ class "grid-x grid-padding-x" ]
         [ div [ class "cell medium-6" ]
@@ -72,7 +53,7 @@ viewEloFields err =
                  , type_ "text"
                  , onInput (FormFieldChange << MinimumEloChanged)
                  ]
-                    ++ errorAttribute err
+                    ++ FormError.errorAttribute err
                 )
                 []
             ]
@@ -83,11 +64,11 @@ viewEloFields err =
                  , type_ "text"
                  , onInput (FormFieldChange << MaxiumEloChanged)
                  ]
-                    ++ errorAttribute err
+                    ++ FormError.errorAttribute err
                 )
                 []
             ]
-        , div [ class "cell medium-12" ] [ viewError err ]
+        , div [ class "cell medium-12" ] [ FormError.viewError err ]
         ]
 
 
@@ -101,7 +82,7 @@ viewDateFields fields =
             { settings
                 | inputAttributes =
                     settings.inputAttributes
-                        ++ errorAttribute fields.datesDontMatch
+                        ++ FormError.errorAttribute fields.datesDontMatch
             }
     in
     div [ class "grid-x grid-padding-x" ]
@@ -121,7 +102,8 @@ viewDateFields fields =
                 fields.toDatePicker
                 |> Html.map ToDatePicked
             ]
-        , div [ class "cell medium-12" ] [ viewError fields.datesDontMatch ]
+        , div [ class "cell medium-12" ]
+            [ FormError.viewError fields.datesDontMatch ]
         ]
 
 
@@ -259,10 +241,10 @@ viewForm fields =
                      , type_ "text"
                      , onInput (FormFieldChange << EcoChanged)
                      ]
-                        ++ errorAttribute fields.ecoInvalid
+                        ++ FormError.errorAttribute fields.ecoInvalid
                     )
                     []
-                , viewError fields.ecoInvalid
+                , FormError.viewError fields.ecoInvalid
                 ]
             ]
         , button

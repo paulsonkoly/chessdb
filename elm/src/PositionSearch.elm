@@ -4,6 +4,7 @@ import Board exposing (Castle(..))
 import Board.Colour exposing (Colour(..))
 import Board.Square as Square
 import Browser
+import FormError exposing (Error(..))
 import Http
 import Parser
 import Position
@@ -32,7 +33,7 @@ init _ =
     let
         model =
             { position = Position.empty
-            , enPassantStringError = Nothing
+            , enPassantStringError = NoError
             }
     in
     ( model, signalDomRendered3 () )
@@ -91,7 +92,7 @@ update msg model =
                 ( "", _ ) ->
                     ( { model
                         | position = newPosition Nothing
-                        , enPassantStringError = Nothing
+                        , enPassantStringError = NoError
                       }
                     , Cmd.none
                     )
@@ -99,7 +100,7 @@ update msg model =
                 ( _, Ok square ) ->
                     ( { model
                         | position = newPosition (Just square)
-                        , enPassantStringError = Nothing
+                        , enPassantStringError = NoError
                       }
                     , Cmd.none
                     )
@@ -108,7 +109,7 @@ update msg model =
                     ( { model
                         | position = newPosition Nothing
                         , enPassantStringError =
-                            Just "square like \"e3\" expected"
+                            Error "square like \"e3\" expected"
                       }
                     , Cmd.none
                     )

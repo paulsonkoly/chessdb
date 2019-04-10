@@ -2,6 +2,7 @@ module PositionSearch.View exposing (view)
 
 import Board exposing (Castle(..))
 import Board.Colour as Colour exposing (Colour(..))
+import FormError
 import Html exposing (Html, div, input, label, span, text)
 import Html.Attributes
     exposing
@@ -99,12 +100,15 @@ viewBoardForm model =
             [ label []
                 [ text "En passant"
                 , input
-                    [ placeholder "square"
-                    , type_ "text"
-                    , onInput EnPassantInputted
-                    ]
+                    ([ placeholder "square"
+                     , type_ "text"
+                     , onInput EnPassantInputted
+                     ]
+                        ++ FormError.errorAttribute model.enPassantStringError
+                    )
                     []
                 ]
+            , FormError.viewError model.enPassantStringError
             ]
         , div [ class "cell medium-6" ]
             [ viewCastleToggle
