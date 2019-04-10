@@ -1,5 +1,7 @@
 module PositionSearch.Model exposing (Model)
 
+import Position exposing (Position)
+
 
 type alias Model =
-    { fenPosition : Maybe String }
+    { position : Position }

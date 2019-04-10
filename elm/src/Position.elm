@@ -1,4 +1,14 @@
-module Position exposing (Position, fen, init, make, specific, urlEncode)
+module Position exposing
+    ( Position
+    , canCastle
+    , empty
+    , fen
+    , init
+    , make
+    , setCastle
+    , specific
+    , urlEncode
+    )
 
 import Bitwise as Bit
 import Board
@@ -30,6 +40,15 @@ type alias Position =
 init : Position
 init =
     { board = Board.initial
+    , castlingAvailability = 15
+    , activeColour = White
+    , enPassant = Nothing
+    }
+
+
+empty : Position
+empty =
+    { board = Board.empty
     , castlingAvailability = 15
     , activeColour = White
     , enPassant = Nothing
@@ -319,3 +338,46 @@ urlEncode { board, castlingAvailability, activeColour, enPassant } =
 fen : Position -> String
 fen position =
     Board.toFen position.board
+
+
+castleMask : Colour -> Castle -> Int
+castleMask colour castle =
+    case ( colour, castle ) of
+        ( White, Short ) ->
+            1
+
+        ( White, Long ) ->
+            2
+
+        ( Black, Short ) ->
+            4
+
+        ( Black, Long ) ->
+            8
+
+
+canCastle : Colour -> Castle -> Position -> Bool
+canCastle colour castle position =
+    let
+        msk =
+            castleMask colour castle
+    in
+    Bit.and msk position.castlingAvailability == msk
+
+
+setCastle : Position -> Colour -> Castle -> Bool -> Position
+setCastle position colour castle bool =
+    let
+        msk =
+            castleMask colour castle
+    in
+    if bool then
+        { position
+            | castlingAvailability = Bit.or position.castlingAvailability msk
+        }
+
+    else
+        { position
+            | castlingAvailability =
+                Bit.and position.castlingAvailability (Bit.complement msk)
+        }

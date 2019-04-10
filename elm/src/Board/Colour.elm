@@ -2,9 +2,12 @@ module Board.Colour exposing
     ( Colour(..)
     , flip
     , fromEncoded
+    , toHtmlAttribute
     , toUrlQueryParameter
     )
 
+import Html
+import Html.Attributes as Attributes
 import Url.Builder as Url
 
 
@@ -27,6 +30,16 @@ toUrlQueryParameter str colour =
 
         Black ->
             Url.int str 1
+
+
+toHtmlAttribute : Colour -> Html.Attribute msg
+toHtmlAttribute colour =
+    case colour of
+        White ->
+            Attributes.checked True
+
+        Black ->
+            Attributes.checked False
 
 
 fromEncoded : Int -> Result String Colour
