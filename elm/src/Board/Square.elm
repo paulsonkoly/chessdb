@@ -78,6 +78,7 @@ module Board.Square exposing
     , h7
     , h8
     , hDist
+    , jsonEncode
     , offsetBy
     , parser
     , rank
@@ -87,6 +88,7 @@ module Board.Square exposing
     , vDist
     )
 
+import Json.Encode
 import Parser exposing ((|.), (|=), Parser)
 import Url.Builder as Url
 
@@ -470,6 +472,11 @@ fromEncoded ix =
 
     else
         Err ("Square encoding is out of range " ++ String.fromInt ix)
+
+
+jsonEncode : Square -> Json.Encode.Value
+jsonEncode (Square ix) =
+    Json.Encode.int (transform ix)
 
 
 

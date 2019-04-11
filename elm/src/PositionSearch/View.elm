@@ -3,7 +3,7 @@ module PositionSearch.View exposing (view)
 import Board exposing (Castle(..))
 import Board.Colour as Colour exposing (Colour(..))
 import FormError
-import Html exposing (Html, div, input, label, span, text)
+import Html exposing (Html, button, div, input, label, span, text)
 import Html.Attributes
     exposing
         ( attribute
@@ -17,7 +17,7 @@ import Html.Attributes
         , type_
         , value
         )
-import Html.Events exposing (onCheck, onInput)
+import Html.Events exposing (onCheck, onClick, onInput)
 import Position
 import PositionSearch.Model as Model exposing (Model)
 import PositionSearch.Msg exposing (Msg(..))
@@ -28,9 +28,9 @@ view model =
     div [ class "grid-x", class "grid-padding-x" ]
         [ div [ class "cell", class "medium-4" ]
             [ div [ id "chessboard", style "width" "400px" ] [] ]
-        , div [ class "cell", class "medium-2" ]
+        , div [ class "cell", class "medium-3" ]
             [ viewBoardForm model ]
-        , div [ class "cell", class "medium-6" ]
+        , div [ class "cell", class "medium-5" ]
             [ text <| Debug.toString model ]
         ]
 
@@ -142,5 +142,9 @@ viewBoardForm model =
                 "black_long_castle"
                 Black
                 Long
+            ]
+        , div [ class "cell medium-12" ]
+            [ button [ class "button", onClick SearchClicked ]
+                [ text "Search" ]
             ]
         ]

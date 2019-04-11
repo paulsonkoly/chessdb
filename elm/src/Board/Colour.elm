@@ -3,12 +3,14 @@ module Board.Colour exposing
     , flip
     , fromEncoded
     , fromHtmlToggle
+    , jsonEncode
     , toHtmlAttribute
     , toUrlQueryParameter
     )
 
 import Html
 import Html.Attributes as Attributes
+import Json.Encode
 import Url.Builder as Url
 
 
@@ -63,6 +65,16 @@ fromHtmlToggle bool =
 
     else
         Black
+
+
+jsonEncode : Colour -> Json.Encode.Value
+jsonEncode colour =
+    case colour of
+        White ->
+            Json.Encode.int 0
+
+        Black ->
+            Json.Encode.int 1
 
 
 

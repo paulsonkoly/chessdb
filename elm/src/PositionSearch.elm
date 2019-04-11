@@ -8,9 +8,11 @@ import FormError exposing (Error(..))
 import Http
 import Parser
 import Position
-import PositionSearch.Model exposing (Model)
+import PositionSearch.Model as Model exposing (Model)
 import PositionSearch.Msg exposing (Msg(..))
+import PositionSearch.ServerResponse as ServerResponse
 import PositionSearch.View as View
+import Url.Builder as Url
 
 
 port signalDomRendered3 : () -> Cmd msg
@@ -30,13 +32,7 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    let
-        model =
-            { position = Position.empty
-            , enPassantStringError = NoError
-            }
-    in
-    ( model, signalDomRendered3 () )
+    ( Model.init, signalDomRendered3 () )
 
 
 subscriptions : Model -> Sub Msg
@@ -123,3 +119,16 @@ update msg model =
                       }
                     , Cmd.none
                     )
+
+        SearchClicked ->
+            ( model
+            , Http.post
+                { url = Url.absolute [ "games", "search" ] []
+                , body = Http.jsonBody (Model.jsonEncode model)
+                , expect =
+                    Http.expectJson GamesReceived ServerResponse.jsonDecoder
+                }
+            )
+
+        GamesReceived _ ->
+            ( model, Cmd.none )

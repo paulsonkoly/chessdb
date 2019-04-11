@@ -40,8 +40,8 @@ class Repository
 
   # Composable filter objects.
   class Filter
-    def initialize(key, &block)
-      @key = key
+    def initialize(*keys, &block)
+      @keys = keys
       @block = block
       @others = []
     end
@@ -52,7 +52,8 @@ class Repository
     end
 
     def run(table, hash)
-      table = @block.call(table, hash[@key]) if hash.key? @key
+      value = hash.dig(*@keys)
+      table = @block.call(table, value) if value
       @others.each { |filter| table = filter.run(table, hash) }
       table
     end
@@ -103,7 +104,7 @@ class Repository
   end
 
   def game_search_offset
-    @game_search_offset ||= Filter.new(:offset) do |table, actual|
+    @game_search_offset ||= Filter.new(:pagination, :offset) do |table, actual|
       table.offset(actual)
     end.freeze
   end

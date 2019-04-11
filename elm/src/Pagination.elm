@@ -1,9 +1,9 @@
 module Pagination exposing
     ( Msg(..)
     , Pagination
-    , decoder
-    , encode
     , init
+    , jsonDecoder
+    , jsonEncode
     , setBusy
     , setOffset
     , view
@@ -12,8 +12,8 @@ module Pagination exposing
 import Html exposing (Html, a, div, li, nav, span, text, ul)
 import Html.Attributes exposing (attribute, class, disabled, href)
 import Html.Events exposing (onClick)
-import Json.Decode as Decode exposing (Decoder)
-import Json.Encode as Encode exposing (Value)
+import Json.Decode
+import Json.Encode
 
 
 type alias Record =
@@ -90,21 +90,21 @@ isLastPage paginated =
 The encoding contains an offset, and a count fileds.
 
 -}
-decoder : Decoder Pagination
-decoder =
-    Decode.map2 (\a b -> Pagination { offset = a, count = b, busy = False })
-        (Decode.field "offset" Decode.int)
-        (Decode.field "count" Decode.int)
+jsonDecoder : Json.Decode.Decoder Pagination
+jsonDecoder =
+    Json.Decode.map2 (\a b -> Pagination { offset = a, count = b, busy = False })
+        (Json.Decode.field "offset" Json.Decode.int)
+        (Json.Decode.field "count" Json.Decode.int)
 
 
 {-| encodes a pagination request into JSon
 
-we incode an offset fields sent to the server
+we encode an offset fields sent to the server
 
 -}
-encode : Pagination -> List ( String, Value )
-encode (Pagination { offset }) =
-    [ ( "offset", Encode.int offset ) ]
+jsonEncode : Pagination -> Json.Encode.Value
+jsonEncode (Pagination { offset }) =
+    Json.Encode.object [ ( "offset", Json.Encode.int offset ) ]
 
 
 

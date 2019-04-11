@@ -4,6 +4,7 @@ module Position exposing
     , empty
     , fen
     , init
+    , jsonEncode
     , make
     , setCastle
     , specific
@@ -23,6 +24,7 @@ import Board
 import Board.Colour as Colour exposing (Colour(..))
 import Board.Scanner as Scanner
 import Board.Square as Square exposing (File(..), Rank(..), Square(..))
+import Json.Encode
 import Maybe.Extra as Maybe
 import Parser
 import State
@@ -328,11 +330,26 @@ updateEnPassant moveE colour source =
 urlEncode : Position -> List Url.QueryParameter
 urlEncode { board, castlingAvailability, activeColour, enPassant } =
     Maybe.values
-        [ Just (Url.string "fen" (Board.toFen board))
-        , Just (Url.int "castle" castlingAvailability)
+        [ Just (Url.string "fen_position" (Board.toFen board))
+        , Just (Url.int "castling_availability" castlingAvailability)
         , Just (Colour.toUrlQueryParameter "active_colour" activeColour)
         , enPassant |> Maybe.map (Square.toUrlQueryParameter "en_passant")
         ]
+
+
+jsonEncode : Position -> Json.Encode.Value
+jsonEncode { board, castlingAvailability, activeColour, enPassant } =
+    Json.Encode.object <|
+        Maybe.values
+            [ Just ( "fen_position", Json.Encode.string (Board.toFen board) )
+            , Just
+                ( "castling_availability"
+                , Json.Encode.int castlingAvailability
+                )
+            , Just ( "active_colour", Colour.jsonEncode activeColour )
+            , enPassant
+                |> Maybe.map (\ep -> ( "en_passant", Square.jsonEncode ep ))
+            ]
 
 
 fen : Position -> String

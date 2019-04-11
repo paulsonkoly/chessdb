@@ -252,5 +252,5 @@ jsonEncodedFields fields pagination =
                 [ ( "from_date", fields.fromDate )
                 , ( "to_date", fields.toDate )
                 ]
-            ++ Pagination.encode pagination
+            ++ [ ( "pagination", Pagination.jsonEncode pagination ) ]
         )

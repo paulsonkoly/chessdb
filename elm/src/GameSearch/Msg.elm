@@ -38,7 +38,7 @@ jsonResponseDecoder : Decoder ServerResponse
 jsonResponseDecoder =
     Decode.map2 (\a b -> ServerResponse { games = a, pagination = b })
         (Decode.field "data" (Decode.list gamePropertiesDecoder))
-        Pagination.decoder
+        Pagination.jsonDecoder
 
 
 type Msg
