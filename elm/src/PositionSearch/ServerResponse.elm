@@ -6,11 +6,10 @@ import Pagination exposing (Pagination)
 import PositionSearch.Model as Model
 
 
-type ServerResponse
-    = ServerResponse
-        { games : List Model.GameAtMove
-        , pagination : Pagination
-        }
+type alias ServerResponse =
+    { games : List Model.GameAtMove
+    , pagination : Pagination
+    }
 
 
 jsonGameAtMoveDecoder : Json.Decode.Decoder Model.GameAtMove
@@ -22,6 +21,6 @@ jsonGameAtMoveDecoder =
 
 jsonDecoder : Json.Decode.Decoder ServerResponse
 jsonDecoder =
-    Json.Decode.map2 (\a b -> ServerResponse { games = a, pagination = b })
+    Json.Decode.map2 ServerResponse
         (Json.Decode.field "data" (Json.Decode.list jsonGameAtMoveDecoder))
         Pagination.jsonDecoder

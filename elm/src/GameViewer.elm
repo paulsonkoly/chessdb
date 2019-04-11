@@ -54,15 +54,15 @@ cmdFetchPopularitiesFor : Model -> Cmd Msg
 cmdFetchPopularitiesFor model =
     let
         initialQuery =
-            [ Url.string "fen" "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-            , Url.int "castle" 15
+            [ Url.string "fen_position" "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+            , Url.int "castling_availability" 15
             , Url.int "active_colour" 1
             ]
 
         moveQuery move =
             List.filterMap identity
-                [ Just (Url.string "fen" move.fenPosition)
-                , Just (Url.int "castle" move.castlingAvailability)
+                [ Just (Url.string "fen_position" move.fenPosition)
+                , Just (Url.int "castling_availability" move.castlingAvailability)
                 , Just (Url.int "active_colour" move.activeColour)
                 , move.enPassant |> Maybe.map (Url.int "en_passant")
                 ]

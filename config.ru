@@ -54,9 +54,10 @@ class App < Roda
     r.on 'moves' do
       r.get 'explorer' do
         begin
-          @fen = r.params.fetch('fen',
+          @fen = r.params.fetch('fen_position',
                                'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR')
-          @castling_availability = Integer(r.params.fetch('castle', 15))
+          @castling_availability = 
+            Integer(r.params.fetch('castling_availability', 15))
           @active_colour = Integer(r.params.fetch('active_colour', 0))
           @en_passant = r.params['en_passant']&.yield_self do |i|
             Integer(i)
@@ -72,8 +73,8 @@ class App < Roda
       r.get 'popularities.json' do
         begin
           token = Integer(r.params.fetch('token', 0))
-          fen = r.params['fen']
-          castle = Integer(r.params.fetch('castle', 0))
+          fen = r.params['fen_position']
+          castle = Integer(r.params.fetch('castling_availability', 0))
           active_colour = Integer(r.params.fetch('active_colour', 0))
           en_passant = r.params['en_passant']&.yield_self do |i|
             Integer(i)
@@ -99,6 +100,14 @@ class App < Roda
       r.get 'search' do
         @active_menu = :position_search
         app.erb_store.resolve_html(:position_search, binding)
+      end
+
+      r.post 'search' do
+        {
+          count: app.repository.position_count(r.params),
+          offset: r.params.dig(:pagination, :offset) || 0,
+          data: app.repository.position_search(r.params)
+        }
       end
     end
   end

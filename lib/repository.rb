@@ -26,7 +26,7 @@ class Repository
   end
 
   def game_search(filter_hash)
-    (game_search_filter << game_search_offset)
+    (game_search_filter << pagination_filter)
       .run(@db[:games], filter_hash)
       .order_by(:id).limit(20).all
   end
@@ -34,6 +34,19 @@ class Repository
   def game_count(filter_hash)
     game_search_filter
       .run(@db[:games], filter_hash)
+      .select(Sequel.function(:count).*)
+      .first[:count]
+  end
+
+  def position_search(filter_hash)
+    (position_search_filter << pagination_filter)
+      .run(@db[:moves].join(@db[:games], id: :game_id), filter_hash)
+      .order_by(Sequel.qualify(:moves, :id)).limit(20).all
+  end
+
+  def position_count(filter_hash)
+    (position_search_filter)
+      .run(@db[:moves], filter_hash)
       .select(Sequel.function(:count).*)
       .first[:count]
   end
@@ -103,10 +116,28 @@ class Repository
     end
   end
 
-  def game_search_offset
-    @game_search_offset ||= Filter.new(:pagination, :offset) do |table, actual|
+  def pagination_filter
+    @pagination_filter ||= Filter.new(:pagination, :offset) do |table, actual|
       table.offset(actual)
     end.freeze
+  end
+
+
+  def position_search_filter
+    @position_search_filter ||=
+      (Filter.new(:position, :active_colour) do |table, actual|
+        table.where(active_colour: Sequel.cast(actual, :bit))
+      end <<
+      Filter.new(:position, :castling_availability) do |table, actual|
+        table.where(castling_availability: actual)
+      end <<
+      Filter.new(:position, :fen_position) do |table, actual|
+        table.where(fen_position: actual)
+      end <<
+      Filter.new(:position, :en_passant) do |table, actual|
+        table.where(en_passant: actual)
+      end
+      ).freeze
   end
 
   def game_columns

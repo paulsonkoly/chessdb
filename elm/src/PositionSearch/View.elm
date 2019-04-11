@@ -3,7 +3,22 @@ module PositionSearch.View exposing (view)
 import Board exposing (Castle(..))
 import Board.Colour as Colour exposing (Colour(..))
 import FormError
-import Html exposing (Html, button, div, input, label, span, text)
+import Html
+    exposing
+        ( Html
+        , button
+        , div
+        , input
+        , label
+        , span
+        , table
+        , tbody
+        , td
+        , text
+        , th
+        , thead
+        , tr
+        )
 import Html.Attributes
     exposing
         ( attribute
@@ -18,8 +33,10 @@ import Html.Attributes
         , value
         )
 import Html.Events exposing (onCheck, onClick, onInput)
+import Loadable
+import Pagination
 import Position
-import PositionSearch.Model as Model exposing (Model)
+import PositionSearch.Model as Model exposing (GameAtMove, Model)
 import PositionSearch.Msg exposing (Msg(..))
 
 
@@ -31,8 +48,46 @@ view model =
         , div [ class "cell", class "medium-3" ]
             [ viewBoardForm model ]
         , div [ class "cell", class "medium-5" ]
-            [ text <| Debug.toString model ]
+            [ Loadable.viewLoadable model.games viewGameProperties
+            , Html.map PaginationRequested (Pagination.view model.pagination)
+            ]
         ]
+
+
+viewGameProperties : List GameAtMove -> Html Msg
+viewGameProperties games =
+    let
+        header =
+            thead []
+                [ th [] [ text "White" ]
+                , th [] [ text "Black" ]
+                , th [] [ text "Move #" ]
+                ]
+
+        eloString int =
+            " (" ++ String.fromInt int ++ ")"
+
+        white game =
+            game.white ++ eloString game.whiteElo
+
+        black game =
+            game.black ++ eloString game.blackElo
+
+        body =
+            tbody [] <|
+                List.map
+                    (\{ game, fullmoveNumber } ->
+                        tr
+                            -- [ onClick (GameLoadRequested game.id) ]
+                            []
+                            [ td [] [ text (white game) ]
+                            , td [] [ text (black game) ]
+                            , td [] [ text (String.fromInt fullmoveNumber) ]
+                            ]
+                    )
+                    games
+    in
+    table [ class "hover", class "game-list" ] [ header, body ]
 
 
 viewCastleToggle : Model -> String -> String -> Colour -> Castle -> Html Msg

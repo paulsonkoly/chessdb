@@ -6,6 +6,8 @@ import Board.Square as Square
 import Browser
 import FormError exposing (Error(..))
 import Http
+import Loadable exposing (Loadable(..))
+import Pagination
 import Parser
 import Position
 import PositionSearch.Model as Model exposing (Model)
@@ -38,6 +40,16 @@ init _ =
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     signalFenChanged3 BoardFenChanged
+
+
+postRequest : Model -> Cmd Msg
+postRequest model =
+    Http.post
+        { url = Url.absolute [ "positions", "search" ] []
+        , body = Http.jsonBody (Model.jsonEncode model)
+        , expect =
+            Http.expectJson GamesReceived ServerResponse.jsonDecoder
+        }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -121,14 +133,33 @@ update msg model =
                     )
 
         SearchClicked ->
-            ( model
-            , Http.post
-                { url = Url.absolute [ "games", "search" ] []
-                , body = Http.jsonBody (Model.jsonEncode model)
-                , expect =
-                    Http.expectJson GamesReceived ServerResponse.jsonDecoder
-                }
+            ( { model
+                | games = Loading
+                , pagination = Pagination.init
+              }
+            , postRequest model
             )
 
-        GamesReceived _ ->
-            ( model, Cmd.none )
+        GamesReceived response ->
+            ( { model
+                | pagination =
+                    response
+                        |> Result.map .pagination
+                        |> Result.toMaybe
+                        |> Maybe.withDefault model.pagination
+                , games = Loadable.map .games (Loaded response)
+              }
+            , Cmd.none
+            )
+
+        PaginationRequested (Pagination.Request offset) ->
+            let
+                newPagination =
+                    model.pagination
+                        |> Pagination.setOffset offset
+                        |> Pagination.setBusy True
+
+                newModel =
+                    { model | pagination = newPagination }
+            in
+            ( newModel, postRequest newModel )
