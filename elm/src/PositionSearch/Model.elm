@@ -1,17 +1,20 @@
 module PositionSearch.Model exposing
     ( GameAtMove, Model, init
+    , setClearBoard, setInitialBoard
     , jsonEncode
     )
 
 {-| PositionSearch element Model part.
 
-
-# Types, and constructors
+#Types, and constructors
 
 @docs GameAtMove, Model, init
 
+#Data manipulation
 
-# Conversions
+@docs setClearBoard, setInitialBoard
+
+#Conversions
 
 @docs jsonEncode
 
@@ -52,6 +55,38 @@ init =
     , enPassantStringError = NoError
     , pagination = Pagination.init
     , games = Loading
+    }
+
+
+
+------------------------------------------------------------------------
+--                         Data manipulation                          --
+------------------------------------------------------------------------
+
+
+{-| Clears the board
+
+Pagination and game list are not touched. The form errors are cleared.
+
+-}
+setClearBoard : Model -> Model
+setClearBoard model =
+    { model
+        | position = Position.empty
+        , enPassantStringError = NoError
+    }
+
+
+{-| Sets up the starting position
+
+Pagination and game list are not touched. The form errors are cleared.
+
+-}
+setInitialBoard : Model -> Model
+setInitialBoard model =
+    { model
+        | position = Position.initial
+        , enPassantStringError = NoError
     }
 
 

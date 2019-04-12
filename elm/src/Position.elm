@@ -1,15 +1,15 @@
 module Position exposing
-    ( Position
-    , canCastle
-    , empty
-    , fen
-    , init
-    , jsonEncode
-    , make
-    , setCastle
-    , specific
-    , urlEncode
+    ( Position, initial, empty
+    , canCastle, fen, jsonEncode, make, setCastle, specific, urlEncode
     )
+
+{-| A board along with the castling availabilities, side to move, en passant
+
+#Types and constructors
+
+@docs Position, initial, empty
+
+-}
 
 import Bitwise as Bit
 import Board
@@ -31,6 +31,12 @@ import State
 import Url.Builder as Url
 
 
+
+------------------------------------------------------------------------
+--                       Types and constructors                       --
+------------------------------------------------------------------------
+
+
 type alias Position =
     { board : Board
     , castlingAvailability : Int
@@ -39,8 +45,10 @@ type alias Position =
     }
 
 
-init : Position
-init =
+{-| starting position
+-}
+initial : Position
+initial =
     { board = Board.initial
     , castlingAvailability = 15
     , activeColour = White
@@ -48,6 +56,8 @@ init =
     }
 
 
+{-| Invalid position with an empty board
+-}
 empty : Position
 empty =
     { board = Board.empty

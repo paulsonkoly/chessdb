@@ -204,7 +204,23 @@ viewBoardForm model =
                 Black
                 Long
             ]
-        , div [ class "cell medium-12" ]
+        , div [ class "cell medium-6" ]
+            [ div [ class "button-group" ]
+                [ button
+                    [ class "button"
+                    , class "secondary"
+                    , onClick ClearClicked
+                    ]
+                    [ text "Clear" ]
+                , button
+                    [ class "button"
+                    , class "secondary"
+                    , onClick InitalClicked
+                    ]
+                    [ text "Initial" ]
+                ]
+            ]
+        , div [ class "cell medium-6" ]
             [ button [ class "button", onClick SearchClicked ]
                 [ text "Search" ]
             ]

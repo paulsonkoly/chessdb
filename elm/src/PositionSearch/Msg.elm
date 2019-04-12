@@ -13,5 +13,7 @@ type Msg
     | CastleChecked Colour Castle Bool
     | EnPassantInputted String
     | SearchClicked
+    | ClearClicked
+    | InitalClicked
     | GamesReceived (Result Http.Error ServerResponse)
     | PaginationRequested Pagination.Msg

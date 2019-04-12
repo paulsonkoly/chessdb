@@ -6,7 +6,7 @@
 
   var chessboard;
   var onChange = function(oldPos, newPos) {
-    app.ports.signalFenChanged3.send(ChessBoard.objToFen(newPos));
+    app.ports.signalInFenChanged.send(ChessBoard.objToFen(newPos));
   };
 
   app.ports.signalDomRendered3.subscribe(function(msg) {
@@ -18,5 +18,9 @@
           onChange: onChange
         })
     })
+  });
+
+  app.ports.signalOutFenChanged.subscribe( function(msg) {
+    chessboard.position(msg)
   });
 </script>

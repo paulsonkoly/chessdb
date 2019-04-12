@@ -7,7 +7,7 @@ castling / en passant, plus a table of the query result.
 
 #Ports
 
-@docs signalFenChanged3, signalFenChanged3
+@docs signalDomRendered3, signalInFenChanged, signalOutFenChanged
 
 #docs main
 
@@ -38,7 +38,12 @@ port signalDomRendered3 : () -> Cmd msg
 
 {-| js -> elm triggered when the js chessboard position changes
 -}
-port signalFenChanged3 : (String -> msg) -> Sub msg
+port signalInFenChanged : (String -> msg) -> Sub msg
+
+
+{-| elm -> js signals when fen changes due to clean/initial button presses
+-}
+port signalOutFenChanged : String -> Cmd msg
 
 
 {-| elm entry point
@@ -59,7 +64,7 @@ init _ =
 
 subscriptions : Model -> Sub Msg
 subscriptions _ =
-    signalFenChanged3 BoardFenChanged
+    signalInFenChanged BoardFenChanged
 
 
 postRequest : Model -> Cmd Msg
@@ -158,6 +163,24 @@ update msg model =
                 , pagination = Pagination.init
               }
             , postRequest model
+            )
+
+        ClearClicked ->
+            let
+                newModel =
+                    model |> Model.setClearBoard
+            in
+            ( newModel
+            , signalOutFenChanged (Position.fen newModel.position)
+            )
+
+        InitalClicked ->
+            let
+                newModel =
+                    model |> Model.setInitialBoard
+            in
+            ( newModel
+            , signalOutFenChanged (Position.fen newModel.position)
             )
 
         GamesReceived response ->
