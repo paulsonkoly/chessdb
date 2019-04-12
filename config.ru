@@ -25,6 +25,11 @@ class App < Roda
       r.redirect 'games/search'
     end
 
+    r.get 'about' do
+      @active_menu = :about
+      app.erb_store.resolve_html(:about, binding)
+    end
+
     r.on 'games' do
       r.get Integer do |id|
         @active_menu = :none

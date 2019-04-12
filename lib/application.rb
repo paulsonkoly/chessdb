@@ -18,7 +18,8 @@ class Application
       {
         token: :position_search,
         filename: 'templates/position_search.html.erb'
-      }.freeze
+      } <<
+      { token: :about, filename: 'templates/about.html.erb' }.freeze
     @configuration = Configuration.new
     @repository = Repository.new(@configuration)
     @dependency_map =
