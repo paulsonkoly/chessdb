@@ -23,7 +23,7 @@ import Task
 import Url.Builder as Url
 
 
-port signalDomRendered : () -> Cmd msg
+port signalDomRendered : String -> Cmd msg
 
 
 port signalFenChanged : String -> Cmd msg
@@ -88,11 +88,19 @@ cmdFetchPopularitiesFor model =
             mUrl
 
 
-init : Int -> ( Model, Cmd Msg )
-init id =
+type alias Flags =
+    { id : Int, halfmoveNumber : Int }
+
+
+init : Flags -> ( Model, Cmd Msg )
+init { id, halfmoveNumber } =
     let
         model =
-            { game = Loading, move = -1, token = 1, popularities = Loading }
+            { game = Loading
+            , move = halfmoveNumber
+            , token = 1
+            , popularities = Loading
+            }
     in
     ( model
     , Cmd.batch
@@ -100,7 +108,11 @@ init id =
             { url = "/games/" ++ String.fromInt id ++ ".json"
             , expect = Http.expectJson GameReceived gameDecoder
             }
-        , cmdFetchPopularitiesFor model
+        , if halfmoveNumber == -1 then
+            cmdFetchPopularitiesFor model
+
+          else
+            Cmd.none
         ]
     )
 
@@ -137,11 +149,30 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ------------------------------------------------------------------------
-        GameReceived game ->
-            ( { model | game = Loaded game }
-            , case game of
-                Ok _ ->
-                    signalDomRendered ()
+        GameReceived eGame ->
+            let
+                newModel =
+                    { model | game = Loaded eGame }
+
+                fen =
+                    getMoveProperty
+                        model.move
+                        newModel
+                        .fenPosition
+                        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+                        |> Maybe.withDefault "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+            in
+            ( newModel
+            , case eGame of
+                Ok game ->
+                    Cmd.batch
+                        [ signalDomRendered fen
+                        , if model.move == -1 then
+                            Cmd.none
+
+                          else
+                            cmdFetchPopularitiesFor newModel
+                        ]
 
                 Err _ ->
                     Cmd.none

@@ -2,13 +2,13 @@
 <script>
   var app = Elm.GameViewer.init({
     node: document.getElementById("game_viewer"),
-    flags: <%= id %>
-});
+    flags: { id: <%= id %>, halfmoveNumber: <%= @halfmove_number %> }
+  });
   var chessboard;
 
   app.ports.signalDomRendered.subscribe(function (msg) {
     requestAnimationFrame(function() {
-      chessboard = ChessBoard('chessboard', 'start');
+      chessboard = ChessBoard('chessboard', msg);
     });
   });
 

@@ -28,6 +28,7 @@ class App < Roda
     r.on 'games' do
       r.get Integer do |id|
         @active_menu = :none
+        @halfmove_number = Integer(r.params.fetch('halfmove_number', -1))
         app.erb_store.resolve_html(:game_viewer, binding)
       end
 
