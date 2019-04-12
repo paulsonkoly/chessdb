@@ -14,9 +14,10 @@ castling / en passant, plus a table of the query result.
 -}
 
 import Board exposing (Castle(..))
-import Board.Colour exposing (Colour(..))
+import Board.Colour as Colour exposing (Colour(..))
 import Board.Square as Square
 import Browser
+import Browser.Navigation as Browser
 import FormError exposing (Error(..))
 import Http
 import Loadable exposing (Loadable(..))
@@ -206,3 +207,15 @@ update msg model =
                     { model | pagination = newPagination }
             in
             ( newModel, postRequest newModel )
+
+        GameLoadRequested id fullmoveNumber ->
+            ( model
+            , Browser.load <|
+                Url.absolute
+                    [ "games", String.fromInt id ]
+                    [ Url.int "fullmove_number" fullmoveNumber
+                    , Colour.toUrlQueryParameter
+                        "active_colour"
+                        model.position.activeColour
+                    ]
+            )

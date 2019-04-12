@@ -17,3 +17,4 @@ type Msg
     | InitalClicked
     | GamesReceived (Result Http.Error ServerResponse)
     | PaginationRequested Pagination.Msg
+    | GameLoadRequested Int Int

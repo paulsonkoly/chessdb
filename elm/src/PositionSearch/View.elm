@@ -84,8 +84,9 @@ viewGameProperties games =
                 List.map
                     (\{ game, fullmoveNumber } ->
                         tr
-                            -- [ onClick (GameLoadRequested game.id) ]
-                            []
+                            [ onClick
+                                (GameLoadRequested game.id fullmoveNumber)
+                            ]
                             [ td [] [ text (white game) ]
                             , td [] [ text (black game) ]
                             , td [] [ text (String.fromInt fullmoveNumber) ]
