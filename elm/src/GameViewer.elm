@@ -14,6 +14,7 @@ import GameViewer.View exposing (..)
 import Http
 import Json.Decode as Decode
 import Loadable exposing (..)
+import Maybe.Extra as Maybe
 import Parser
 import Platform.Cmd
 import Platform.Sub
@@ -53,23 +54,24 @@ getMoveProperty ix model f default =
 cmdFetchPopularitiesFor : Model -> Cmd Msg
 cmdFetchPopularitiesFor model =
     let
-        initialQuery =
-            [ Url.string "fen_position" "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-            , Url.int "castling_availability" 15
-            , Url.int "active_colour" 1
-            ]
+        mInitial =
+            Just Position.initial
 
-        moveQuery move =
-            List.filterMap identity
-                [ Just (Url.string "fen_position" move.fenPosition)
-                , Just (Url.int "castling_availability" move.castlingAvailability)
-                , Just (Url.int "active_colour" move.activeColour)
-                , move.enPassant |> Maybe.map (Url.int "en_passant")
-                ]
+        mSpecific move =
+            Position.specific
+                move.fenPosition
+                move.castlingAvailability
+                move.activeColour
+                move.enPassant
+                |> Result.toMaybe
 
         mQuery =
-            getMoveProperty model.move model moveQuery initialQuery
-                |> Maybe.map (\l -> Url.int "token" model.token :: l)
+            getMoveProperty model.move model mSpecific mInitial
+                |> Maybe.join
+                |> Maybe.map
+                    (\pos ->
+                        Url.int "token" model.token :: Position.urlEncode pos
+                    )
 
         mUrl =
             mQuery |> Maybe.map (Url.absolute [ "moves", "popularities.json" ])
