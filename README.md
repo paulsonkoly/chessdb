@@ -6,6 +6,8 @@ This site is an open source tech demo to view and browse the [KingBase](http://k
 
 Use the Game search to find games by date, result, players, player ELO etc. Clicking on specific games takes you to the game viewer interface.
 
+![screenshot](screenshots/game_search.png)
+
 ## Game viewer
 
 While browsing the moves of a particular game you are also presented with the moves in the database that were played in the position in other games. Clicking one of these moves will take you to the Move explorer with the move played in the position.
@@ -17,6 +19,8 @@ The Move explorer lets the user to navigate through variations of moves played i
 ## Position search
 
 The Position search allows you to set up an arbitrary position and see if it's present in the database. You can click on the games to start browsing particular games starting from the position you set.
+
+![screenshot](screenshots/position_search.png)
 
 ## Development
 
