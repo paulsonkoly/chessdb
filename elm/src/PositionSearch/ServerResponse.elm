@@ -1,4 +1,19 @@
-module PositionSearch.ServerResponse exposing (ServerResponse, jsonDecoder)
+module PositionSearch.ServerResponse exposing
+    ( ServerResponse
+    , jsonDecoder
+    )
+
+{-| Response to querying the server for games with the given position.
+
+#Types
+
+@docs ServerResponse
+
+#Conversions
+
+@docs jsonDecoder
+
+-}
 
 import Game.Decoder as Game
 import Json.Decode

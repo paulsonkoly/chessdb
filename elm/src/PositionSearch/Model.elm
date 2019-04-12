@@ -1,9 +1,21 @@
 module PositionSearch.Model exposing
-    ( GameAtMove
-    , Model
-    , init
+    ( GameAtMove, Model, init
     , jsonEncode
     )
+
+{-| PositionSearch element Model part.
+
+
+# Types, and constructors
+
+@docs GameAtMove, Model, init
+
+
+# Conversions
+
+@docs jsonEncode
+
+-}
 
 import FormError exposing (Error(..))
 import Game exposing (GameProperties)
@@ -12,6 +24,12 @@ import Json.Encode
 import Loadable exposing (Loadable(..))
 import Pagination exposing (Pagination)
 import Position exposing (Position)
+
+
+
+------------------------------------------------------------------------
+--                       Types and constructors                       --
+------------------------------------------------------------------------
 
 
 type alias GameAtMove =

@@ -1,5 +1,11 @@
 module PositionSearch.View exposing (view)
 
+{-| View for position search
+
+@docs view
+
+-}
+
 import Board exposing (Castle(..))
 import Board.Colour as Colour exposing (Colour(..))
 import FormError

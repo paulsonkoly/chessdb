@@ -1,5 +1,18 @@
 port module PositionSearch exposing (main)
 
+{-| Position search browser element.
+
+Form for setting up a position, setting position related attributes like
+castling / en passant, plus a table of the query result.
+
+#Ports
+
+@docs signalFenChanged3, signalFenChanged3
+
+#docs main
+
+-}
+
 import Board exposing (Castle(..))
 import Board.Colour exposing (Colour(..))
 import Board.Square as Square
@@ -17,12 +30,19 @@ import PositionSearch.View as View
 import Url.Builder as Url
 
 
+{-| elm -> js signals when the DOM has been rendered, so the js chessboard can be put on
+the element that was created by elm
+-}
 port signalDomRendered3 : () -> Cmd msg
 
 
+{-| js -> elm triggered when the js chessboard position changes
+-}
 port signalFenChanged3 : (String -> msg) -> Sub msg
 
 
+{-| elm entry point
+-}
 main =
     Browser.element
         { init = init
