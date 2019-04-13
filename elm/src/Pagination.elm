@@ -241,15 +241,18 @@ viewPaginatedEntry paginated jump =
         pageText =
             String.fromInt destination
     in
-    li []
-        [ a
-            ([ attribute "aria-label" ("Page " ++ pageText)
-             , onClick (Request (translateBack destination))
-             ]
-                ++ disabledClass paginated.busy
-            )
+    li (disabledClass paginated.busy)
+        (if paginated.busy then
             [ text pageText ]
-        ]
+
+         else
+            [ a
+                [ attribute "aria-label" ("Page " ++ pageText)
+                , onClick (Request (translateBack destination))
+                ]
+                [ text pageText ]
+            ]
+        )
 
 
 viewEllipsis : Html msg
