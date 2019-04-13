@@ -239,7 +239,7 @@ viewPaginatedEntry paginated jump =
                     currentPage paginated + i
 
         pageText =
-            String.fromInt (1 + destination)
+            String.fromInt destination
     in
     li []
         [ a
@@ -280,7 +280,7 @@ view (Pagination paginated) =
                         identity
                         [ Just (viewPaginatedPrevious paginated)
                         , guard (current >= 3) <|
-                            viewPaginatedEntry paginated (Absolute 0)
+                            viewPaginatedEntry paginated (Absolute 1)
                         , guard (current > 3) viewEllipsis
                         , guard (current > 1) <|
                             viewPaginatedEntry paginated (Relative -1)
@@ -288,7 +288,7 @@ view (Pagination paginated) =
                             li [ class "current" ]
                                 [ span [ class "show-for-sr" ]
                                     [ text "You're on page" ]
-                                , text (String.fromInt (1 + current))
+                                , text (String.fromInt current)
                                 ]
                         , guard (current < last) <|
                             viewPaginatedEntry paginated (Relative 1)
@@ -318,12 +318,12 @@ itemsPerPage =
 
 translate : Int -> Int
 translate a =
-    (a + itemsPerPage - 1) // itemsPerPage
+    a // itemsPerPage + 1
 
 
 translateBack : Int -> Int
 translateBack a =
-    a * itemsPerPage
+    (a - 1) * itemsPerPage
 
 
 currentPage : Record -> Int
@@ -333,19 +333,19 @@ currentPage { offset } =
 
 numberOfPages : Record -> Int
 numberOfPages { count } =
-    translate count
+    (count + itemsPerPage - 1) // itemsPerPage
 
 
 lastPage : Record -> Int
 lastPage record =
-    numberOfPages record - 1
+    numberOfPages record
 
 
 isFirstPage : Record -> Bool
-isFirstPage paginated =
-    currentPage paginated == 0
+isFirstPage record =
+    currentPage record == 1
 
 
 isLastPage : Record -> Bool
-isLastPage paginated =
-    currentPage paginated + 1 == numberOfPages paginated
+isLastPage record =
+    currentPage record == lastPage record

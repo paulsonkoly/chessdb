@@ -82,7 +82,7 @@ suite =
                     [ test "pagination was parsed from json" <|
                         \_ -> Expect.fail "nope"
                     ]
-        , describe "1-1000 @ 100" <|
+        , describe "1-1000 @ 1000" <|
             let
                 pagination =
                     Json.decodeString Pagination.jsonDecoder
@@ -125,7 +125,7 @@ suite =
             let
                 pagination =
                     Json.decodeString Pagination.jsonDecoder
-                        "{\"offset\":500,\"count\":1000}"
+                        "{\"offset\":499,\"count\":1000}"
 
                 view =
                     Result.map Pagination.view pagination
@@ -138,8 +138,10 @@ suite =
                     [ test "has Previous" <|
                         \_ -> Query.has [ text "Previous" ] query
                     , test "has 1" <| \_ -> Query.has [ text "1" ] query
-                    , test "doesn't have  2" <|
-                        \_ -> Query.hasNot [ text "2" ] query
+
+                    -- 24 matches on 2 that's why we don't test for it
+                    -- , test "doesn't have  2" <|
+                    --     \_ -> Query.hasNot [ text "2" ] query
                     , test "has ..." <|
                         \_ -> Query.has [ class "ellipsis" ] query
                     , test "doesn't have 23" <|
@@ -174,7 +176,7 @@ suite =
             let
                 pagination =
                     Json.decodeString Pagination.jsonDecoder
-                        "{\"offset\":5,\"count\":10}"
+                        "{\"offset\":4,\"count\":10}"
 
                 view =
                     Result.map Pagination.view pagination
@@ -200,7 +202,7 @@ suite =
                     [ test "pagination was parsed from json" <|
                         \_ -> Expect.fail "nope"
                     ]
-        , describe "1-40 @ 20" <|
+        , describe "1-40 @ 21" <|
             let
                 pagination =
                     Json.decodeString Pagination.jsonDecoder
