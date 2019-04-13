@@ -233,4 +233,33 @@ suite =
                     [ test "pagination was parsed from json" <|
                         \_ -> Expect.fail "nope"
                     ]
+        , describe "busy 1-1000 @ 500" <|
+            let
+                pagination =
+                    Json.decodeString Pagination.jsonDecoder
+                        "{\"offset\":499,\"count\":1000}"
+
+                view =
+                    pagination
+                        |> Result.map (Pagination.view << Pagination.setBusy True)
+
+                eQuery =
+                    Result.map Query.fromHtml view
+            in
+            case eQuery of
+                Ok query ->
+                    [ testNotLink "Previous" query
+                    , testNotLink "1" query
+                    , testNotLink "24" query
+                    , testNotLink "25" query
+                    , testNotLink "26" query
+                    , testNotLink "27" query
+                    , testNotLink "50" query
+                    , testNotLink "Next" query
+                    ]
+
+                Err _ ->
+                    [ test "pagination was parsed from json" <|
+                        \_ -> Expect.fail "nope"
+                    ]
         ]
