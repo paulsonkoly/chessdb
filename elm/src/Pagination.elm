@@ -121,9 +121,23 @@ The encoding contains an offset, and a count fileds.
 -}
 jsonDecoder : Json.Decode.Decoder Pagination
 jsonDecoder =
-    Json.Decode.map2 (\a b -> Pagination { offset = a, count = b, busy = False })
+    Json.Decode.map2 Tuple.pair
         (Json.Decode.field "offset" Json.Decode.int)
         (Json.Decode.field "count" Json.Decode.int)
+        |> Json.Decode.andThen
+            (\( a, b ) ->
+                if b < 0 || a < 0 || a >= b then
+                    Json.Decode.fail <|
+                        "invalid values (offset, count) : ("
+                            ++ String.fromInt a
+                            ++ ", "
+                            ++ String.fromInt b
+                            ++ ")"
+
+                else
+                    Json.Decode.succeed <|
+                        Pagination { offset = a, count = b, busy = False }
+            )
 
 
 {-| encodes a pagination request into JSon
