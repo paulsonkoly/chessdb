@@ -75,7 +75,7 @@ suite =
                     , testLink "2" query
                     , testLink "3" query
                     , testLink "50" query
-                    , testLink "next" query
+                    , testLink "Next" query
                     ]
 
                 Err _ ->
@@ -114,7 +114,7 @@ suite =
                     , testLink "1" query
                     , testLink "49" query
                     , testNotLink "50" query
-                    , testNotLink "next" query
+                    , testNotLink "Next" query
                     ]
 
                 Err _ ->
@@ -163,7 +163,7 @@ suite =
                     , testLink "26" query
                     , testLink "27" query
                     , testLink "50" query
-                    , testLink "next" query
+                    , testLink "Next" query
                     ]
 
                 Err _ ->
