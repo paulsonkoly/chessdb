@@ -40,8 +40,9 @@ class Repository
 
   def position_search(filter_hash)
     (position_search_filter << pagination_filter)
-      .run(@db[:moves].join(@db[:games], id: :game_id), filter_hash)
-      .order_by(Sequel.qualify(:moves, :id)).limit(20).all
+      .run(@db[:moves], filter_hash)
+      .order_by(Sequel.qualify(:moves, :id)).limit(20)
+      .join(:games, id: :game_id).all
   end
 
   def position_count(filter_hash)
