@@ -54,7 +54,7 @@ update msg model =
                 date =
                     case dateEvent of
                         Picked newDate ->
-                            Just newDate
+                            newDate
 
                         _ ->
                             fields.fromDate
@@ -82,7 +82,7 @@ update msg model =
                 date =
                     case dateEvent of
                         Picked newDate ->
-                            Just newDate
+                            newDate
 
                         _ ->
                             fields.toDate
