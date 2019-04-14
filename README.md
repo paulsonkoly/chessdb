@@ -12,6 +12,8 @@ Use the Game search to find games by date, result, players, player ELO etc. Clic
 
 While browsing the moves of a particular game you are also presented with the moves in the database that were played in the position in other games. Clicking one of these moves will take you to the Move explorer with the move played in the position.
 
+![screenshot](screenshots/game_viewer.png)
+
 ## Move explorer
 
 The Move explorer lets the user to navigate through variations of moves played in a position. You can discover openings or see what moves were played in other games in the same position.
