@@ -41,6 +41,12 @@ suite =
                     Json.decodeString
                         Pagination.jsonDecoder
                         "{\"offset\":10,\"count\":5}"
+        , test "0/0 is accepted value" <|
+            \_ ->
+                Expect.ok <|
+                    Json.decodeString
+                        Pagination.jsonDecoder
+                        "{\"offset\":0,\"count\":0}"
         , describe "1-1000 @ 1" <|
             let
                 pagination =

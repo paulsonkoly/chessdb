@@ -126,7 +126,7 @@ jsonDecoder =
         (Json.Decode.field "count" Json.Decode.int)
         |> Json.Decode.andThen
             (\( a, b ) ->
-                if b < 0 || a < 0 || a >= b then
+                if b < 0 || a < 0 || (b > 0 && a >= b) then
                     Json.Decode.fail <|
                         "invalid values (offset, count) : ("
                             ++ String.fromInt a
