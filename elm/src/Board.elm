@@ -1,22 +1,45 @@
 module Board exposing
-    ( Board
-    , Castle(..)
-    , Disambiguity(..)
-    , Kind(..)
-    , Move(..)
-    , Piece(..)
-    , boardParser
-    , capture
+    ( Board, Castle(..), Disambiguity(..), Kind(..), Move(..), Piece(..)
+    , empty, initial
+    , move, capture, promote
+    , get, putPiece
     , disambiguate
-    , empty
-    , get
-    , initial
-    , move
-    , moveParser
-    , promote
-    , putPiece
-    , toFen
+    , boardParser, moveParser, toFen
     )
+
+{-| Represents the board with pieces on it. Does not include the full position,
+just where the pieces are. Castling availability, side to move, en passant
+square etc are not stored here.
+
+#Types
+
+@docs Board, Castle, Disambiguity, Kind, Move, Piece
+
+#Constructors
+
+##Board
+
+@docs empty, initial
+
+##Move
+
+@docs move, capture, promote
+
+#Data mainpulation
+
+##Board
+
+@docs get, putPiece
+
+##Move
+
+@docs disambiguate
+
+#Parsers, conversions
+
+@docs boardParser, moveParser, toFen
+
+-}
 
 import Array exposing (Array)
 import Board.Colour exposing (Colour(..))
@@ -49,11 +72,15 @@ type Board
     = Board (Array (Maybe Piece))
 
 
+{-| Board with no pieces
+-}
 empty : Board
 empty =
     Board (Array.repeat 64 Nothing)
 
 
+{-| Board of the starting position
+-}
 initial : Board
 initial =
     empty
@@ -112,6 +139,8 @@ type Move
         }
 
 
+{-| Normal move of a piece to a square
+-}
 move : Kind -> Square -> Move
 move kind destination =
     Normal
@@ -123,6 +152,8 @@ move kind destination =
         }
 
 
+{-| Capture on a square
+-}
 capture : Kind -> Square -> Move
 capture kind destination =
     Normal
@@ -134,6 +165,8 @@ capture kind destination =
         }
 
 
+{-| Promote a pawn
+-}
 promote : Kind -> Square -> Move
 promote kind destination =
     Normal
@@ -145,6 +178,8 @@ promote kind destination =
         }
 
 
+{-| Disambiguates an ambigous move
+-}
 disambiguate : Disambiguity -> Move -> Move
 disambiguate disambiguity moveE =
     case moveE of
