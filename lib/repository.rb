@@ -26,7 +26,7 @@ class Repository
   end
 
   def game_search(filter_hash)
-    (game_search_filter << pagination_filter)
+    game_search_filter_paginated
       .run(@db[:games], filter_hash)
       .order_by(:id).limit(20).all
   end
@@ -39,7 +39,7 @@ class Repository
   end
 
   def position_search(filter_hash)
-    (position_search_filter << pagination_filter)
+    position_search_filter_paginated
       .run(@db[:moves], filter_hash)
       .order_by(Sequel.qualify(:moves, :id)).limit(20)
       .join(:games, id: :game_id).all
@@ -63,6 +63,10 @@ class Repository
     def <<(other)
       @others << other
       self
+    end
+
+    def +(other)
+      self.dup << other
     end
 
     def run(table, hash)
@@ -105,6 +109,11 @@ class Repository
       ).freeze
   end
 
+  def game_search_filter_paginated
+    @game_search_filter_paginated ||=
+      pagination_filter + game_search_filter
+  end
+
   def result_filter
     Filter.new(:result) do |table, actual|
       case actual
@@ -139,6 +148,10 @@ class Repository
         table.where(en_passant: actual)
       end
       ).freeze
+  end
+
+  def position_search_filter_paginated
+    paginated_filter + position_search_filter
   end
 
   def game_columns
