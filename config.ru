@@ -93,7 +93,8 @@ class App < Roda
           halt 400
         end
 
-        hash = [fen, castle, active_colour, en_passant].hash
+        # needs to be consistent across processes
+        hash = [fen, castle, active_colour, en_passant].to_s
 
         data = app.cache.fetch(hash) do
           app.repository.popular_moves(fen: fen,
