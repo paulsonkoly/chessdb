@@ -1,13 +1,28 @@
 module Position exposing
-    ( Position, initial, empty
-    , canCastle, fen, jsonEncode, make, setCastle, specific, urlEncode
+    ( Position, initial, empty, specific
+    , make, canCastle, setCastle
+    , jsonEncode, urlEncode, fen
     )
 
 {-| A board along with the castling availabilities, side to move, en passant
 
 #Types and constructors
 
-@docs Position, initial, empty
+Creating positions with empty boards, initial board set up or with specific fen
+strings is possible.
+
+@docs Position, initial, empty, specific
+
+#Data manipulation
+
+Note that make also takes care of castling rights, the `canCastle`, `setCastle`
+functions are simply helpers.
+
+@docs make, canCastle, setCastle
+
+#Conversions
+
+@docs jsonEncode, urlEncode, fen
 
 -}
 
@@ -67,6 +82,9 @@ empty =
     }
 
 
+{-| A specific position from a fen, castling, etc
+This might fail if things don't parse correctly.
+-}
 specific : String -> Int -> Int -> Maybe Int -> Result String Position
 specific fenPosition castlingAvailability activeColour mEnPassant =
     let
@@ -101,6 +119,14 @@ specific fenPosition castlingAvailability activeColour mEnPassant =
         enPassant
 
 
+
+------------------------------------------------------------------------
+--                         Data manipulation                          --
+------------------------------------------------------------------------
+
+
+{-| Makes a move on a position.
+-}
 make : Move -> Position -> Result String Position
 make moveE position =
     let
@@ -126,6 +152,91 @@ make moveE position =
                     , activeColour = Colour.flip position.activeColour
                 }
             )
+
+
+canCastle : Colour -> Castle -> Position -> Bool
+canCastle colour castle position =
+    let
+        msk =
+            castleMask colour castle
+    in
+    Bit.and msk position.castlingAvailability == msk
+
+
+setCastle : Position -> Colour -> Castle -> Bool -> Position
+setCastle position colour castle bool =
+    let
+        msk =
+            castleMask colour castle
+    in
+    if bool then
+        { position
+            | castlingAvailability = Bit.or position.castlingAvailability msk
+        }
+
+    else
+        { position
+            | castlingAvailability =
+                Bit.and position.castlingAvailability (Bit.complement msk)
+        }
+
+
+
+------------------------------------------------------------------------
+--                            Conversions                             --
+------------------------------------------------------------------------
+
+
+urlEncode : Position -> List Url.QueryParameter
+urlEncode { board, castlingAvailability, activeColour, enPassant } =
+    Maybe.values
+        [ Just (Url.string "fen_position" (Board.toFen board))
+        , Just (Url.int "castling_availability" castlingAvailability)
+        , Just (Colour.toUrlQueryParameter "active_colour" activeColour)
+        , enPassant |> Maybe.map (Square.toUrlQueryParameter "en_passant")
+        ]
+
+
+jsonEncode : Position -> Json.Encode.Value
+jsonEncode { board, castlingAvailability, activeColour, enPassant } =
+    Json.Encode.object <|
+        Maybe.values
+            [ Just ( "fen_position", Json.Encode.string (Board.toFen board) )
+            , Just
+                ( "castling_availability"
+                , Json.Encode.int castlingAvailability
+                )
+            , Just ( "active_colour", Colour.jsonEncode activeColour )
+            , enPassant
+                |> Maybe.map (\ep -> ( "en_passant", Square.jsonEncode ep ))
+            ]
+
+
+fen : Position -> String
+fen position =
+    Board.toFen position.board
+
+
+
+------------------------------------------------------------------------
+--                              Private                               --
+------------------------------------------------------------------------
+
+
+castleMask : Colour -> Castle -> Int
+castleMask colour castle =
+    case ( colour, castle ) of
+        ( White, Short ) ->
+            1
+
+        ( White, Long ) ->
+            2
+
+        ( Black, Short ) ->
+            4
+
+        ( Black, Long ) ->
+            8
 
 
 pieces : Move -> Position -> Square -> Board
@@ -335,76 +446,3 @@ updateEnPassant moveE colour source =
 
                 _ ->
                     Nothing
-
-
-urlEncode : Position -> List Url.QueryParameter
-urlEncode { board, castlingAvailability, activeColour, enPassant } =
-    Maybe.values
-        [ Just (Url.string "fen_position" (Board.toFen board))
-        , Just (Url.int "castling_availability" castlingAvailability)
-        , Just (Colour.toUrlQueryParameter "active_colour" activeColour)
-        , enPassant |> Maybe.map (Square.toUrlQueryParameter "en_passant")
-        ]
-
-
-jsonEncode : Position -> Json.Encode.Value
-jsonEncode { board, castlingAvailability, activeColour, enPassant } =
-    Json.Encode.object <|
-        Maybe.values
-            [ Just ( "fen_position", Json.Encode.string (Board.toFen board) )
-            , Just
-                ( "castling_availability"
-                , Json.Encode.int castlingAvailability
-                )
-            , Just ( "active_colour", Colour.jsonEncode activeColour )
-            , enPassant
-                |> Maybe.map (\ep -> ( "en_passant", Square.jsonEncode ep ))
-            ]
-
-
-fen : Position -> String
-fen position =
-    Board.toFen position.board
-
-
-castleMask : Colour -> Castle -> Int
-castleMask colour castle =
-    case ( colour, castle ) of
-        ( White, Short ) ->
-            1
-
-        ( White, Long ) ->
-            2
-
-        ( Black, Short ) ->
-            4
-
-        ( Black, Long ) ->
-            8
-
-
-canCastle : Colour -> Castle -> Position -> Bool
-canCastle colour castle position =
-    let
-        msk =
-            castleMask colour castle
-    in
-    Bit.and msk position.castlingAvailability == msk
-
-
-setCastle : Position -> Colour -> Castle -> Bool -> Position
-setCastle position colour castle bool =
-    let
-        msk =
-            castleMask colour castle
-    in
-    if bool then
-        { position
-            | castlingAvailability = Bit.or position.castlingAvailability msk
-        }
-
-    else
-        { position
-            | castlingAvailability =
-                Bit.and position.castlingAvailability (Bit.complement msk)
-        }
