@@ -78,11 +78,12 @@ viewDateFields fields =
         settings =
             Model.datePickerSettings
 
-        newSettings =
+        newSettings fieldError =
             { settings
                 | inputAttributes =
                     settings.inputAttributes
                         ++ FormError.errorAttribute fields.datesDontMatch
+                        ++ FormError.errorAttribute (fieldError fields)
             }
     in
     div [ class "grid-x grid-padding-x" ]
@@ -90,17 +91,19 @@ viewDateFields fields =
             [ label [ for "date" ] [ text "From date" ]
             , DatePicker.view
                 fields.fromDate
-                newSettings
+                (newSettings .fromDateError)
                 fields.fromDatePicker
                 |> Html.map FromDatePicked
+            , FormError.viewError fields.fromDateError
             ]
         , div [ class "cell medium-6" ]
             [ label [ for "date" ] [ text "To date" ]
             , DatePicker.view
                 fields.toDate
-                newSettings
+                (newSettings .toDateError)
                 fields.toDatePicker
                 |> Html.map ToDatePicked
+            , FormError.viewError fields.toDateError
             ]
         , div [ class "cell medium-12" ]
             [ FormError.viewError fields.datesDontMatch ]

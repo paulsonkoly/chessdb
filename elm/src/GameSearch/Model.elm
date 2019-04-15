@@ -36,8 +36,10 @@ type alias FormFields =
     , site : String
     , fromDate : Maybe Date
     , fromDatePicker : DatePicker
+    , fromDateError : Error
     , toDate : Maybe Date
     , toDatePicker : DatePicker
+    , toDateError : Error
     , datesDontMatch : Error
     , round : String
     , result : String
@@ -81,8 +83,10 @@ init _ =
             , site = ""
             , fromDate = Nothing
             , fromDatePicker = datePicker
+            , fromDateError = NoError
             , toDate = Nothing
             , toDatePicker = datePicker
+            , toDateError = NoError
             , datesDontMatch = NoError
             , round = ""
             , result = ""
@@ -163,7 +167,13 @@ areFieldsValid : FormFields -> Bool
 areFieldsValid fields =
     not <|
         FormError.anyError
-            [ fields.elosDontMatch, fields.ecoInvalid, fields.datesDontMatch ]
+            [ fields.elosDontMatch
+            , fields.ecoInvalid
+            , fields.datesDontMatch
+            , fields.fromDateError
+            , fields.toDateError
+            , fields.datesDontMatch
+            ]
 
 
 hasWhiteOrBlack : FormFields -> Bool

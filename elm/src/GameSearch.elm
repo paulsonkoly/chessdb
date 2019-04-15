@@ -3,7 +3,8 @@ module GameSearch exposing (main)
 import Browser
 import Browser.Navigation as Browser
 import Date exposing (Date)
-import DatePicker exposing (DateEvent(..))
+import DatePicker
+import FormError exposing (Error(..))
 import Game exposing (..)
 import Game.Decoder exposing (gamePropertiesDecoder)
 import GameSearch.Model as Model exposing (Model)
@@ -51,18 +52,22 @@ update msg model =
                         datePicked
                         fields.fromDatePicker
 
-                date =
+                ( date, error ) =
                     case dateEvent of
-                        Picked newDate ->
-                            newDate
+                        DatePicker.Picked newDate ->
+                            ( newDate, NoError )
+
+                        DatePicker.FailedInput (DatePicker.Invalid oops) ->
+                            ( fields.fromDate, Error oops )
 
                         _ ->
-                            fields.fromDate
+                            ( fields.fromDate, fields.fromDateError )
 
                 newFields =
                     { fields
                         | fromDate = date
                         , fromDatePicker = newDatePicker
+                        , fromDateError = error
                     }
                         |> Model.validateFields
             in
@@ -79,18 +84,22 @@ update msg model =
                         datePicked
                         fields.toDatePicker
 
-                date =
+                ( date, error ) =
                     case dateEvent of
-                        Picked newDate ->
-                            newDate
+                        DatePicker.Picked newDate ->
+                            ( newDate, NoError )
+
+                        DatePicker.FailedInput (DatePicker.Invalid oops) ->
+                            ( fields.toDate, Error oops )
 
                         _ ->
-                            fields.toDate
+                            ( fields.toDate, fields.toDateError )
 
                 newFields =
                     { fields
                         | toDate = date
                         , toDatePicker = newDatePicker
+                        , toDateError = error
                     }
                         |> Model.validateFields
             in
