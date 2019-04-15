@@ -16,6 +16,8 @@ class App < Roda
   plugin :json
   plugin :json_parser, parser: -> str { JSON.parse(str, symbolize_names: true) }
   plugin :halt
+  plugin :environments
+  compile_assets if production?
 
   route do |r|
     r.assets

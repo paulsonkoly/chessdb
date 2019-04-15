@@ -7,3 +7,4 @@ assets/js/jquery-*.min.js
 /.sass-cache/
 /elm/elm-stuff/
 /bin/
+/public/assets/

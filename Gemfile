@@ -20,6 +20,10 @@ group :development do
   gem 'pry-stack_explorer'
 end
 
+group :production do
+  gem 'uglifier'
+end
+
 git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
 
 # gem "rails"
