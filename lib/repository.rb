@@ -151,7 +151,7 @@ class Repository
   end
 
   def position_search_filter_paginated
-    paginated_filter + position_search_filter
+    pagination_filter + position_search_filter
   end
 
   def game_columns
