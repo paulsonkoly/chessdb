@@ -72,6 +72,17 @@ viewLoaded model game =
                         [ div [ id "chessboard" ] [] ]
 
                     --, style "width" "400px" ] [] ]
+                    , div [ class "text-right" ]
+                        [ small []
+                            [ em []
+                                [ text "Use "
+                                , kbd [] [ text "h" ]
+                                , text " or "
+                                , kbd [] [ text "l" ]
+                                , text " to navigate with the keyboard."
+                                ]
+                            ]
+                        ]
                     ]
                 , div [ class "cell" ]
                     [ viewButtons
@@ -208,7 +219,6 @@ viewButtons { moveNumber, lastMoveNumber } =
             , viewButton (setter (moveNumber - 1)) S.angleLeft
             , viewButton (setter (moveNumber + 1)) S.angleRight
             , viewButton (setter lastMoveNumber) S.angleDoubleRight
-            , button [ class "button" ] [ I.view S.info ] -- TODO : modal help
             ]
 
 
