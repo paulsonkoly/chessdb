@@ -21,7 +21,7 @@ import Popularities
 
 view : Model -> Html Msg
 view model =
-    viewLoadable model.game (viewLoaded model)
+    viewLoadable model.game (viewLoaded model) (text "")
 
 
 viewLoaded : Model -> Game -> Html Msg

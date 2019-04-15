@@ -16,6 +16,7 @@ import Html
         , div
         , input
         , label
+        , p
         , span
         , table
         , tbody
@@ -54,8 +55,26 @@ view model =
         , div [ class "cell", class "medium-3" ]
             [ viewBoardForm model ]
         , div [ class "cell", class "medium-5" ]
-            [ Loadable.viewLoadable model.games viewGameProperties
+            [ Loadable.viewLoadable
+                model.games
+                viewGameProperties
+                viewWelcomeString
             , Html.map PaginationRequested (Pagination.view model.pagination)
+            ]
+        ]
+
+
+viewWelcomeString : Html msg
+viewWelcomeString =
+    div []
+        [ p [] [ text "Search for games with a position you set." ]
+        , p []
+            [ text <|
+                "Note that the starting position before the first move is not "
+                    ++ "indexed in the database, and will only find games where "
+                    ++ "that  same position appears after some moves. A double "
+                    ++ "pawn advance requres you to set the en passant square "
+                    ++ "(one square behind the advanced pawn)."
             ]
         ]
 

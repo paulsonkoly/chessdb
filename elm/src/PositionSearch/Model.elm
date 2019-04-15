@@ -54,7 +54,7 @@ init =
     { position = Position.empty
     , enPassantStringError = NoError
     , pagination = Pagination.init
-    , games = Loading
+    , games = NoRequest
     }
 
 

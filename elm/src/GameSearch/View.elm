@@ -264,7 +264,7 @@ view model =
         [ div [ class "medium-6 cell" ]
             [ div [ class "callout" ] [ viewForm model.formFields ] ]
         , div [ class "medium-6 cell" ]
-            [ Loadable.viewLoadable model.games viewGameProperties
+            [ Loadable.viewLoadable model.games viewGameProperties (text "")
             , Html.map PaginationRequested (Pagination.view model.pagination)
             ]
         ]

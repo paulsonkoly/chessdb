@@ -74,7 +74,7 @@ view popularities =
 
         body =
             tbody [] <|
-                Loadable.viewLoadableList popularities viewNormalPopularities
+                Loadable.viewLoadableList popularities viewNormalPopularities []
     in
     table [ class "hover", class "popularities-list" ] [ header, body ]
 
