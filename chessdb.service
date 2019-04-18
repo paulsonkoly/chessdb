@@ -1,0 +1,19 @@
+[Unit]
+Description = "ChessDB server"
+Requires = postgresql.service
+Requires = redis.service
+
+[Service]
+Type = simple
+# Create system user
+User = chessdb
+Group = chessdb
+# app under /srv/chessdb/chessdb (/srv/chessdb is the home of chessdb)
+WorkingDirectory = /srv/chessdb/chessdb
+ExecStart=/usr/bin/bash -lc 'bundle exec rackup -s puma -E production -o 0.0.0.0 --port 9393 config.ru'
+TimeoutSec=30
+RestartSec=15s
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
