@@ -117,8 +117,8 @@ class Repository
   def result_filter
     Filter.new(:result) do |table, actual|
       case actual
-      when "1-0" then table.where(result: 0)
-      when "0-1" then table.where(result: 1)
+      when "0-1" then table.where(result: 0)
+      when "1-0" then table.where(result: 1)
       when "Decisive" then table.where { result < 2 }
       when "1/2-1/2" then table.where(result: 2)
       else table
