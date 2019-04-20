@@ -66,7 +66,9 @@ class Repository
     end
 
     def +(other)
-      self.dup << other
+      self.dup.tap do |obj|
+        obj.instance_variable_set(:@others, @others + [other])
+      end
     end
 
     def run(table, hash)
@@ -151,7 +153,8 @@ class Repository
   end
 
   def position_search_filter_paginated
-    pagination_filter + position_search_filter
+    @position_search_filter_paginated ||=
+      pagination_filter + position_search_filter
   end
 
   def game_columns
