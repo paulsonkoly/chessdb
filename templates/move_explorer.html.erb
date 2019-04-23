@@ -1,15 +1,8 @@
-<div class="grid-x grid-padding-x">
-  <div class="cell medium-6">
-    <div id="move_explorer"></div>
-  </div>
-  <div class="cell medium-6">
-    <div id="chessboard"></div>
-  </div>
-</div>
+<div id="move_explorer"></div>
 <script>
   var app = Elm.MoveExplorer.init({
     node: document.getElementById("move_explorer"),
-    flags: { 
+    flags: {
       fen: "<%= @fen %>",
       castlingAvailability: <%= @castling_availability %>,
       activeColour: <%= @active_colour %>,
@@ -18,8 +11,12 @@
   });
   var chessboard;
 
-  chessboard = ChessBoard('chessboard', 'start');
-  app.ports.signalFenChanged2.subscribe(function (fen) {
-    chessboard.position(fen);
+  app.ports.signalDomRendered2.subscribe(function (msg) {
+    requestAnimationFrame(function() {
+      chessboard = ChessBoard('chessboard', '<%= @fen %>');
+      app.ports.signalFenChanged2.subscribe(function (fen) {
+        chessboard.position(fen);
+      });
+    });
   });
 </script>
