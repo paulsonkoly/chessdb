@@ -1,5 +1,7 @@
 # ChessDB
 
+[Live demo](http://sdd.hu:9393/)
+
 This site is an open source tech demo to view and browse the [KingBase](http://kingbase-chess.net/") chess database. With ChessDB you have access to the entire 2.2 million games with about 177 million positions.
 
 ## Game search
