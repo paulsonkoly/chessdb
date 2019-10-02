@@ -80,6 +80,20 @@ suite =
                             }
                         )
                     )
+        , test "N8e7" <|
+            \_ ->
+                Expect.equal
+                    (Parser.run Board.moveParser "N8e7")
+                    (Ok
+                        (Normal
+                            { kind = Knight
+                            , disambiguity = Just (RankDisambiguity (Board.Rank 8))
+                            , capture = False
+                            , destination = Board.e7
+                            , promotion = Nothing
+                            }
+                        )
+                    )
         , test "O-O" <|
             \_ ->
                 Expect.equal
