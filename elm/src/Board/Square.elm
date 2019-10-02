@@ -427,19 +427,18 @@ fileParser =
 
 rankParser : Parser Rank
 rankParser =
-    Parser.int
-        |> Parser.andThen
-            (\r ->
-                if 1 <= r && r <= 8 then
-                    Parser.succeed (Rank r)
-
-                else
-                    Parser.problem
-                        ("Rank should be between 1 and 8 (was "
-                            ++ String.fromInt r
-                            ++ ")"
-                        )
-            )
+    -- Parser.int doesn't work here. It seems it fails eagerly. See
+    -- https://github.com/phaul/chessdb/issues/7
+    Parser.oneOf
+        [ Parser.succeed (Rank 1) |. Parser.token "1"
+        , Parser.succeed (Rank 2) |. Parser.token "2"
+        , Parser.succeed (Rank 3) |. Parser.token "3"
+        , Parser.succeed (Rank 4) |. Parser.token "4"
+        , Parser.succeed (Rank 5) |. Parser.token "5"
+        , Parser.succeed (Rank 6) |. Parser.token "6"
+        , Parser.succeed (Rank 7) |. Parser.token "7"
+        , Parser.succeed (Rank 8) |. Parser.token "8"
+        ]
 
 
 parser : Parser Square
