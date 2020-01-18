@@ -26,8 +26,8 @@ GEM
     pry-stack_explorer (0.4.9.3)
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
-    puma (3.12.1)
-    rack (2.0.6)
+    puma (3.12.2)
+    rack (2.0.8)
     rake (12.3.2)
     roda (3.18.0)
       rack
