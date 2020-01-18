@@ -1,0 +1,16 @@
+require 'shellwords'
+
+elmfiles = Dir['**/*.elm']
+toplevels = Shellwords.join(['src/GameViewer.elm',
+                             'src/PositionSearch.elm',
+                             'src/GameSearch.elm',
+                             'src/MoveExplorer.elm'])
+
+task :default => :build
+
+desc 'Compiles elm into application.js'
+task :build => 'application.js'
+
+file 'application.js' => elmfiles do
+  sh "elm make --optimize #{toplevels} --output=application.js"
+end

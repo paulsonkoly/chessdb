@@ -13,6 +13,7 @@ gem 'hiredis', '~> 0.6'
 gem 'app_configuration', '~> 0.0'
 
 group :development do
+  gem 'rake'
   gem 'shotgun'
   gem 'pry'
   gem 'pry-doc'
