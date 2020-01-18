@@ -1,11 +1,9 @@
 require 'yaml'
 require 'sequel'
 
-def with_database
+def with_database(&block)
   db_config = YAML.load_file('config/chessdb.yml')['database'][:development]
-  db = Sequel.connect(adapter: 'postgres', **db_config)
-  yield(db)
-  db.disconnect
+  Sequel.connect(adapter: 'postgres', **db_config, &block)
 end
 
 namespace :db do
