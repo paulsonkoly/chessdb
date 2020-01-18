@@ -1,5 +1,8 @@
 require 'shellwords'
 
+js='application.js'
+copied = "../assets/js/#{js}"
+
 elmfiles = Dir['**/*.elm']
 toplevels = Shellwords.join(['src/GameViewer.elm',
                              'src/PositionSearch.elm',
@@ -8,9 +11,16 @@ toplevels = Shellwords.join(['src/GameViewer.elm',
 
 task :default => :build
 
-desc 'Compiles elm into application.js'
-task :build => 'application.js'
+desc "Compiles elm into #{js}"
+task :build => js
 
-file 'application.js' => elmfiles do
-  sh "elm make --optimize #{toplevels} --output=application.js"
+file js => elmfiles do
+  sh "elm make --optimize #{toplevels} --output=#{js}"
+end
+
+desc 'Copies the build into the assets folder'
+task :copy => copied
+
+file copied => js do
+  cp js, "../assets/js/#{js}"
 end
