@@ -15,7 +15,7 @@ end
 
 create_table :moves do
   primary_key :id, type: 'bigint'
-  Integer :game_id, type: 'bigint', null: false
+  foreign_key :game_id, :games, type: 'bigint', null: false
   String :fen_position, size: 72, null: false
   String :san, size: 10, null: false
   String :next_san, size: 10
