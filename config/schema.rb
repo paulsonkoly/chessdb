@@ -9,7 +9,7 @@ create_table :games do
   Fixnum :result, type: 'smallint'
   Fixnum :white_elo, type: 'smallint'
   Fixnum :black_elo, type: 'smallint'
-  String :ECO, size: 10
+  String :eco, size: 10
   Date :event_date
 end
 
