@@ -1,6 +1,8 @@
 require 'yaml'
 require 'sequel'
 
+private
+
 def with_database(&block)
   db_config = YAML.load_file('config/chessdb.yml')['database'][:development]
   Sequel.connect(adapter: 'postgres', **db_config, &block)
@@ -17,7 +19,8 @@ namespace :db do
   desc 'Deletes tables'
   task :drop do
     with_database do |db|
-      db.drop_table :games
+      db.drop_table? :moves
+      db.drop_table? :games
     end
   end
 end
